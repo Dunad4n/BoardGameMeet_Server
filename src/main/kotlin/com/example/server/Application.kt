@@ -1,11 +1,15 @@
-package com.example.bgm
+package com.example.server
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
+
+
+
+
 @SpringBootApplication
-class BgmApplication
+class Application
 
 fun main(args: Array<String>) {
-	runApplication<BgmApplication>(*args)
+    runApplication<Application>(*args)
 }
