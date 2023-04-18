@@ -1,5 +1,6 @@
 package com.example.bgm.entities
 
+import com.example.bgm.Gender
 import jakarta.persistence.*
 
 @Entity
@@ -15,20 +16,22 @@ data class Person(
     @Column(name = "password")
     private val password: String,
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private val gender: Char,
+    private val gender: Gender,
 
     @Column(name = "age")
     private val age: Int,
 
-//    @Column("city")
+//    @Column(name = "city")
 //    private val city: Address,
+//
+//    @OneToMany(mappedBy = "events", cascade = [CascadeType.ALL])
+//    private val events: List<Event>
 )
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private val id = -1;
-
-    constructor() : this("", "", "", 'm', -1)
 }
