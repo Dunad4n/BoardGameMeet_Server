@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import java.sql.Date
 
 @Table(name = "event")
+@Entity
 data class Event(
 
     @Column(name = "name")
@@ -13,7 +14,7 @@ data class Event(
     private val game: String,
 
     @Column(name = "address")
-    private val address: Address,
+    private val address: String,
 
     @Column(name = "date")
     private val date: Date,
@@ -21,17 +22,20 @@ data class Event(
     @Column(name = "maxPersonCount")
     private val maxPersonCount: Int,
 
-    @Column(name = "ages")
-    private val ages: AgeRange,
+    @Column(name = "minAge")
+    private val minAge: Int,
+
+    @Column(name = "maxAge")
+    private val maxAge: Int,
 
     @OneToOne(cascade = [CascadeType.ALL])
     @Column(name = "host")
     private val host: Person,
 
-    @OneToMany(mappedBy = "people", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
     private val people: List<Person>,
 
-    @OneToMany(mappedBy = "bannedPeople", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
     private val bannedPeople: List<Person>,
 
     @Column(name = "description")
@@ -40,7 +44,7 @@ data class Event(
     @Column(name = "items")
     private val items: String,
 
-    @OneToMany(mappedBy = "messages", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
     private val messages: List<Message>,
 
     @Column(name = "active")

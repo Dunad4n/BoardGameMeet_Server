@@ -1,4 +1,4 @@
-package com.example.bgm.entities
+package com.example.bgm.entities.util
 
 
 data class Address(

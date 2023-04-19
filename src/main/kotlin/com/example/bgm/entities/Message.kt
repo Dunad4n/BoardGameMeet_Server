@@ -1,15 +1,18 @@
 package com.example.bgm.entities
 
+import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
 import java.sql.Date
 
 @Table(name = "message")
+@Entity
 data class Message(
 
     @Column(name = "text")
     private val text: String,
 
     @ManyToOne(cascade = [CascadeType.ALL])
+    @JsonBackReference
     @Column(name = "event")
     private val event: Event,
 

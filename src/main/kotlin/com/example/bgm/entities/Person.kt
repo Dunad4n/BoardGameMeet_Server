@@ -16,6 +16,9 @@ data class Person(
     @Column(name = "password")
     private val password: String,
 
+    @Column(name = "secret_word")
+    private val secretWord: String,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "gender")
     private val gender: Gender,
@@ -23,11 +26,11 @@ data class Person(
     @Column(name = "age")
     private val age: Int,
 
-//    @Column(name = "city")
-//    private val city: Address,
-//
-//    @OneToMany(mappedBy = "events", cascade = [CascadeType.ALL])
-//    private val events: List<Event>
+    @Column(name = "city")
+    private val city: String,
+
+    @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
+    private val events: List<Event>
 )
 {
     @Id
