@@ -1,8 +1,7 @@
-package com.example.server.Controller
+package com.example.bgm.Controller
 
-import com.example.server.TestEntity
-import com.example.server.TestService
-import org.springframework.http.MediaType
+import com.example.bgm.TestEntity
+import com.example.bgm.TestService
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
@@ -16,16 +15,14 @@ class ServiceController {
 
     @RequestMapping(
         path = arrayOf("/test"),
-        method = arrayOf(RequestMethod.GET),
-        produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
+        method = arrayOf(RequestMethod.GET),)
     fun test(): TestResponse{
         return TestResponse(status = true, service.getAll())
     }
 
     @RequestMapping(
         path = arrayOf("/test2"),
-        method = arrayOf(RequestMethod.GET),
-        produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
+        method = arrayOf(RequestMethod.GET),)
     fun testWithParams(@RequestParam(value = "id") id: Int): TestResponse{
         return TestResponse(status = true, listOf(service.get(id)));
     }
