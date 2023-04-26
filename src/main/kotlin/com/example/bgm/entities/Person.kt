@@ -6,36 +6,26 @@ import jakarta.persistence.*
 @Table(name = "person")
 data class Person(
 
-    @Column(name = "name")
-    private val name: String,
+    @Column(name = "name") val name: String,
 
-    @Column(name = "nickname")
-    private val nickname: String,
+    @Column(name = "nickname") val nickname: String,
 
-    @Column(name = "password")
-    private val password: String,
+    @Column(name = "password") val password: String,
 
-    @Column(name = "secret_word")
-    private val secretWord: String,
+    @Column(name = "secret_word") val secretWord: String,
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
-    private val gender: Gender,
+    @Column(name = "gender") val gender: Gender,
 
-    @Column(name = "age")
-    private val age: Int,
+    @Column(name = "age") val age: Int,
 
-    @Column(name = "city")
-    private val city: String,
-
-//    @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
-    @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "people")
-    private val events: List<Event>,
+    @Column(name = "city") val city: String,
 
     @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "banned_people")
-    private val banedIn: List<Event>
+    @JoinColumn(name = "people") val events: List<Event>,
+
+    @ManyToMany(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "banned_people") val banedIn: List<Event>
 )
 {
     @Id

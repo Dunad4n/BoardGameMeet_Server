@@ -7,55 +7,40 @@ import java.sql.Date
 @Entity
 data class Event(
 
-    @Column(name = "name")
-    private val name: String,
+    @Column(name = "name") val name: String,
 
-    @Column(name = "game")
-    private val game: String,
+    @Column(name = "game") val game: String,
 
-    @Column(name = "address")
-    private val address: String,
+    @Column(name = "address") val address: String,
 
-    @Column(name = "date")
-    private val date: Date,
+    @Column(name = "date") val date: Date,
 
-    @Column(name = "maxPersonCount")
-    private val maxPersonCount: Int,
+    @Column(name = "maxPersonCount") val maxPersonCount: Int,
 
-    @Column(name = "minAge")
-    private val minAge: Int,
+    @Column(name = "minAge") val minAge: Int,
 
-    @Column(name = "maxAge")
-    private val maxAge: Int,
+    @Column(name = "maxAge") val maxAge: Int,
 
     @ManyToOne(cascade = [CascadeType.ALL])
-//    @Column(name = "host")
-    @JoinColumn(name = "host")
-    private val host: Person,
+    @JoinColumn(name = "host") val host: Person,
 
-//    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
-    private val people: List<Person>,
+    @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL]) val people: List<Person>,
 
-//    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
-    private val bannedPeople: List<Person>,
+    @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL]) val bannedPeople: List<Person>,
 
-    @Column(name = "description")
-    private val description: String,
+    @Column(name = "description") val description: String,
 
-    @Column(name = "items")
-    private val items: String,
+    @Column(name = "items") val items: String,
 
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    private val messages: List<Message>,
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL]) val messages: List<Message>,
 
-    @Column(name = "active")
-    private val isActive: Boolean
+    @Column(name = "active") val isActive: Boolean
 ) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private val id = -1;
+
+
 }

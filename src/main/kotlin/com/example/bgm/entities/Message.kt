@@ -2,28 +2,22 @@ package com.example.bgm.entities
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
-import lombok.NoArgsConstructor
 import java.sql.Date
 
 @Table(name = "message")
 @Entity
 data class Message(
 
-    @Column(name = "text")
-    private val text: String,
+    @Column(name = "text") val text: String,
 
     @ManyToOne(cascade = [CascadeType.ALL])
     @JsonBackReference
-//    @Column(name = "event")
-    @JoinColumn(name = "event")
-    private val event: Event,
+    @JoinColumn(name = "event") val event: Event,
 
     @ManyToOne(cascade = [CascadeType.ALL])
-//    @Column(name = "person")
-    @JoinColumn(name = "person")
-    private val person: Person,
+    @JoinColumn(name = "person") val person: Person,
 
-    private val dateTime: Date
+    val dateTime: Date
 ) {
 
     @Id
