@@ -1,21 +1,24 @@
 package com.example.bgm.Controller
 
-import com.example.bgm.TestService
+import com.example.bgm.EventService
 import com.example.bgm.entities.Event
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ServiceController {
-    val service: TestService = TestService();
+class ServiceController{
+
+    @Autowired
+    private lateinit var service: EventService
 
     @RequestMapping(
         path = ["/events"],
         method = [RequestMethod.GET]
     )
-    fun allEvents(@RequestParam(value = "id") id: Int,
+    fun allEvents(@RequestParam(value = "id") id: Long,
                      @RequestParam(value = "received") received: Int): List<EventsResponseEntity> {
         return service.getEvents(id, received)
     }
@@ -34,7 +37,7 @@ class ServiceController {
         path = ["/myEvents"],
         method = [RequestMethod.GET]
     )
-    fun myEvents(@RequestParam(value = "id") id: Int,
+    fun myEvents(@RequestParam(value = "id") id: Long,
                      @RequestParam(value = "received") received: Int): List<MyEventsResponseEntity> {
         return service.getMyEvents(id, received)
     }

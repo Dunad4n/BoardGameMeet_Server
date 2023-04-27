@@ -2,22 +2,31 @@ package com.example.bgm.entities
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotNull
 import java.sql.Date
+import java.time.LocalDateTime
 
 @Table(name = "message")
 @Entity
 data class Message(
 
-    @Column(name = "text") val text: String,
+    @NotNull
+    @Column(name = "text")
+    var text: String,
 
+    @NotNull
     @ManyToOne(cascade = [CascadeType.ALL])
-    @JsonBackReference
-    @JoinColumn(name = "event") val event: Event,
+    @JoinColumn(name = "event")
+    var event: Event,
 
+    @NotNull
     @ManyToOne(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "person") val person: Person,
+    @JoinColumn(name = "person")
+    var person: Person,
 
-    val dateTime: Date
+    @NotNull
+    @Column(name = "date_time")
+    var dateTime: LocalDateTime
 ) {
 
     @Id

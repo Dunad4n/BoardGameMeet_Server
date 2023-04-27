@@ -1,46 +1,80 @@
 package com.example.bgm.entities
 
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotNull
+import lombok.Data
 import java.sql.Date
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Table(name = "event")
+@Data
 @Entity
 data class Event(
 
-    @Column(name = "name") val name: String,
+    @NotNull
+    @Column(name = "name")
+    var name: String,
 
-    @Column(name = "game") val game: String,
+    @NotNull
+    @Column(name = "game")
+    var game: String,
 
-    @Column(name = "address") val address: String,
+    @NotNull
+    @Column(name = "city")
+    var city: String,
 
-    @Column(name = "date") val date: Date,
+    @NotNull
+    @Column(name = "address")
+    var address: String,
 
-    @Column(name = "maxPersonCount") val maxPersonCount: Int,
+    @NotNull
+    @Column(name = "date")
+    var date: LocalDateTime,
 
-    @Column(name = "minAge") val minAge: Int,
+    @NotNull
+    @Column(name = "maxPersonCount")
+    var maxPersonCount: Int,
 
-    @Column(name = "maxAge") val maxAge: Int,
+    @Column(name = "minAge")
+    var minAge: Int,
 
+    @Column(name = "maxAge")
+    var maxAge: Int,
+
+    @NotNull
     @ManyToOne(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "host") val host: Person,
+    @JoinColumn(name = "host")
+    var host: Person,
 
-    @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL]) val people: List<Person>,
+    @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
+    var members: List<Person>,
 
-    @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL]) val bannedPeople: List<Person>,
+    @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
+    var bannedMembers: List<Person>,
 
-    @Column(name = "description") val description: String,
+    @Column(name = "description")
+    var description: String,
 
-    @Column(name = "items") val items: String,
+    @Column(name = "items")
+    var items: String,
 
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL]) val messages: List<Message>,
-
-    @Column(name = "active") val isActive: Boolean
-) {
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
+    var messages: List<Message>,
+){
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private val id = -1;
+    var id: Long? = null
+        get() = field
+        set(id) {
+            field = id
+        }
+
+    fun membersForFull(): Int { return maxPersonCount - members.size }
+    fun isActive(): Boolean { return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC) }
+
 
 
 }

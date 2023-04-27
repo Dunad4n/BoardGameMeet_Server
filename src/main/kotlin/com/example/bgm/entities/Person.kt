@@ -1,35 +1,59 @@
 package com.example.bgm.entities
 
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotNull
 
 @Entity
 @Table(name = "person")
 data class Person(
 
-    @Column(name = "name") val name: String,
+    @NotNull
+    @Column(name = "name")
+    var name: String,
 
-    @Column(name = "nickname") val nickname: String,
+    @NotNull
+    @Column(name = "nickname")
+    var nickname: String,
 
-    @Column(name = "password") val password: String,
+    @NotNull
+    @Column(name = "password")
+    var password: String,
 
-    @Column(name = "secret_word") val secretWord: String,
+    @NotNull
+    @Column(name = "secret_word")
+    var secretWord: String,
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender") val gender: Gender,
+    @Column(name = "gender")
+    var gender: Gender,
 
-    @Column(name = "age") val age: Int,
+    @Column(name = "age")
+    var age: Int,
 
-    @Column(name = "city") val city: String,
+    @NotNull
+    @Column(name = "city")
+    var city: String,
+
+    @NotNull
+    @Column(name = "avatar_id")
+    var avatarId: Int,
 
     @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "people") val events: List<Event>,
+    @JoinColumn(name = "people")
+    var events: List<Event>,
 
     @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "banned_people") val banedIn: List<Event>
+    @JoinColumn(name = "banned_people")
+    var banedIn: List<Event>
 )
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private val id = -1;
+    var id = -1
+        get() = field
+        set(id) {
+            field = id
+        }
 }
