@@ -27,10 +27,10 @@ class ServiceController{
         path = ["/events1"],
         method = [RequestMethod.GET]
     )
-    fun eventsWithSearch(@RequestParam(value = "id") id: Int,
+    fun eventsWithSearch(@RequestParam(value = "id") id: Long,
                             @RequestParam(value = "received") received: Int,
                             @RequestParam(value = "search") search: String): List<EventsResponseEntity> {
-        return service.getEventsWithSearch(id, received, search)
+        return service.getEvents(id, received, search)
     }
 
     @RequestMapping(
