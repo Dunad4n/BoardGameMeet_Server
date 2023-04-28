@@ -1,15 +1,6 @@
 package com.example.bgm
 
-import com.example.bgm.entities.Event
-import com.example.bgm.entities.Gender
-import com.example.bgm.entities.Person
-import com.example.bgm.repositories.EventRepo
-import com.example.bgm.services.EventService
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @SpringBootTest
 class ServerApplicationTests {

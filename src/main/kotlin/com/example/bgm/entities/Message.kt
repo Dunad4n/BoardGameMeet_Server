@@ -32,5 +32,5 @@ data class Message(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private val id = -1;
+    var id = -1
 }

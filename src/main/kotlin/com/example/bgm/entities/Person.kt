@@ -37,7 +37,7 @@ data class Person(
 
     @NotNull
     @Column(name = "avatar_id")
-    var avatarId: Int,
+    var avatarId: Long,
 
     @ManyToMany(cascade = [CascadeType.ALL])
     @JoinColumn(name = "people")
@@ -52,8 +52,5 @@ data class Person(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     var id = -1
-        get() = field
-        set(id) {
-            field = id
-        }
+
 }
