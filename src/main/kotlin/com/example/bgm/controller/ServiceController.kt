@@ -2,17 +2,18 @@ package com.example.bgm.controller
 
 import com.example.bgm.services.EventService
 import com.example.bgm.entities.Event
+import com.example.bgm.services.PersonService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class ServiceController{
 
     @Autowired
-    private lateinit var service: EventService
+    private lateinit var eventService: EventService
+
+    @Autowired
+    private lateinit var personService: PersonService
 
     @RequestMapping(
         path = ["/events"],
@@ -20,7 +21,7 @@ class ServiceController{
     )
     fun allEvents(@RequestParam(value = "id") id: Long,
                      @RequestParam(value = "received") received: Int): List<EventsResponseEntity>? {
-        return service.getMainPageEvents(id, received)
+        return eventService.getMainPageEvents(id, received)
     }
 //объединить в 1 с оптионал прараметром в сервисе тоже
     @RequestMapping(
@@ -30,7 +31,7 @@ class ServiceController{
     fun eventsWithSearch(@RequestParam(value = "id") id: Long,
                             @RequestParam(value = "received") received: Int,
                             @RequestParam(value = "search") search: String): List<EventsResponseEntity>? {
-        return service.getMainPageEvents(id, received, search)
+        return eventService.getMainPageEvents(id, received, search)
     }
 
     @RequestMapping(
@@ -39,7 +40,7 @@ class ServiceController{
     )
     fun myEvents(@RequestParam(value = "id") id: Long,
                      @RequestParam(value = "received") received: Int): List<MyEventsResponseEntity> {
-        return service.getMyEventsPageEvent(id, received)
+        return eventService.getMyEventsPageEvent(id, received)
     }
 
     @RequestMapping(
@@ -47,14 +48,22 @@ class ServiceController{
         method = [RequestMethod.GET]
     )
     fun event(@RequestParam(value = "id") id: Long): Event? {
-        return service.getEvent(id)
+        return eventService.getEvent(id)
     }
 
-//    @RequestMapping(
-//        path = ["/profile"],
-//        method = [RequestMethod.GET]
-//    )
-//    fun profile(@RequestParam(value = "id") id: Int): ProfileResponseEntity {
-//        return service.getProfile(id)
-//    }
+    @RequestMapping(
+        path = ["/person/create"],
+        method = [RequestMethod.POST]
+    )
+    fun createPerson(@RequestBody createPersonRequest: CreatePersonRequestEntity) {
+        personService.createPerson(createPersonRequest)
+    }
+
+    @RequestMapping(
+        path = ["/profile/{id}"],
+        method = [RequestMethod.GET]
+    )
+    fun profile(@PathVariable id: Long): ProfileResponseEntity {
+        return personService.getProfile(id)
+    }
 }

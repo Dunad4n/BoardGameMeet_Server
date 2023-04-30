@@ -34,24 +34,20 @@ data class Event(
     var date: LocalDateTime,
 
     @NotNull
-    @Column(name = "maxPersonCount")
+    @Column(name = "max_person_count")
     var maxPersonCount: Int,
 
-    @Column(name = "minAge")
+    @Column(name = "min_age")
     var minAge: Int? = null,
 
-    @Column(name = "maxAge")
+    @Column(name = "max_age")
     var maxAge: Int? = null,
 ){
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "event_id")
     var id: Long? = null
-        get() = field
-        set(id) {
-            field = id
-        }
 
     @NotNull
     @ManyToOne(cascade = [CascadeType.ALL])
@@ -59,10 +55,10 @@ data class Event(
     lateinit var host: Person
 
     @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
-    lateinit var members: ArrayList<Person>
+    var members: ArrayList<Person> = arrayListOf()
 
     @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
-    lateinit var bannedMembers: ArrayList<Person>
+    var bannedMembers: ArrayList<Person> = arrayListOf()
 
     @Column(name = "description")
     lateinit var description: String
@@ -71,7 +67,7 @@ data class Event(
     lateinit var items: String
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    lateinit var messages: ArrayList<Message>
+    var messages: ArrayList<Message> = arrayListOf()
 
     constructor(name: String,
                 game: String,

@@ -35,18 +35,20 @@ data class Person(
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "person_id")
     var id: Long? = null
 
     @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "people")
-    lateinit var events: ArrayList<Event>
+//    @JoinColumn(name = "people")
+    var events: List<Event> = arrayListOf()
 
     @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "banned_people")
-    lateinit var banedIn: ArrayList<Event>
+//    @JoinColumn(name = "banned_people")
+    var banedIn: List<Event> = arrayListOf()
 
-    @NotNull
+    @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
+    var messages: List<Message> = arrayListOf()
+
     @Column(name = "avatar_id")
     var avatarId: Long? = null
 
