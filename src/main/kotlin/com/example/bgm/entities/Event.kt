@@ -1,5 +1,6 @@
 package com.example.bgm.entities
 
+import com.fasterxml.jackson.databind.BeanDescription
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import lombok.Data
@@ -37,10 +38,10 @@ data class Event(
     var maxPersonCount: Int,
 
     @Column(name = "minAge")
-    var minAge: Int,
+    var minAge: Int? = null,
 
     @Column(name = "maxAge")
-    var maxAge: Int,
+    var maxAge: Int? = null,
 ){
 
     @Id
@@ -58,10 +59,10 @@ data class Event(
     lateinit var host: Person
 
     @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
-    lateinit var members: List<Person>
+    lateinit var members: ArrayList<Person>
 
     @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
-    lateinit var bannedMembers: List<Person>
+    lateinit var bannedMembers: ArrayList<Person>
 
     @Column(name = "description")
     lateinit var description: String
@@ -70,11 +71,33 @@ data class Event(
     lateinit var items: String
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    lateinit var messages: List<Message>
+    lateinit var messages: ArrayList<Message>
+
+    constructor(name: String,
+                game: String,
+                city: String,
+                address: String,
+                date: LocalDateTime,
+                maxPersonCount: Int,
+                minAge: Int,
+                maxAge: Int,
+                description: String,
+                host: Person)
+    : this(name, game, city, address, date, maxPersonCount, minAge, maxAge) {
+        this.description = description
+        this.host = host
+    }
 
     fun membersForFull(): Int { return maxPersonCount - members.size }
     fun isActive(): Boolean { return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC) }
 
+    fun ban(user: Person) {
+        members.remove(user)
+        bannedMembers.add(user)
+    }
 
+    fun kick(user: Person) {
+        members.remove(user)
+    }
 
 }

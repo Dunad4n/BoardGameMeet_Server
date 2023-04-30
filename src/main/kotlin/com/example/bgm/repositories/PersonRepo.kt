@@ -9,5 +9,6 @@ import java.util.*
 interface PersonRepo: JpaRepository<Person, Long> {
 
     override fun findById(id: Long): Optional<Person>
+    fun findByNickname(nickname: String): Person?
 
 }

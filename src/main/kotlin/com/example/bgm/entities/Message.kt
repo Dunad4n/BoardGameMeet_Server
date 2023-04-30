@@ -22,7 +22,7 @@ data class Message(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    var id: Int? = null
+    var id: Long? = null
 
     @NotNull
     @ManyToOne(cascade = [CascadeType.ALL])
@@ -33,4 +33,8 @@ data class Message(
     @ManyToOne(cascade = [CascadeType.ALL])
     @JoinColumn(name = "person")
     lateinit var person: Person
+
+    constructor(text: String, dateTime: LocalDateTime, person: Person) : this(text, dateTime) {
+        this.person = person
+    }
 }

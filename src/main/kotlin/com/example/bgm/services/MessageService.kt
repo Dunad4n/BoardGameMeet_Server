@@ -1,10 +1,12 @@
 package com.example.bgm.services
 
-import com.example.bgm.Controller.MessageResponseEntity
+import com.example.bgm.controller.CreateMessageRequestEntity
+import com.example.bgm.controller.MessageResponseEntity
 import com.example.bgm.entities.Message
 import com.example.bgm.entities.Person
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.MessageRepo
+import com.example.bgm.repositories.PersonRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -16,6 +18,9 @@ class MessageService {
 
     @Autowired
     lateinit var eventRepo: EventRepo
+
+    @Autowired
+    lateinit var personRepo: PersonRepo
 
     private fun mapToMessageResponseEntity(message: Message, person: Person): MessageResponseEntity {
         return MessageResponseEntity(message.text,
@@ -29,6 +34,11 @@ class MessageService {
             messages.add(mapToMessageResponseEntity(message, message.person))
         }
         return messages
+    }
+
+    fun createMessage(createMessageRequest: CreateMessageRequestEntity) {
+        val user = personRepo.findById(createMessageRequest.userid).get()
+        messageRepo.save(Message(createMessageRequest.text, createMessageRequest.dateTime, user))
     }
 
 }

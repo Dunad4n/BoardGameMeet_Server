@@ -1,8 +1,9 @@
 package com.example.bgm.services
 
-import com.example.bgm.Controller.MemberResponseEntity
-import com.example.bgm.Controller.ProfileResponseEntity
-import com.example.bgm.Controller.UpdatePersonRequestEntity
+import com.example.bgm.controller.CreatePersonRequestEntity
+import com.example.bgm.controller.MemberResponseEntity
+import com.example.bgm.controller.ProfileResponseEntity
+import com.example.bgm.controller.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
 import com.example.bgm.repositories.EventRepo
@@ -36,12 +37,17 @@ class PersonService {
     }
 
 
-    fun findById(id: Long): Person? {
+    fun getPerson(id: Long): Person? {
         return personRepo.findById(id).get()
     }
 
-    fun createPerson(person: Person) {
-        personRepo.save(person)
+    fun createPerson(createPersonRequest: CreatePersonRequestEntity) {
+        personRepo.save(Person(createPersonRequest.name,
+                                createPersonRequest.nickname,
+                                createPersonRequest.password,
+                                createPersonRequest.secretWord,
+                                createPersonRequest.gender,
+                                createPersonRequest.city))
     }
 
     /**
@@ -74,6 +80,13 @@ class PersonService {
         return mapToProfileResponseEntity(personRepo.findById(id).get())
     }
 
+    fun joinToEvent(userId: Long, eventId: Long) {
+        eventRepo.findById(eventId).get().members.add(personRepo.findById(userId).get())
+    }
 
+    fun leaveFromEvent(userId: Long, eventId: Long) {
+        val user = personRepo.findById(userId).get()
+        eventRepo.findById(eventId).get().kick(user)
+    }
 
 }

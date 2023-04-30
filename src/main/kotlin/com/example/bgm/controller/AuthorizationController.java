@@ -1,4 +1,4 @@
-package com.example.bgm.Controller;
+package com.example.bgm.controller;
 
 public class AuthorizationController {
 

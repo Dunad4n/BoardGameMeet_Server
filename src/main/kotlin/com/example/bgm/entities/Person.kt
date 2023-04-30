@@ -11,6 +11,7 @@ data class Person(
     @Column(name = "name")
     var name: String,
 
+    @Id
     @NotNull
     @Column(name = "nickname")
     var nickname: String,
@@ -28,29 +29,29 @@ data class Person(
     @Column(name = "gender")
     var gender: Gender,
 
-    @Column(name = "age")
-    var age: Int,
-
     @NotNull
     @Column(name = "city")
     var city: String,
-
-    @NotNull
-    @Column(name = "avatar_id")
-    var avatarId: Long,
 )
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    var id = -1
+    var id: Long? = null
 
     @ManyToMany(cascade = [CascadeType.ALL])
     @JoinColumn(name = "people")
-    lateinit var events: List<Event>
+    lateinit var events: ArrayList<Event>
 
     @ManyToMany(cascade = [CascadeType.ALL])
     @JoinColumn(name = "banned_people")
-    lateinit var banedIn: List<Event>
+    lateinit var banedIn: ArrayList<Event>
+
+    @NotNull
+    @Column(name = "avatar_id")
+    var avatarId: Long? = null
+
+    @Column(name = "age")
+    var age: Int? = null
 
 }

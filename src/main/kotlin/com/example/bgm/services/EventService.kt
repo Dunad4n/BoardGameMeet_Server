@@ -1,8 +1,9 @@
 package com.example.bgm.services
 
-import com.example.bgm.Controller.EventsResponseEntity
-import com.example.bgm.Controller.MyEventsResponseEntity
-import com.example.bgm.Controller.UpdateEventRequestEntity
+import com.example.bgm.controller.CreateEventRequestEntity
+import com.example.bgm.controller.EventsResponseEntity
+import com.example.bgm.controller.MyEventsResponseEntity
+import com.example.bgm.controller.UpdateEventRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Gender
 import com.example.bgm.entities.Person
@@ -23,8 +24,8 @@ class EventService {
     lateinit var personRepo: PersonRepo
 
     private val persons = listOf(
-        Person("name", "nickname", "password", "secret word", Gender.Male, 20, "City", 5),
-        Person("name2", "nickname2", "password2", "secret word2", Gender.Male, 20, "City2", 10)
+        Person("name", "nickname", "password", "secret word", Gender.Male, "City"),
+        Person("name2", "nickname2", "password2", "secret word2", Gender.Male, "City2")
 
     )
 
@@ -54,16 +55,24 @@ class EventService {
                                         event.minAge,
                                         event.maxAge,
                                    event.host == user)
-        /**
-         * event.host == user зачем
-         */
     }
 
     fun getEvent(id: Long): Event? {
         return eventRepo.findById(id).get()
     }
 
-    fun createEvent(event: Event) {
+    fun createEvent(createEventRequest: CreateEventRequestEntity) {
+        val host = personRepo.findById(createEventRequest.hostId).get()
+        val event = Event(createEventRequest.name,
+                          createEventRequest.game,
+                            createEventRequest.city,
+                            createEventRequest.address,
+                            createEventRequest.date,
+                            createEventRequest.maxPersonCount,
+                            createEventRequest.minAge,
+                            createEventRequest.maxAge,
+                            createEventRequest.description,
+                            host)
         eventRepo.save(event)
     }
 
@@ -123,6 +132,13 @@ class EventService {
             res.add(mapToMyEventsResponseEntity(event, user))
         }
         return res
+    }
+
+    fun banPerson(eventId: Long, userNickname: String) {
+        val user = personRepo.findByNickname(userNickname)
+        if (user != null) {
+            eventRepo.findById(eventId).get().ban(user)
+        }
     }
 
     private fun sortEventsForMainPage(events: List<Event>): List<Event> {

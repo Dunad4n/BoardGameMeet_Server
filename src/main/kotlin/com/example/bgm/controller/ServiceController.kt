@@ -1,4 +1,4 @@
-package com.example.bgm.Controller
+package com.example.bgm.controller
 
 import com.example.bgm.services.EventService
 import com.example.bgm.entities.Event
