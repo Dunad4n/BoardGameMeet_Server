@@ -60,10 +60,34 @@ class ServiceController{
     }
 
     @RequestMapping(
-        path = ["/profile/{id}"],
+        path = ["/profile/{userId}"],
         method = [RequestMethod.GET]
     )
-    fun profile(@PathVariable id: Long): ProfileResponseEntity {
-        return personService.getProfile(id)
+    fun profile(@PathVariable userId: Long): ProfileResponseEntity {
+        return personService.getProfile(userId)
+    }
+
+    @RequestMapping(
+        path = ["/event/create"],
+        method = [RequestMethod.POST]
+    )
+    fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity) {
+        eventService.createEvent(createEventRequest)
+    }
+
+    @RequestMapping(
+        path = ["/event/{eventId}/items/get"],
+        method = [RequestMethod.GET]
+    )
+    fun getItems(@PathVariable eventId: Long): List<String> {
+        return eventService.getItems(eventId)
+    }
+
+    @RequestMapping(
+        path = ["/event/{eventId}/items/edit"],
+        method = [RequestMethod.POST]
+    )
+    fun editItems(@PathVariable eventId: Long, @RequestBody editItemsRequest: EditItemsRequestEntity) {
+        return eventService.editItems(eventId, editItemsRequest)
     }
 }

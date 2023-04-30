@@ -1,9 +1,6 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.CreateEventRequestEntity
-import com.example.bgm.controller.EventsResponseEntity
-import com.example.bgm.controller.MyEventsResponseEntity
-import com.example.bgm.controller.UpdateEventRequestEntity
+import com.example.bgm.controller.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Gender
 import com.example.bgm.entities.Person
@@ -23,16 +20,16 @@ class EventService {
     @Autowired
     lateinit var personRepo: PersonRepo
 
-    private val persons = listOf(
-        Person("name", "nickname", "password", "secret word", Gender.Male, "City"),
-        Person("name2", "nickname2", "password2", "secret word2", Gender.Male, "City2")
-
-    )
-
-    private val events = listOf(
-        Event("name", "game", "city1", "address1", LocalDateTime.now(), 12, 18, 25),
-        Event("name", "game", "city2", "address2", LocalDateTime.now(), 12, 18, 25)
-    )
+//    private val persons = listOf(
+//        Person("name", "nickname", "password", "secret word", Gender.Male, "City"),
+//        Person("name2", "nickname2", "password2", "secret word2", Gender.Male, "City2")
+//
+//    )
+//
+//    private val events = listOf(
+//        Event("name", "game", "city1", "address1", LocalDateTime.now(), 12, ),
+//        Event("name", "game", "city2", "address2", LocalDateTime.now(), 12, 18, 25)
+//    )
 
     private fun mapToEventsResponseEntity(event: Event): EventsResponseEntity{
         return EventsResponseEntity(event.name,
@@ -65,14 +62,14 @@ class EventService {
         val host = personRepo.findById(createEventRequest.hostId).get()
         val event = Event(createEventRequest.name,
                           createEventRequest.game,
-                            createEventRequest.city,
-                            createEventRequest.address,
-                            createEventRequest.date,
-                            createEventRequest.maxPersonCount,
-                            createEventRequest.minAge,
-                            createEventRequest.maxAge,
-                            createEventRequest.description,
-                            host)
+                          createEventRequest.city,
+                          createEventRequest.address,
+                          createEventRequest.date,
+                          createEventRequest.maxPersonCount,
+                          host,
+                          createEventRequest.minAge,
+                          createEventRequest.maxAge,
+                          createEventRequest.description)
         eventRepo.save(event)
     }
 
@@ -139,6 +136,22 @@ class EventService {
         if (user != null) {
             eventRepo.findById(eventId).get().ban(user)
         }
+    }
+
+    fun getItems(id: Long): List<String> {
+        val event = eventRepo.findById(id).get()
+        return event.items.split(event.getSpace())
+    }
+
+    fun editItems(id: Long, editItemsRequest: EditItemsRequestEntity) {
+        val event = eventRepo.findById(id).get()
+        val items = editItemsRequest.items
+        event.items = ""
+        for (i in 0..items.size - 2) {
+            event.items += items[i] + event.getSpace()
+        }
+        event.items += items[items.size - 1]
+        eventRepo.save(event)
     }
 
     private fun sortEventsForMainPage(events: List<Event>): List<Event> {

@@ -37,11 +37,10 @@ data class Event(
     @Column(name = "max_person_count")
     var maxPersonCount: Int,
 
-    @Column(name = "min_age")
-    var minAge: Int? = null,
-
-    @Column(name = "max_age")
-    var maxAge: Int? = null,
+    @NotNull
+    @ManyToOne(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "host")
+    var host: Person
 ){
 
     @Id
@@ -49,16 +48,17 @@ data class Event(
     @Column(name = "event_id")
     var id: Long? = null
 
-    @NotNull
-    @ManyToOne(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "host")
-    lateinit var host: Person
+    @Column(name = "min_age")
+    var minAge: Int? = null
+
+    @Column(name = "max_age")
+    var maxAge: Int? = null
 
     @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
-    var members: ArrayList<Person> = arrayListOf()
+    var members = mutableListOf<Person>()
 
     @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
-    var bannedMembers: ArrayList<Person> = arrayListOf()
+    var bannedMembers = mutableListOf<Person>()
 
     @Column(name = "description")
     lateinit var description: String
@@ -67,7 +67,9 @@ data class Event(
     lateinit var items: String
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    var messages: ArrayList<Message> = arrayListOf()
+    var messages = mutableListOf<Message>()
+
+    private val space = "     "
 
     constructor(name: String,
                 game: String,
@@ -75,14 +77,17 @@ data class Event(
                 address: String,
                 date: LocalDateTime,
                 maxPersonCount: Int,
+                host: Person,
                 minAge: Int,
                 maxAge: Int,
-                description: String,
-                host: Person)
-    : this(name, game, city, address, date, maxPersonCount, minAge, maxAge) {
+                description: String)
+    : this(name, game, city, address, date, maxPersonCount, host) {
         this.description = description
-        this.host = host
+        this.minAge = minAge
+        this.maxAge = maxAge
     }
+
+    fun getSpace(): String { return space }
 
     fun membersForFull(): Int { return maxPersonCount - members.size }
     fun isActive(): Boolean { return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC) }
