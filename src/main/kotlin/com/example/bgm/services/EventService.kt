@@ -23,14 +23,14 @@ class EventService {
     lateinit var personRepo: PersonRepo
 
     private val persons = listOf(
-        Person("name", "nickname", "password", "secret word", Gender.Male, 20, "City", 5, listOf(), listOf()),
-        Person("name2", "nickname2", "password2", "secret word2", Gender.Male, 20, "City2", 10, listOf(), listOf())
+        Person("name", "nickname", "password", "secret word", Gender.Male, 20, "City", 5),
+        Person("name2", "nickname2", "password2", "secret word2", Gender.Male, 20, "City2", 10)
 
     )
 
     private val events = listOf(
-        Event("name", "game", "city1", "address1", LocalDateTime.now(), 12, 18, 25, persons[0], persons, persons, "description", "items", listOf()),
-        Event("name", "game", "city2", "address2", LocalDateTime.now(), 12, 18, 25, persons[0], persons, persons, "description", "items", listOf())
+        Event("name", "game", "city1", "address1", LocalDateTime.now(), 12, 18, 25),
+        Event("name", "game", "city2", "address2", LocalDateTime.now(), 12, 18, 25)
     )
 
     private fun mapToEventsResponseEntity(event: Event): EventsResponseEntity{

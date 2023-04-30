@@ -41,26 +41,6 @@ data class Event(
 
     @Column(name = "maxAge")
     var maxAge: Int,
-
-    @NotNull
-    @ManyToOne(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "host")
-    var host: Person,
-
-    @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
-    var members: List<Person>,
-
-    @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
-    var bannedMembers: List<Person>,
-
-    @Column(name = "description")
-    var description: String,
-
-    @Column(name = "items")
-    var items: String,
-
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    var messages: List<Message>,
 ){
 
     @Id
@@ -71,6 +51,26 @@ data class Event(
         set(id) {
             field = id
         }
+
+    @NotNull
+    @ManyToOne(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "host")
+    lateinit var host: Person
+
+    @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
+    lateinit var members: List<Person>
+
+    @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
+    lateinit var bannedMembers: List<Person>
+
+    @Column(name = "description")
+    lateinit var description: String
+
+    @Column(name = "items")
+    lateinit var items: String
+
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
+    lateinit var messages: List<Message>
 
     fun membersForFull(): Int { return maxPersonCount - members.size }
     fun isActive(): Boolean { return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC) }

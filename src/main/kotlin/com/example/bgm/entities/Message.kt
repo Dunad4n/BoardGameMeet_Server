@@ -15,16 +15,6 @@ data class Message(
     var text: String,
 
     @NotNull
-    @ManyToOne(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "event")
-    var event: Event,
-
-    @NotNull
-    @ManyToOne(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "person")
-    var person: Person,
-
-    @NotNull
     @Column(name = "date_time")
     var dateTime: LocalDateTime
 ) {
@@ -32,5 +22,15 @@ data class Message(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    var id = -1
+    var id: Int? = null
+
+    @NotNull
+    @ManyToOne(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "event")
+    lateinit var event: Event
+
+    @NotNull
+    @ManyToOne(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "person")
+    lateinit var person: Person
 }

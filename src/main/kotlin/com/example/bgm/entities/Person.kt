@@ -38,19 +38,19 @@ data class Person(
     @NotNull
     @Column(name = "avatar_id")
     var avatarId: Long,
-
-    @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "people")
-    var events: List<Event>,
-
-    @ManyToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "banned_people")
-    var banedIn: List<Event>
 )
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     var id = -1
+
+    @ManyToMany(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "people")
+    lateinit var events: List<Event>
+
+    @ManyToMany(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "banned_people")
+    lateinit var banedIn: List<Event>
 
 }
