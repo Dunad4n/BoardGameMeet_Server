@@ -11,7 +11,6 @@ data class Person(
     @Column(name = "name")
     var name: String,
 
-    @Id
     @NotNull
     @Column(name = "nickname")
     var nickname: String,

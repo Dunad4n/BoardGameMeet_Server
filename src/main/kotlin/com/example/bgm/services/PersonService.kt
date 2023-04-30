@@ -42,12 +42,20 @@ class PersonService {
     }
 
     fun createPerson(createPersonRequest: CreatePersonRequestEntity) {
-        personRepo.save(Person(createPersonRequest.name,
-                                createPersonRequest.nickname,
-                                createPersonRequest.password,
-                                createPersonRequest.secretWord,
-                                createPersonRequest.gender,
-                                createPersonRequest.city))
+        if(personRepo.findByNickname(createPersonRequest.nickname) == null) {
+            personRepo.save(
+                Person(
+                    createPersonRequest.name,
+                    createPersonRequest.nickname,
+                    createPersonRequest.password,
+                    createPersonRequest.secretWord,
+                    createPersonRequest.gender,
+                    createPersonRequest.city
+                )
+            )
+        } else {
+            throw Exception("this nickname is occupied")
+        }
     }
 
     /**
