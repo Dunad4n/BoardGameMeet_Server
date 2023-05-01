@@ -7,22 +7,22 @@ import java.time.LocalDateTime
  * Event
  */
 
-data class MainPageEventResponseEntity(val Name: String,
-                                       val Game: String,
-                                       val Address: String,
-                                       val Date: LocalDateTime,
-                                       val CurPersonCount: Int,
-                                       val MaxPersonCount: Int,
-                                       val AgeMin: Int?,
-                                       val AgeMax: Int?)
-data class MyEventsResponseEntity(val Name: String,
-                                  val Game: String,
-                                  val Address: String,
-                                  val Date: LocalDateTime,
-                                  val CurPersonCount: Int,
-                                  val MaxPersonCount: Int,
-                                  val AgeMin: Int?,
-                                  val AgeMax: Int?,
+data class MainPageEventResponseEntity(val name: String,
+                                       val game: String,
+                                       val address: String,
+                                       val date: LocalDateTime,
+                                       val curPersonCount: Int,
+                                       val maxPersonCount: Int,
+                                       val minAge: Int?,
+                                       val maxAge: Int?)
+data class MyEventsResponseEntity(val name: String,
+                                  val game: String,
+                                  val address: String,
+                                  val date: LocalDateTime,
+                                  val curPersonCount: Int,
+                                  val maxPersonCount: Int,
+                                  val minAge: Int?,
+                                  val maxAge: Int?,
                                   val host: Boolean)
 
 data class EventResponseEntity(val name: String,
@@ -40,12 +40,12 @@ data class EventResponseEntity(val name: String,
  * Person
  */
 
-data class ProfileResponseEntity(val Name: String,
-                                 val Nickname: String,
-                                 val Age: Int?,
-                                 val City: String,
+data class ProfileResponseEntity(val name: String,
+                                 val nickname: String,
+                                 val age: Int?,
+                                 val city: String,
                                  val avatarId: Long?,
-                                 val Gender: Gender)
+                                 val gender: Gender)
 
 data class MemberResponseEntity(val nickname: String,
                                 val avatarId: Long?,
