@@ -7,14 +7,14 @@ import java.time.LocalDateTime
  * Event
  */
 
-data class EventsResponseEntity(val Name: String,
-                                val Game: String,
-                                val Address: String,
-                                val Date: LocalDateTime,
-                                val CurPersonCount: Int,
-                                val MaxPersonCount: Int,
-                                val AgeMin: Int?,
-                                val AgeMax: Int?)
+data class MainPageEventResponseEntity(val Name: String,
+                                       val Game: String,
+                                       val Address: String,
+                                       val Date: LocalDateTime,
+                                       val CurPersonCount: Int,
+                                       val MaxPersonCount: Int,
+                                       val AgeMin: Int?,
+                                       val AgeMax: Int?)
 data class MyEventsResponseEntity(val Name: String,
                                   val Game: String,
                                   val Address: String,
@@ -24,6 +24,17 @@ data class MyEventsResponseEntity(val Name: String,
                                   val AgeMin: Int?,
                                   val AgeMax: Int?,
                                   val host: Boolean)
+
+data class EventResponseEntity(val name: String,
+                               val game: String,
+                               val address: String,
+                               val date: LocalDateTime,
+                               val curPersonCount: Int,
+                               val maxPersonCount: Int,
+                               val ageMin: Int?,
+                               val ageMax: Int?,
+                               val description: String,
+                               val items: List<String>)
 
 /**
  * Person

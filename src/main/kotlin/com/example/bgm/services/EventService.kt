@@ -2,13 +2,11 @@ package com.example.bgm.services
 
 import com.example.bgm.controller.*
 import com.example.bgm.entities.Event
-import com.example.bgm.entities.Gender
 import com.example.bgm.entities.Person
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.PersonRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 @Service
@@ -20,42 +18,44 @@ class EventService {
     @Autowired
     lateinit var personRepo: PersonRepo
 
-//    private val persons = listOf(
-//        Person("name", "nickname", "password", "secret word", Gender.Male, "City"),
-//        Person("name2", "nickname2", "password2", "secret word2", Gender.Male, "City2")
-//
-//    )
-//
-//    private val events = listOf(
-//        Event("name", "game", "city1", "address1", LocalDateTime.now(), 12, ),
-//        Event("name", "game", "city2", "address2", LocalDateTime.now(), 12, 18, 25)
-//    )
-
-    private fun mapToEventsResponseEntity(event: Event): EventsResponseEntity{
-        return EventsResponseEntity(event.name,
-                                    event.game,
-                                    event.address,
-                                    event.date,
-                                    event.members.size,
-                                    event.maxPersonCount,
-                                    event.minAge,
-                                    event.maxAge)
+    private fun mapToMainPageEventsResponseEntity(event: Event): MainPageEventResponseEntity{
+        return MainPageEventResponseEntity(event.name,
+                                           event.game,
+                                           event.address,
+                                           event.date,
+                                           event.members.size,
+                                           event.maxPersonCount,
+                                           event.minAge,
+                                           event.maxAge)
     }
 
     private fun mapToMyEventsResponseEntity(event: Event, user: Person): MyEventsResponseEntity {
         return MyEventsResponseEntity(event.name,
-                                        event.game,
-                                        event.address,
-                                        event.date,
-                                        event.members.size,
-                                        event.maxPersonCount,
-                                        event.minAge,
-                                        event.maxAge,
-                                   event.host == user)
+                                      event.game,
+                                      event.address,
+                                      event.date,
+                                      event.members.size,
+                                      event.maxPersonCount,
+                                      event.minAge,
+                                      event.maxAge,
+                                 event.host == user)
     }
 
-    fun getEvent(id: Long): Event? {
-        return eventRepo.findById(id).get()
+    private fun mapToEventResponseEntity(event: Event): EventResponseEntity {
+        return EventResponseEntity(event.name,
+                                   event.game,
+                                   event.address,
+                                   event.date,
+                                   event.members.size,
+                                   event.maxPersonCount,
+                                   event.minAge,
+                                   event.maxAge,
+                                   event.description,
+                                   event.getItems())
+    }
+
+    fun getEvent(id: Long): EventResponseEntity {
+        return mapToEventResponseEntity(eventRepo.findById(id).get())
     }
 
     fun createEvent(createEventRequest: CreateEventRequestEntity) {
@@ -70,12 +70,10 @@ class EventService {
                           createEventRequest.minAge,
                           createEventRequest.maxAge,
                           createEventRequest.description)
+        event.members.add(host)
         eventRepo.save(event)
     }
 
-    /**
-     * обсудить реквесты с клиента
-     */
     fun updateEvent(updateRequest: UpdateEventRequestEntity) {
         val event = eventRepo.findById(updateRequest.id).get()
         event.name = updateRequest.name
@@ -94,17 +92,16 @@ class EventService {
         eventRepo.deleteById(id)
     }
 
-    // поменять events на запрос к бд
-    fun getMainPageEvents(userId: Long, start: Int, search: String = ""): ArrayList<EventsResponseEntity>? {
+    fun getMainPageEvents(userId: Long, start: Int, search: String = ""): ArrayList<MainPageEventResponseEntity>? {
         val events = if (search != "") {
             eventRepo.findAllByCityAndName(personRepo.findById(userId).get().city, search)
         } else {
             eventRepo.findAllByCity(personRepo.findById(userId).get().city)
         }
-        val res = arrayListOf<EventsResponseEntity>()
+        val res = arrayListOf<MainPageEventResponseEntity>()
         if (events != null) {
             for(event in sortEventsForMainPage(filterEvents(events))) {
-                res.add(mapToEventsResponseEntity(event))
+                res.add(mapToMainPageEventsResponseEntity(event))
             }
         } else {
             return null
@@ -120,7 +117,6 @@ class EventService {
 //        return res
 //    }
 
-    // поменять events и  persons на запрос к бд
     fun getMyEventsPageEvent(userId: Long, start: Int): ArrayList<MyEventsResponseEntity> {
         val user = personRepo.findById(userId).get()
         val myEvents = user.events
@@ -140,7 +136,7 @@ class EventService {
 
     fun getItems(id: Long): List<String> {
         val event = eventRepo.findById(id).get()
-        return event.items.split(event.getSpace())
+        return event.getItems()
     }
 
     fun editItems(id: Long, editItemsRequest: EditItemsRequestEntity) {

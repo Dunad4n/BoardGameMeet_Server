@@ -101,4 +101,8 @@ data class Event(
         members.remove(user)
     }
 
+    fun getItems(): List<String> {
+        return items.split(space)
+    }
+
 }

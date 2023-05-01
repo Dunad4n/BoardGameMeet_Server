@@ -20,7 +20,7 @@ class ServiceController{
         method = [RequestMethod.GET]
     )
     fun allEvents(@RequestParam(value = "id") id: Long,
-                     @RequestParam(value = "received") received: Int): List<EventsResponseEntity>? {
+                     @RequestParam(value = "received") received: Int): List<MainPageEventResponseEntity>? {
         return eventService.getMainPageEvents(id, received)
     }
 //объединить в 1 с оптионал прараметром в сервисе тоже
@@ -30,7 +30,7 @@ class ServiceController{
     )
     fun eventsWithSearch(@RequestParam(value = "id") id: Long,
                             @RequestParam(value = "received") received: Int,
-                            @RequestParam(value = "search") search: String): List<EventsResponseEntity>? {
+                            @RequestParam(value = "search") search: String): List<MainPageEventResponseEntity>? {
         return eventService.getMainPageEvents(id, received, search)
     }
 
@@ -47,7 +47,7 @@ class ServiceController{
         path = ["/event"],
         method = [RequestMethod.GET]
     )
-    fun event(@RequestParam(value = "id") id: Long): Event? {
+    fun event(@RequestParam(value = "id") id: Long): EventResponseEntity {
         return eventService.getEvent(id)
     }
 
