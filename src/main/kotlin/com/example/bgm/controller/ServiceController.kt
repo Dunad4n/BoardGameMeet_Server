@@ -1,7 +1,6 @@
 package com.example.bgm.controller
 
 import com.example.bgm.services.EventService
-import com.example.bgm.entities.Event
 import com.example.bgm.services.PersonService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
@@ -89,5 +88,29 @@ class ServiceController{
     )
     fun editItems(@PathVariable eventId: Long, @RequestBody editItemsRequest: EditItemsRequestEntity) {
         return eventService.editItems(eventId, editItemsRequest)
+    }
+
+    @RequestMapping(
+        path = ["/joinToEvent"],
+        method = [RequestMethod.PUT]
+    )
+    fun jointToEvent(@RequestBody joinRequest: JoinOrLeaveEventRequestEntity) {
+        personService.joinToEvent(joinRequest.userId, joinRequest.eventId)
+    }
+
+    @RequestMapping(
+        path = ["/event/{eventId}/members"],
+        method = [RequestMethod.GET]
+    )
+    fun getAllMembers(@PathVariable eventId: Long): ArrayList<MemberResponseEntity> {
+        return personService.getAllMembers(eventId)
+    }
+
+    @RequestMapping(
+        path = ["/leaveFromEvent"],
+        method = [RequestMethod.PUT]
+    )
+    fun leaveFromEvent(@RequestBody leaveRequest: JoinOrLeaveEventRequestEntity) {
+        return personService.leaveFromEvent(leaveRequest.userId, leaveRequest.eventId)
     }
 }

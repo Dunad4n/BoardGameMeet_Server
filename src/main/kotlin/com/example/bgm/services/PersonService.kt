@@ -89,12 +89,21 @@ class PersonService {
     }
 
     fun joinToEvent(userId: Long, eventId: Long) {
-        eventRepo.findById(eventId).get().members.add(personRepo.findById(userId).get())
+        val event = eventRepo.findById(eventId).get()
+        val user = personRepo.findById(userId).get()
+        if (!event.bannedMembers.contains(user)) {
+            event.addPerson(user)
+            eventRepo.save(event)
+        }
     }
 
     fun leaveFromEvent(userId: Long, eventId: Long) {
         val user = personRepo.findById(userId).get()
-        eventRepo.findById(eventId).get().kick(user)
+        val event = eventRepo.findById(eventId).get()
+        if (event.members.contains(user) && event.host.id != user.id) {
+            event.kick(user)
+            eventRepo.save(event)
+        }
     }
 
 }

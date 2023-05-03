@@ -8,28 +8,28 @@ import jakarta.validation.constraints.NotNull
 data class Person(
 
     @NotNull
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     var name: String,
 
     @NotNull
-    @Column(name = "nickname")
+    @Column(name = "nickname", nullable = false)
     var nickname: String,
 
     @NotNull
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     var password: String,
 
     @NotNull
-    @Column(name = "secret_word")
+    @Column(name = "secret_word", nullable = false)
     var secretWord: String,
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
+    @Column(name = "gender", nullable = false)
     var gender: Gender,
 
     @NotNull
-    @Column(name = "city")
+    @Column(name = "city", nullable = false)
     var city: String,
 )
 {
@@ -38,16 +38,24 @@ data class Person(
     @Column(name = "person_id")
     var id: Long? = null
 
-    @ManyToMany(cascade = [CascadeType.ALL])
-//    @JoinColumn(name = "people")
-    var events: List<Event> = arrayListOf()
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "members_events",
+        joinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")],
+        inverseJoinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")]
+    )
+    var events = mutableListOf<Event>()
 
-    @ManyToMany(cascade = [CascadeType.ALL])
-//    @JoinColumn(name = "banned_people")
-    var banedIn: List<Event> = arrayListOf()
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "person_banned_in_events",
+        joinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")],
+        inverseJoinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")]
+    )
+    var banedIn = mutableListOf<Event>()
 
     @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
-    var messages: List<Message> = arrayListOf()
+    var messages = mutableListOf<Message>()
 
     @Column(name = "avatar_id")
     var avatarId: Long? = null

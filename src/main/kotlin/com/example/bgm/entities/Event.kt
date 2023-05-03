@@ -54,10 +54,20 @@ data class Event(
     @Column(name = "max_age")
     var maxAge: Int? = null
 
-    @ManyToMany(mappedBy = "events", cascade = [CascadeType.ALL])
+    @ManyToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "members_events",
+        joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")],
+        inverseJoinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")]
+    )
     var members = mutableListOf<Person>()
 
-    @ManyToMany(mappedBy = "banedIn", cascade = [CascadeType.ALL])
+    @ManyToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "person_banned_in_events",
+        joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")],
+        inverseJoinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")]
+    )
     var bannedMembers = mutableListOf<Person>()
 
     @Column(name = "description")
@@ -68,8 +78,6 @@ data class Event(
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
     var messages = mutableListOf<Message>()
-
-    private val space = "     "
 
     constructor(name: String,
                 game: String,
@@ -87,7 +95,7 @@ data class Event(
         this.maxAge = maxAge
     }
 
-    fun getSpace(): String { return space }
+    fun getSpace(): String { return "     " }
 
     fun membersForFull(): Int { return maxPersonCount - members.size }
     fun isActive(): Boolean { return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC) }
@@ -101,8 +109,12 @@ data class Event(
         members.remove(user)
     }
 
+    fun addPerson(user: Person) {
+        members.add(user)
+    }
+
     fun getItems(): List<String> {
-        return items.split(space)
+        return items.split("     ")
     }
 
 }

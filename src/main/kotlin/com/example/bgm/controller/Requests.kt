@@ -2,7 +2,6 @@ package com.example.bgm.controller
 
 import com.example.bgm.entities.Gender
 import com.fasterxml.jackson.annotation.JsonProperty
-import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 
@@ -52,6 +51,9 @@ data class UpdatePersonRequestEntity(val id: Long,
                                      val age: Int,
                                      val gender: Gender,
                                      val avatarId: Long)
+
+data class JoinOrLeaveEventRequestEntity(val eventId: Long,
+                                         val userId: Long)
 
 /**
  * Message
