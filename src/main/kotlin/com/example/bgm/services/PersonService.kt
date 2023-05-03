@@ -6,9 +6,12 @@ import com.example.bgm.controller.ProfileResponseEntity
 import com.example.bgm.controller.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
+import com.example.bgm.entities.Role
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.PersonRepo
+import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
@@ -19,6 +22,12 @@ class PersonService {
 
     @Autowired
     lateinit var eventRepo: EventRepo
+
+    @Autowired
+    lateinit var roleRepo: RoleRepo
+
+//    @Autowired
+//    lateinit var passwordEncoder: BCryptPasswordEncoder
 
 
     private fun mapToMemberResponseEntity(person: Person, event: Event): MemberResponseEntity {
@@ -88,6 +97,10 @@ class PersonService {
         return mapToProfileResponseEntity(personRepo.findById(id).get())
     }
 
+    fun getByNickname(nickname: String): Person? {
+        return personRepo.findByNickname(nickname)
+    }
+
     fun joinToEvent(userId: Long, eventId: Long) {
         val event = eventRepo.findById(eventId).get()
         val user = personRepo.findById(userId).get()
@@ -105,5 +118,14 @@ class PersonService {
             eventRepo.save(event)
         }
     }
+
+//    fun register(person: Person): Person? {
+//        val rolePerson: Role = roleRepo.findByName("ROLE_USER")
+//        val personRoles = mutableListOf<Role>()
+//        personRoles.add(rolePerson)
+//        person.password = passwordEncoder.encode(person.password)
+//        person.roles = personRoles
+//        return personRepo.save(person)
+//    }
 
 }

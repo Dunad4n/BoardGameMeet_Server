@@ -2,6 +2,7 @@ package com.example.bgm.entities
 
 import com.fasterxml.jackson.databind.BeanDescription
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import lombok.Data
 import java.sql.Date
@@ -13,19 +14,19 @@ import java.time.ZoneOffset
 @Entity
 data class Event(
 
-    @NotNull
+    @NotBlank
     @Column(name = "name")
     var name: String,
 
-    @NotNull
+    @NotBlank
     @Column(name = "game")
     var game: String,
 
-    @NotNull
+    @NotBlank
     @Column(name = "city")
     var city: String,
 
-    @NotNull
+    @NotBlank
     @Column(name = "address")
     var address: String,
 

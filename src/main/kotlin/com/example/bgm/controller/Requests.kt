@@ -55,6 +55,9 @@ data class UpdatePersonRequestEntity(val id: Long,
 data class JoinOrLeaveEventRequestEntity(val eventId: Long,
                                          val userId: Long)
 
+data class AuthenticationRequestEntity(val nickname: String,
+                                       val password: String)
+
 /**
  * Message
  */
