@@ -58,5 +58,4 @@ data class UpdatePersonRequestEntity(val id: Long,
  */
 
 data class CreateMessageRequestEntity(val text: String,
-                                      val dateTime: LocalDateTime,
                                       val userid: Long)

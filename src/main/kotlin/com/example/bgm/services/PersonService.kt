@@ -88,12 +88,11 @@ class PersonService {
         return mapToProfileResponseEntity(personRepo.findById(id).get())
     }
 
-    fun joinToEvent(userId: Long, eventId: Long) {
-        eventRepo.findById(eventId).get().members.add(personRepo.findById(userId).get())
+    fun joinToEvent(user: Person, eventId: Long) {
+        eventRepo.findById(eventId).get().members.add(user)
     }
 
-    fun leaveFromEvent(userId: Long, eventId: Long) {
-        val user = personRepo.findById(userId).get()
+    fun leaveFromEvent(user: Person, eventId: Long) {
         eventRepo.findById(eventId).get().kick(user)
     }
 

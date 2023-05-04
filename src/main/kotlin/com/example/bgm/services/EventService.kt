@@ -92,7 +92,7 @@ class EventService {
         eventRepo.deleteById(id)
     }
 
-    fun getMainPageEvents(userId: Long, start: Int, search: String = ""): ArrayList<MainPageEventResponseEntity>? {
+    fun getMainPageEvents(userId: Long, start: Int, search: String = ""): ArrayList<MainPageEventResponseEntity> {
         val events = if (search != "") {
             eventRepo.findAllByCityAndName(personRepo.findById(userId).get().city, search)
         } else {
@@ -103,19 +103,9 @@ class EventService {
             for(event in sortEventsForMainPage(filterEvents(events))) {
                 res.add(mapToMainPageEventsResponseEntity(event))
             }
-        } else {
-            return null
         }
         return res
     }
-
-//    // поменять events на запрос к бд
-//    fun getEventsWithSearch(user: Int, start: Int, search: String): ArrayList<EventsResponseEntity> {
-//        val res: ArrayList<EventsResponseEntity> = arrayListOf()
-//        for(event in events)
-//            res.add(mapToEventsResponseEntity(event))
-//        return res
-//    }
 
     fun getMyEventsPageEvent(userId: Long, start: Int): ArrayList<MyEventsResponseEntity> {
         val user = personRepo.findById(userId).get()

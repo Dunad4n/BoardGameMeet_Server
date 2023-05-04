@@ -1,10 +1,8 @@
 package com.example.bgm.entities
 
-import com.fasterxml.jackson.databind.BeanDescription
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import lombok.Data
-import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -86,6 +84,8 @@ data class Event(
         this.minAge = minAge
         this.maxAge = maxAge
     }
+
+//    constructor() : this("", "", "", "", LocalDateTime.now(), 2, Person()) {    }
 
     fun getSpace(): String { return space }
 

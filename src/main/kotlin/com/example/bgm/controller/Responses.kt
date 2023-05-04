@@ -54,6 +54,5 @@ data class MemberResponseEntity(val nickname: String,
 /**
  * Message
  */
-
 data class MessageResponseEntity(val text: String,
                                  val avatarId: Long?)

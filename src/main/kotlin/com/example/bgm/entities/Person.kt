@@ -33,6 +33,10 @@ data class Person(
     var city: String,
 )
 {
+    constructor() : this("", "", "", "", Gender.Male, "") {
+
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "person_id")
