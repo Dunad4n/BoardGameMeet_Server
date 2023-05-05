@@ -1,8 +1,10 @@
 package com.example.bgm.controller
 
+import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.EventService
 import com.example.bgm.services.PersonService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -37,9 +39,12 @@ class ServiceController{
         path = ["/myEvents"],
         method = [RequestMethod.GET]
     )
-    fun myEvents(@RequestParam(value = "id") id: Long,
+    fun myEvents(@AuthenticationPrincipal authPerson: JwtPerson,
                      @RequestParam(value = "received") received: Int): List<MyEventsResponseEntity> {
-        return eventService.getMyEventsPageEvent(id, received)
+        if (authPerson.id == null) {
+            throw Exception("person id is null")
+        }
+        return eventService.getMyEventsPageEvent(authPerson.id, received)
     }
 
     @RequestMapping(
@@ -50,28 +55,29 @@ class ServiceController{
         return eventService.getEvent(id)
     }
 
-    @RequestMapping(
-        path = ["/person/create"],
-        method = [RequestMethod.POST]
-    )
-    fun createPerson(@RequestBody createPersonRequest: CreatePersonRequestEntity) {
-        personService.createPerson(createPersonRequest)
-    }
+//    @RequestMapping(
+//        path = ["/person/create"],
+//        method = [RequestMethod.POST]
+//    )
+//    fun createPerson(@RequestBody createPersonRequest: CreatePersonRequestEntity) {
+//        personService.createPerson(createPersonRequest)
+//    }
 
     @RequestMapping(
-        path = ["/profile/{userId}"],
+        path = ["/profile/{nickname}"],
         method = [RequestMethod.GET]
     )
-    fun profile(@PathVariable userId: Long): ProfileResponseEntity {
-        return personService.getProfile(userId)
+    fun profile(@PathVariable nickname: String, @AuthenticationPrincipal authPerson: JwtPerson): ProfileResponseEntity {
+        return personService.getProfile(nickname)
     }
 
     @RequestMapping(
         path = ["/event/create"],
         method = [RequestMethod.POST]
     )
-    fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity) {
-        eventService.createEvent(createEventRequest)
+    fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
+                    @AuthenticationPrincipal authPerson: JwtPerson) {
+        eventService.createEvent(createEventRequest, authPerson.id)
     }
 
     @RequestMapping(
@@ -86,16 +92,22 @@ class ServiceController{
         path = ["/event/{eventId}/items/edit"],
         method = [RequestMethod.POST]
     )
-    fun editItems(@PathVariable eventId: Long, @RequestBody editItemsRequest: EditItemsRequestEntity) {
-        return eventService.editItems(eventId, editItemsRequest)
+    fun editItems(@PathVariable eventId: Long,
+                  @RequestBody editItemsRequest: EditItemsRequestEntity,
+                  @AuthenticationPrincipal authPerson: JwtPerson) {
+        return eventService.editItems(eventId, editItemsRequest, authPerson)
     }
 
     @RequestMapping(
         path = ["/joinToEvent"],
         method = [RequestMethod.PUT]
     )
-    fun jointToEvent(@RequestBody joinRequest: JoinOrLeaveEventRequestEntity) {
-        personService.joinToEvent(joinRequest.userId, joinRequest.eventId)
+    fun jointToEvent(@RequestBody joinRequest: JoinOrLeaveEventRequestEntity,
+                     @AuthenticationPrincipal authPerson: JwtPerson) {
+        if (authPerson.id == null) {
+           throw Exception("person id is null")
+        }
+        return personService.joinToEvent(authPerson.id, joinRequest.eventId)
     }
 
     @RequestMapping(
@@ -110,7 +122,11 @@ class ServiceController{
         path = ["/leaveFromEvent"],
         method = [RequestMethod.PUT]
     )
-    fun leaveFromEvent(@RequestBody leaveRequest: JoinOrLeaveEventRequestEntity) {
-        return personService.leaveFromEvent(leaveRequest.userId, leaveRequest.eventId)
+    fun leaveFromEvent(@RequestBody leaveRequest: JoinOrLeaveEventRequestEntity,
+                       @AuthenticationPrincipal authPerson: JwtPerson) {
+        if (authPerson.id == null) {
+            throw Exception("person id is null")
+        }
+        return personService.leaveFromEvent(authPerson.id, leaveRequest.eventId)
     }
 }

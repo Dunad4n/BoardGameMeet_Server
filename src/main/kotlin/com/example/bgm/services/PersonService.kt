@@ -1,17 +1,12 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.CreatePersonRequestEntity
-import com.example.bgm.controller.MemberResponseEntity
-import com.example.bgm.controller.ProfileResponseEntity
-import com.example.bgm.controller.UpdatePersonRequestEntity
+import com.example.bgm.controller.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
-import com.example.bgm.entities.Role
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
@@ -25,9 +20,6 @@ class PersonService {
 
     @Autowired
     lateinit var roleRepo: RoleRepo
-
-//    @Autowired
-//    lateinit var passwordEncoder: BCryptPasswordEncoder
 
 
     private fun mapToMemberResponseEntity(person: Person, event: Event): MemberResponseEntity {
@@ -48,23 +40,6 @@ class PersonService {
 
     fun getPerson(id: Long): Person? {
         return personRepo.findById(id).get()
-    }
-
-    fun createPerson(createPersonRequest: CreatePersonRequestEntity) {
-        if(personRepo.findByNickname(createPersonRequest.nickname) == null) {
-            personRepo.save(
-                Person(
-                    createPersonRequest.name,
-                    createPersonRequest.nickname,
-                    createPersonRequest.password,
-                    createPersonRequest.secretWord,
-                    createPersonRequest.gender,
-                    createPersonRequest.city
-                )
-            )
-        } else {
-            throw Exception("this nickname is occupied")
-        }
     }
 
     /**
@@ -93,8 +68,12 @@ class PersonService {
         return members
     }
 
-    fun getProfile(id: Long): ProfileResponseEntity {
-        return mapToProfileResponseEntity(personRepo.findById(id).get())
+    fun getProfile(nickname: String): ProfileResponseEntity {
+        val person = personRepo.findByNickname(nickname)
+        if(person != null) {
+            return mapToProfileResponseEntity(person)
+        }
+        throw Exception("There is no user with this nickname")
     }
 
     fun getByNickname(nickname: String): Person? {
@@ -103,19 +82,23 @@ class PersonService {
 
     fun joinToEvent(userId: Long, eventId: Long) {
         val event = eventRepo.findById(eventId).get()
-        val user = personRepo.findById(userId).get()
-        if (!event.bannedMembers.contains(user)) {
-            event.addPerson(user)
+        val person = personRepo.findById(userId).get()
+        if (!event.bannedMembers.contains(person) && !event.members.contains(person)) {
+            event.addPerson(person)
             eventRepo.save(event)
+        } else {
+            throw Exception("this person can not join to chosen event")
         }
     }
 
     fun leaveFromEvent(userId: Long, eventId: Long) {
-        val user = personRepo.findById(userId).get()
+        val person = personRepo.findById(userId).get()
         val event = eventRepo.findById(eventId).get()
-        if (event.members.contains(user) && event.host.id != user.id) {
-            event.kick(user)
+        if (event.members.contains(person) && event.host.id != person.id) {
+            event.kick(person)
             eventRepo.save(event)
+        } else {
+            throw Exception("this person can not leave from chosen event")
         }
     }
 

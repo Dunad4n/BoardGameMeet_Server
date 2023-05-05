@@ -51,6 +51,9 @@ data class MemberResponseEntity(val nickname: String,
                                 val avatarId: Long?,
                                 val host: Boolean)
 
+data class AuthenticationResponseEntity(val nickname: String,
+                                        val token: String)
+
 /**
  * Message
  */

@@ -3,10 +3,12 @@ package com.example.bgm.services
 import com.example.bgm.controller.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
+import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.PersonRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 @Service
@@ -58,13 +60,16 @@ class EventService {
         return mapToEventResponseEntity(eventRepo.findById(id).get())
     }
 
-    fun createEvent(createEventRequest: CreateEventRequestEntity) {
-        val host = personRepo.findById(createEventRequest.hostId).get()
+    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?) {
+        if (hostId == null) {
+            throw Exception("person id is null")
+        }
+        val host = personRepo.findById(hostId).get()
         val event = Event(createEventRequest.name,
                           createEventRequest.game,
                           createEventRequest.city,
                           createEventRequest.address,
-                          createEventRequest.date,
+                          LocalDateTime.now(),
                           createEventRequest.maxPersonCount,
                           host,
                           createEventRequest.minAge,
@@ -80,7 +85,7 @@ class EventService {
         event.game = updateRequest.game
         event.city = updateRequest.city
         event.address = updateRequest.address
-        event.date = updateRequest.date
+        event.date = LocalDateTime.now()
         event.maxPersonCount = updateRequest.maxPersonCount
         event.maxAge = updateRequest.maxAge
         event.minAge = updateRequest.minAge
@@ -139,8 +144,11 @@ class EventService {
         return event.getItems()
     }
 
-    fun editItems(id: Long, editItemsRequest: EditItemsRequestEntity) {
+    fun editItems(id: Long, editItemsRequest: EditItemsRequestEntity, authPerson: JwtPerson) {
         val event = eventRepo.findById(id).get()
+        if(authPerson.id != event.host.id) {
+            throw Exception("this person cen not edit chosen event")
+        }
         val items = editItemsRequest.items
         event.items = ""
         for (i in 0..items.size - 2) {

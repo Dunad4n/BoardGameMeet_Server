@@ -11,12 +11,10 @@ import kotlin.math.max
 data class Person(
 
     @NotBlank
-    @Size(max = 20)
     @Column(name = "name", nullable = false)
     var name: String,
 
     @NotBlank
-    @Size(max = 30)
     @Column(name = "nickname", nullable = false)
     var nickname: String,
 

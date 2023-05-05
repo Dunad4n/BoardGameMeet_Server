@@ -4,13 +4,12 @@ import com.example.bgm.entities.Person
 import com.example.bgm.entities.Role
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import java.util.function.Function
 import java.util.stream.Collectors
 
 
 object JwtUserFactory {
-    fun create(person: Person): JwtUser {
-        return JwtUser(
+    fun create(person: Person): JwtPerson {
+        return JwtPerson(
             person.id,
             person.nickname,
             person.password,

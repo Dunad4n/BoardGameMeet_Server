@@ -5,7 +5,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 
-class JwtUser(
+class JwtPerson(
     @get:JsonIgnore val id: Long?,
     private val nickname: String,
     private val password: String,

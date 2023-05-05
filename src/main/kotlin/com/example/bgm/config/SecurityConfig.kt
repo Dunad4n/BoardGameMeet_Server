@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.SecurityConfigurerAdapter
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration
 import org.springframework.security.config.annotation.web.configurers.CorsConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.DefaultSecurityFilterChain
@@ -44,7 +45,7 @@ class SecurityConfig {
             .and()
             .authorizeHttpRequests()
             .requestMatchers("/auth/**").permitAll()
-//            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
             .and()
             .apply<SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>>(JwtConfigurer(jwtTokenProvider))

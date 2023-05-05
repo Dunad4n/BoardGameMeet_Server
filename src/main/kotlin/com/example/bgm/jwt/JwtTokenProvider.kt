@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct
 
 @Component
 class JwtTokenProvider {
+
     @Value("\${jwt.token.secret}")
     lateinit var secret: String
 
@@ -33,7 +34,7 @@ class JwtTokenProvider {
 
     @PostConstruct
     protected fun init() {
-        secret = Base64.getEncoder().encodeToString(secret!!.toByteArray())
+        secret = Base64.getEncoder().encodeToString(secret.toByteArray())
     }
 
     fun createToken(username: String?, roles: List<Role>): String {

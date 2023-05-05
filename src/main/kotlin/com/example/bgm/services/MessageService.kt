@@ -9,6 +9,7 @@ import com.example.bgm.repositories.MessageRepo
 import com.example.bgm.repositories.PersonRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class MessageService {
@@ -38,7 +39,7 @@ class MessageService {
 
     fun createMessage(createMessageRequest: CreateMessageRequestEntity) {
         val user = personRepo.findById(createMessageRequest.userid).get()
-        messageRepo.save(Message(createMessageRequest.text, createMessageRequest.dateTime, user))
+        messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), user))
     }
 
 }
