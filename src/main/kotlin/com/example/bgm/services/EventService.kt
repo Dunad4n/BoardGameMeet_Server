@@ -144,9 +144,9 @@ class EventService {
         return event.getItems()
     }
 
-    fun editItems(id: Long, editItemsRequest: EditItemsRequestEntity, authPerson: JwtPerson) {
+    fun editItems(id: Long, editItemsRequest: EditItemsRequestEntity, hostId: Long?) {
         val event = eventRepo.findById(id).get()
-        if(authPerson.id != event.host.id) {
+        if(hostId != event.host.id) {
             throw Exception("this person cen not edit chosen event")
         }
         val items = editItemsRequest.items

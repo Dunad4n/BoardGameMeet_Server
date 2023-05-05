@@ -42,7 +42,7 @@ data class Event(
     @ManyToOne(cascade = [CascadeType.ALL])
     @JoinColumn(name = "host")
     var host: Person
-){
+) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -80,26 +80,35 @@ data class Event(
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
     var messages = mutableListOf<Message>()
 
-    constructor(name: String,
-                game: String,
-                city: String,
-                address: String,
-                date: LocalDateTime,
-                maxPersonCount: Int,
-                host: Person,
-                minAge: Int,
-                maxAge: Int,
-                description: String)
-    : this(name, game, city, address, date, maxPersonCount, host) {
+    constructor(
+        name: String,
+        game: String,
+        city: String,
+        address: String,
+        date: LocalDateTime,
+        maxPersonCount: Int,
+        host: Person,
+        minAge: Int,
+        maxAge: Int,
+        description: String
+    )
+            : this(name, game, city, address, date, maxPersonCount, host) {
         this.description = description
         this.minAge = minAge
         this.maxAge = maxAge
     }
 
-    fun getSpace(): String { return "     " }
+    fun getSpace(): String {
+        return "     "
+    }
 
-    fun membersForFull(): Int { return maxPersonCount - members.size }
-    fun isActive(): Boolean { return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC) }
+    fun membersForFull(): Int {
+        return maxPersonCount - members.size
+    }
+
+    fun isActive(): Boolean {
+        return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC)
+    }
 
     fun ban(user: Person) {
         members.remove(user)

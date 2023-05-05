@@ -1,11 +1,16 @@
 package com.example.bgm.controller
 
 import com.example.bgm.jwt.JwtPerson
+import com.example.bgm.services.AuthService
 import com.example.bgm.services.EventService
 import com.example.bgm.services.PersonService
+import com.example.bgm.services.RequestValidationService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
+
 
 @RestController
 class ServiceController{
@@ -16,22 +21,28 @@ class ServiceController{
     @Autowired
     private lateinit var personService: PersonService
 
+    @Autowired
+    private lateinit var authService: AuthService
+
+    @Autowired
+    private lateinit var requestValidationService: RequestValidationService
+
     @RequestMapping(
         path = ["/events"],
         method = [RequestMethod.GET]
     )
     fun allEvents(@RequestParam(value = "id") id: Long,
-                     @RequestParam(value = "received") received: Int): List<MainPageEventResponseEntity>? {
+                     @RequestParam(value = "received") received: Int): ArrayList<MainPageEventResponseEntity>? {
         return eventService.getMainPageEvents(id, received)
     }
-//объединить в 1 с оптионал прараметром в сервисе тоже
+
     @RequestMapping(
-        path = ["/events1"],
+        path = ["/eventsWithSearch"],
         method = [RequestMethod.GET]
     )
     fun eventsWithSearch(@RequestParam(value = "id") id: Long,
                             @RequestParam(value = "received") received: Int,
-                            @RequestParam(value = "search") search: String): List<MainPageEventResponseEntity>? {
+                            @RequestParam(value = "search") search: String): ArrayList<MainPageEventResponseEntity>? {
         return eventService.getMainPageEvents(id, received, search)
     }
 
@@ -39,12 +50,9 @@ class ServiceController{
         path = ["/myEvents"],
         method = [RequestMethod.GET]
     )
-    fun myEvents(@AuthenticationPrincipal authPerson: JwtPerson,
+    fun myEvents(@RequestParam(value = "id") id: Long,
                      @RequestParam(value = "received") received: Int): List<MyEventsResponseEntity> {
-        if (authPerson.id == null) {
-            throw Exception("person id is null")
-        }
-        return eventService.getMyEventsPageEvent(authPerson.id, received)
+        return eventService.getMyEventsPageEvent(id, received)
     }
 
     @RequestMapping(
@@ -56,77 +64,141 @@ class ServiceController{
     }
 
 //    @RequestMapping(
-//        path = ["/person/create"],
+//        path = ["/createPerson"],
 //        method = [RequestMethod.POST]
 //    )
 //    fun createPerson(@RequestBody createPersonRequest: CreatePersonRequestEntity) {
-//        personService.createPerson(createPersonRequest)
+//        if(!requestValidationService.validate(createPersonRequest))
+//            throw ResponseStatusException(
+//                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+//            )
+//        authService.createPerson(createPersonRequest)
 //    }
 
     @RequestMapping(
-        path = ["/profile/{nickname}"],
+        path = ["/profile"],
         method = [RequestMethod.GET]
     )
-    fun profile(@PathVariable nickname: String, @AuthenticationPrincipal authPerson: JwtPerson): ProfileResponseEntity {
+    fun profile(@RequestParam(value = "id") nickname: String): ProfileResponseEntity {
         return personService.getProfile(nickname)
     }
 
     @RequestMapping(
-        path = ["/event/create"],
+        path = ["/createEvent"],
         method = [RequestMethod.POST]
     )
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
                     @AuthenticationPrincipal authPerson: JwtPerson) {
+        if(!requestValidationService.validate(createEventRequest))
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+            )
         eventService.createEvent(createEventRequest, authPerson.id)
     }
 
     @RequestMapping(
-        path = ["/event/{eventId}/items/get"],
+        path = ["/getItems"],
         method = [RequestMethod.GET]
     )
-    fun getItems(@PathVariable eventId: Long): List<String> {
+    fun getItems(@RequestParam(value = "id") eventId: Long): List<String> {
         return eventService.getItems(eventId)
     }
 
     @RequestMapping(
-        path = ["/event/{eventId}/items/edit"],
+        path = ["/editItems"],
         method = [RequestMethod.POST]
     )
-    fun editItems(@PathVariable eventId: Long,
+    fun editItems(@RequestBody eventId: Long,
                   @RequestBody editItemsRequest: EditItemsRequestEntity,
                   @AuthenticationPrincipal authPerson: JwtPerson) {
-        return eventService.editItems(eventId, editItemsRequest, authPerson)
+        if(!requestValidationService.validate(editItemsRequest))
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+            )
+        return eventService.editItems(eventId, editItemsRequest, authPerson.id)
     }
 
     @RequestMapping(
-        path = ["/joinToEvent"],
-        method = [RequestMethod.PUT]
+        path = ["/leaveEvent"],
+        method = [RequestMethod.POST]
     )
-    fun jointToEvent(@RequestBody joinRequest: JoinOrLeaveEventRequestEntity,
-                     @AuthenticationPrincipal authPerson: JwtPerson) {
+    fun leaveEvent(@RequestBody eventId: Long,
+                   @AuthenticationPrincipal authPerson: JwtPerson) {
         if (authPerson.id == null) {
-           throw Exception("person id is null")
+            throw ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"
+            )
         }
-        return personService.joinToEvent(authPerson.id, joinRequest.eventId)
+        personService.leaveFromEvent(authPerson.id, eventId)
     }
 
     @RequestMapping(
-        path = ["/event/{eventId}/members"],
+        path = ["/joinEvent"],
+        method = [RequestMethod.POST]
+    )
+    fun joinEvent(@RequestBody eventId: Long,
+                  @AuthenticationPrincipal authPerson: JwtPerson) {
+        if (authPerson.id == null) {
+            throw ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"
+            )
+        }
+        personService.joinToEvent(authPerson.id, eventId)
+    }
+
+    @RequestMapping(
+        path = ["/getAllMembers"],
         method = [RequestMethod.GET]
     )
-    fun getAllMembers(@PathVariable eventId: Long): ArrayList<MemberResponseEntity> {
+    fun getAllMembers(@RequestParam(value = "id") eventId: Long): ArrayList<MemberResponseEntity> {
         return personService.getAllMembers(eventId)
     }
 
     @RequestMapping(
-        path = ["/leaveFromEvent"],
-        method = [RequestMethod.PUT]
+        path = ["/deletePerson"],
+        method = [RequestMethod.POST]
     )
-    fun leaveFromEvent(@RequestBody leaveRequest: JoinOrLeaveEventRequestEntity,
-                       @AuthenticationPrincipal authPerson: JwtPerson) {
-        if (authPerson.id == null) {
-            throw Exception("person id is null")
-        }
-        return personService.leaveFromEvent(authPerson.id, leaveRequest.eventId)
+    fun deletePerson(@RequestBody userId: Long) {
+        personService.deletePerson(userId)
+    }
+
+    @RequestMapping(
+        path = ["/updatePerson"],
+        method = [RequestMethod.POST]
+    )
+    fun updatePerson(@RequestBody request: UpdatePersonRequestEntity) {
+        if(!requestValidationService.validate(request))
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+            )
+        personService.updatePerson(request)
+    }
+
+    @RequestMapping(
+        path = ["/banPerson"],
+        method = [RequestMethod.POST]
+    )
+    fun banPerson(@RequestBody eventId: Long, @RequestBody userNickname: String) {
+        eventService.banPerson(eventId, userNickname)
+    }
+
+    @RequestMapping(
+        path = ["/deleteEvent"],
+        method = [RequestMethod.POST]
+    )
+    fun deleteEvent(@RequestBody eventId: Long) {
+        eventService.deleteEvent(eventId)
+    }
+
+    @RequestMapping(
+        path = ["/updateEvent"],
+        method = [RequestMethod.POST]
+    )
+    fun updateEvent(@RequestBody request: UpdateEventRequestEntity) {
+        if(!requestValidationService.validate(request))
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+            )
+        eventService.updateEvent(request)
     }
 }

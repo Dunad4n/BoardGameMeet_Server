@@ -41,5 +41,4 @@ class MessageService {
         val user = personRepo.findById(createMessageRequest.userid).get()
         messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), user))
     }
-
 }
