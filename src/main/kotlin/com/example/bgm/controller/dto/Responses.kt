@@ -1,13 +1,14 @@
-package com.example.bgm.controller
+package com.example.bgm.controller.dto
 
-import com.example.bgm.entities.Gender
+import com.example.bgm.entities.enums.Gender
 import java.time.LocalDateTime
 
 /**
  * Event
  */
 
-data class MainPageEventResponseEntity(val name: String,
+data class MainPageEventResponseEntity(val id: Long?,
+                                       val name: String,
                                        val game: String,
                                        val address: String,
                                        val date: LocalDateTime,
@@ -15,7 +16,8 @@ data class MainPageEventResponseEntity(val name: String,
                                        val maxPersonCount: Int,
                                        val minAge: Int?,
                                        val maxAge: Int?)
-data class MyEventsResponseEntity(val name: String,
+data class MyEventsResponseEntity(val id: Long?,
+                                  val name: String,
                                   val game: String,
                                   val address: String,
                                   val date: LocalDateTime,
@@ -25,7 +27,8 @@ data class MyEventsResponseEntity(val name: String,
                                   val maxAge: Int?,
                                   val host: Boolean)
 
-data class EventResponseEntity(val name: String,
+data class EventResponseEntity(val id: Long?,
+                               val name: String,
                                val game: String,
                                val address: String,
                                val date: LocalDateTime,
@@ -34,7 +37,10 @@ data class EventResponseEntity(val name: String,
                                val ageMin: Int?,
                                val ageMax: Int?,
                                val description: String,
-                               val items: List<String>)
+                               val items: List<ItemResponseEntity>)
+
+data class ItemResponseEntity(val name: String,
+                              val marked: Boolean)
 
 /**
  * Person
@@ -45,7 +51,8 @@ data class ProfileResponseEntity(val name: String,
                                  val age: Int?,
                                  val city: String,
                                  val avatarId: Long?,
-                                 val gender: Gender)
+                                 val gender: Gender
+)
 
 data class MemberResponseEntity(val nickname: String,
                                 val avatarId: Long?,

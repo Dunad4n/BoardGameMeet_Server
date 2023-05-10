@@ -1,11 +1,10 @@
 package com.example.bgm.entities
 
-import com.fasterxml.jackson.databind.BeanDescription
+import com.example.bgm.controller.dto.EditItemsRequestEntity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import lombok.Data
-import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -39,7 +38,7 @@ data class Event(
     var maxPersonCount: Int,
 
     @NotNull
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @ManyToOne
     @JoinColumn(name = "host")
     var host: Person
 ) {
@@ -55,7 +54,7 @@ data class Event(
     @Column(name = "max_age")
     var maxAge: Int? = null
 
-    @ManyToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "members_events",
         joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")],
@@ -63,7 +62,7 @@ data class Event(
     )
     var members = mutableListOf<Person>()
 
-    @ManyToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "person_banned_in_events",
         joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")],
@@ -74,8 +73,8 @@ data class Event(
     @Column(name = "description")
     lateinit var description: String
 
-    @Column(name = "items")
-    lateinit var items: String
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
+    var items = mutableListOf<Item>()
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
     var messages = mutableListOf<Message>()
@@ -88,18 +87,14 @@ data class Event(
         date: LocalDateTime,
         maxPersonCount: Int,
         host: Person,
-        minAge: Int,
-        maxAge: Int,
+        minAge: Int?,
+        maxAge: Int?,
         description: String
     )
             : this(name, game, city, address, date, maxPersonCount, host) {
         this.description = description
         this.minAge = minAge
         this.maxAge = maxAge
-    }
-
-    fun getSpace(): String {
-        return "     "
     }
 
     fun membersForFull(): Int {
@@ -123,8 +118,19 @@ data class Event(
         members.add(user)
     }
 
-    fun getItems(): List<String> {
-        return items.split("     ")
+    fun getItemsList(): List<String?> {
+        return items.map { it.name }
+    }
+
+    fun editItems(items: List<EditItemsRequestEntity>) {
+        for (i in items.indices) {
+            if (i >= this.items.size) {
+                this.items.add(Item(items[i].name, items[i].marked))
+            }
+            this.items[i].name = items[i].name
+            this.items[i].marked = items[i].marked
+            this.items[i].event = this
+        }
     }
 
 }

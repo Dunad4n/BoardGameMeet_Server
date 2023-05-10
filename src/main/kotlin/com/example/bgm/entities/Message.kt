@@ -24,12 +24,12 @@ data class Message(
     var id: Long? = null
 
     @NotNull
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @ManyToOne
     @JoinColumn(name = "event")
     lateinit var event: Event
 
     @NotNull
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @ManyToOne
     @JoinColumn(name = "person_id")
     lateinit var person: Person
 

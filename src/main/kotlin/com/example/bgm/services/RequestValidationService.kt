@@ -1,6 +1,6 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.*
+import com.example.bgm.controller.dto.*
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -38,11 +38,11 @@ class RequestValidationService {
             return false
         }
         // можно добавить проверки на max значение
-        if(request.minAge < 0) {
+        if(request.minAge != null && request.minAge < 0) {
             message = "minAge must bo positive"
             return false
         }
-        if(request.maxAge < 0) {
+        if(request.maxAge != null && request.maxAge < 0) {
             message = "maxAge must bo positive"
             return false
         }
@@ -53,7 +53,7 @@ class RequestValidationService {
         return true
     }
 
-    fun validate(request: UpdateEventRequestEntity): Boolean{
+    fun validate(request: UpdateEventRequest): Boolean{
         //можно уменьшить количесто для имен
         if(request.name.length > 255) {
             message = "the name must be shorter than 255 characters"
@@ -96,9 +96,9 @@ class RequestValidationService {
         return true
     }
 
-    fun validate(request: EditItemsRequestEntity):Boolean{
-        for(s in request.items){
-            if(s.length > 255) {
+    fun validate(request: List<EditItemsRequestEntity>): Boolean{
+        for(item in request){
+            if(item.name.length > 255) {
                 message = "the item must be shorter than 255 characters"
                 return false
             }

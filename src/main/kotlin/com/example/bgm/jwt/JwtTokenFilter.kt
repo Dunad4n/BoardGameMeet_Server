@@ -19,9 +19,7 @@ data class JwtTokenFilter(val jwtTokenProvider: JwtTokenProvider) : GenericFilte
         val token: String? = jwtTokenProvider.resolveToken(servletRequest as HttpServletRequest)
         if (token != null && jwtTokenProvider.validateToken(token)) {
             val authentication: Authentication = jwtTokenProvider.getAuthentication(token)
-            if (authentication != null) {
-                SecurityContextHolder.getContext().authentication = authentication
-            }
+            SecurityContextHolder.getContext().authentication = authentication
         }
         filterChain.doFilter(servletRequest, servletResponse)
     }

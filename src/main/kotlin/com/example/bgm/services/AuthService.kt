@@ -1,8 +1,8 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.AuthenticationRequestEntity
-import com.example.bgm.controller.AuthenticationResponseEntity
-import com.example.bgm.controller.CreatePersonRequestEntity
+import com.example.bgm.controller.dto.AuthenticationRequestEntity
+import com.example.bgm.controller.dto.AuthenticationResponseEntity
+import com.example.bgm.controller.dto.CreatePersonRequestEntity
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.Role
 import com.example.bgm.jwt.JwtTokenProvider
@@ -50,11 +50,11 @@ class AuthService {
 
     fun login(authenticationRequest: AuthenticationRequestEntity): AuthenticationResponseEntity {
         return try {
-            val nickname: String = authenticationRequest.nickname
+            val nickname = authenticationRequest.nickname
             authenticationManager.authenticate(UsernamePasswordAuthenticationToken(nickname, authenticationRequest.password))
             val person: Person = personRepo.findByNickname(nickname)
                 ?: throw UsernameNotFoundException("Person with nickname: $nickname not found")
-            val token: String = jwtTokenProvider.createToken(nickname, person.roles)
+            val token = jwtTokenProvider.createToken(nickname, person.roles)
             AuthenticationResponseEntity(nickname, token)
         } catch (e: AuthenticationException) {
             throw BadCredentialsException("Invalid nickname or password")

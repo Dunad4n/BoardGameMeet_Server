@@ -45,6 +45,7 @@ class SecurityConfig {
             .and()
             .authorizeHttpRequests()
             .requestMatchers("/auth/**").permitAll()
+            .requestMatchers("/events").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
             .and()

@@ -1,10 +1,9 @@
 package com.example.bgm.entities
 
+import com.example.bgm.entities.enums.Gender
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
-import kotlin.math.max
 
 @Entity
 @Table(name = "person")
@@ -72,4 +71,6 @@ data class Person(
         inverseJoinColumns = [ JoinColumn(name = "role_id", referencedColumnName = "role_id") ])
     var roles = mutableListOf<Role>()
 
+    @OneToMany(mappedBy = "host", cascade = [CascadeType.ALL])
+    var hostIn = mutableListOf<Event>()
 }

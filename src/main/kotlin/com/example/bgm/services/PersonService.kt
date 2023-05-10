@@ -1,15 +1,18 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.*
+import com.example.bgm.controller.dto.MemberResponseEntity
+import com.example.bgm.controller.dto.ProfileResponseEntity
+import com.example.bgm.controller.dto.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
+import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 
 @Service
 class PersonService {
@@ -22,6 +25,8 @@ class PersonService {
 
     @Autowired
     lateinit var roleRepo: RoleRepo
+
+    var encoder = BCryptPasswordEncoder()
 
 
     private fun mapToMemberResponseEntity(person: Person, event: Event): MemberResponseEntity {
@@ -47,8 +52,9 @@ class PersonService {
     /**
      * обсудить реквесты save update
      */
-    fun updatePerson(updateRequest: UpdatePersonRequestEntity) {
-        val person = personRepo.findById(updateRequest.id).get()
+    fun updatePerson(updateRequest: UpdatePersonRequestEntity, authPerson: JwtPerson) {
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("person with nickaname ${authPerson.username} does not exist")
         person.name = updateRequest.name
         person.nickname = updateRequest.nickname
         person.city = updateRequest.city
@@ -57,8 +63,13 @@ class PersonService {
         personRepo.save(person)
     }
 
-    fun deletePerson(id: Long) {
-        personRepo.deleteById(id)
+    fun deletePerson(nickname: String, authPerson: JwtPerson) {
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+        if (!person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
+            throw Exception("only admin can delete users")
+        }
+        personRepo.deleteByNickname(nickname)
     }
 
     fun getAllMembers(eventId: Long): ArrayList<MemberResponseEntity> {
@@ -102,6 +113,23 @@ class PersonService {
         } else {
             throw Exception("this person can not leave from chosen event")
         }
+    }
+
+    fun validateSecretWord(secretWord: String, authPerson: JwtPerson): ResponseEntity<String> {
+        if (!personRepo.findByNickname(authPerson.username)?.secretWord.equals(secretWord)) {
+            return ResponseEntity.badRequest().body("wrong secret word")
+        }
+        return ResponseEntity.ok("correct secret word")
+    }
+
+    fun changePassword(newPassword: String, repeatNewPassword: String, authPerson: JwtPerson) {
+        if (newPassword != repeatNewPassword) {
+            throw Exception("passwords is not equals")
+        }
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("can not find person with nickname ${authPerson.username}")
+        person.password = encoder.encode(newPassword)
+        personRepo.save(person)
     }
 
 //    fun register(person: Person): Person? {
