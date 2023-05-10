@@ -1,6 +1,7 @@
 package com.example.bgm.entities
 
 import com.example.bgm.entities.enums.Gender
+import com.example.bgm.entities.jwt.Token
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -73,4 +74,7 @@ data class Person(
 
     @OneToMany(mappedBy = "host", cascade = [CascadeType.ALL])
     var hostIn = mutableListOf<Event>()
+
+    @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
+    var tokens = mutableListOf<Token>()
 }

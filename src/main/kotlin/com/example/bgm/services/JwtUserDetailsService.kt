@@ -18,7 +18,6 @@ class JwtUserDetailsService: UserDetailsService {
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
         val person: Person = personService.getByNickname(username)
-            ?: throw UsernameNotFoundException("User with username: $username not found")
         return JwtUserFactory.create(person)
     }
 }

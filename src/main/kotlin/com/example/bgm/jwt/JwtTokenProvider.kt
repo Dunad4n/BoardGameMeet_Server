@@ -1,6 +1,9 @@
 package com.example.bgm.jwt
 
+import com.example.bgm.entities.Person
 import com.example.bgm.entities.Role
+import com.example.bgm.repositories.jwt.TokenRepo
+import com.example.bgm.services.PersonService
 import io.jsonwebtoken.*
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,6 +30,13 @@ class JwtTokenProvider {
 
     @Autowired
     lateinit var userDetailsService: UserDetailsService
+
+    @Autowired
+    lateinit var tokenRepo: TokenRepo
+
+    @Autowired
+    lateinit var personService: PersonService
+
     @Bean
     fun passwordEncoder(): BCryptPasswordEncoder {
         return BCryptPasswordEncoder()
@@ -69,11 +79,18 @@ class JwtTokenProvider {
     fun validateToken(token: String?): Boolean {
         return try {
             val claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token)
-            !claims.body.expiration.before(Date())
+            val person = personService.getByNickname(getUserName(token))
+            !claims.body.expiration.before(Date()) && tokenRepo.findAllByPerson(person).isNotEmpty()
         } catch (e: JwtException) {
             throw JwtAuthenticationException("JWT token is expired or invalid")
         } catch (e: IllegalArgumentException) {
             throw JwtAuthenticationException("JWT token is expired or invalid")
+        }
+    }
+
+    fun invalidateTokensOfUser(person: Person) {
+        for (token in tokenRepo.findAllByPerson(person)) {
+            tokenRepo.delete(token)
         }
     }
 

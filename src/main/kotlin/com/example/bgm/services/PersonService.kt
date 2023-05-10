@@ -11,6 +11,7 @@ import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -89,8 +90,9 @@ class PersonService {
         throw Exception("There is no user with this nickname")
     }
 
-    fun getByNickname(nickname: String): Person? {
+    fun getByNickname(nickname: String): Person {
         return personRepo.findByNickname(nickname)
+            ?: throw UsernameNotFoundException("person with nickname $nickname not found")
     }
 
     fun joinToEvent(userId: Long, eventId: Long) {
