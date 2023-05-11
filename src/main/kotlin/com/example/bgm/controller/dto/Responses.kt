@@ -6,7 +6,18 @@ import java.time.LocalDateTime
 /**
  * Event
  */
-
+data class CreateEventResponseEntity(val id: Long?,
+                                     val name: String,
+                                     val game: String,
+                                     val city: String,
+                                     val address: String,
+                                     val date: LocalDateTime,
+                                     val curPersonCount: Int,
+                                     val maxPersonCount: Int,
+                                     val minAge: Int?,
+                                     val maxAge: Int?,
+                                     val description: String,
+                                     val hostId: Long?)
 data class MainPageEventResponseEntity(val id: Long?,
                                        val name: String,
                                        val game: String,
@@ -34,8 +45,8 @@ data class EventResponseEntity(val id: Long?,
                                val date: LocalDateTime,
                                val curPersonCount: Int,
                                val maxPersonCount: Int,
-                               val ageMin: Int?,
-                               val ageMax: Int?,
+                               val minAge: Int?,
+                               val maxAge: Int?,
                                val description: String,
                                val items: List<ItemResponseEntity>)
 

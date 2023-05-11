@@ -19,15 +19,15 @@ import org.springframework.stereotype.Service
 class PersonService {
 
     @Autowired
-    lateinit var personRepo: PersonRepo
+    private lateinit var personRepo: PersonRepo
 
     @Autowired
-    lateinit var eventRepo: EventRepo
+    private lateinit var eventRepo: EventRepo
 
     @Autowired
-    lateinit var roleRepo: RoleRepo
+    private lateinit var roleRepo: RoleRepo
 
-    var encoder = BCryptPasswordEncoder()
+    private val encoder = BCryptPasswordEncoder()
 
 
     private fun mapToMemberResponseEntity(person: Person, event: Event): MemberResponseEntity {

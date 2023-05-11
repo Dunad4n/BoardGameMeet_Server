@@ -15,13 +15,13 @@ import java.time.LocalDateTime
 class MessageService {
 
     @Autowired
-    lateinit var messageRepo: MessageRepo
+    private lateinit var messageRepo: MessageRepo
 
     @Autowired
-    lateinit var eventRepo: EventRepo
+    private lateinit var eventRepo: EventRepo
 
     @Autowired
-    lateinit var personRepo: PersonRepo
+    private lateinit var personRepo: PersonRepo
 
     private fun mapToMessageResponseEntity(message: Message, person: Person): MessageResponseEntity {
         return MessageResponseEntity(message.text,

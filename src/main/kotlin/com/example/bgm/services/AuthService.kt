@@ -23,19 +23,19 @@ import org.springframework.stereotype.Service
 class AuthService {
 
     @Autowired
-    lateinit var passwordEncoder: BCryptPasswordEncoder
+    private lateinit var passwordEncoder: BCryptPasswordEncoder
 
     @Autowired
-    lateinit var authenticationManager: AuthenticationManager
+    private lateinit var authenticationManager: AuthenticationManager
 
     @Autowired
-    lateinit var jwtTokenProvider: JwtTokenProvider
+    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Autowired
-    lateinit var personRepo: PersonRepo
+    private lateinit var personRepo: PersonRepo
 
     @Autowired
-    lateinit var tokenRepo: TokenRepo
+    private lateinit var tokenRepo: TokenRepo
 
     fun createPerson(createPersonRequest: CreatePersonRequestEntity, role: Role) {
         if(!personRepo.existsByNickname(createPersonRequest.nickname)) {

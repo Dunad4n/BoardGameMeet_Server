@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
-class EventController {
+class EventController(
 
     @Autowired
-    lateinit var eventService: EventService
-
-
+    private var eventService: EventService,
 
     @Autowired
-    lateinit var requestValidationService: RequestValidationService
+    private var requestValidationService: RequestValidationService
+
+) {
 
     /** Event Мероприятия на главной странице **/
     @GetMapping("/events")
@@ -44,12 +44,12 @@ class EventController {
     /** Event создание мероприятия **/
     @PostMapping("/createEvent")
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
-                    @AuthenticationPrincipal authPerson: JwtPerson) {
+                    @AuthenticationPrincipal authPerson: JwtPerson): CreateEventResponseEntity {
         if(!requestValidationService.validate(createEventRequest))
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
             )
-        eventService.createEvent(createEventRequest, authPerson.id)
+        return eventService.createEvent(createEventRequest, authPerson.id)
     }
 
     /** Event Получить все предметы мероприятия **/

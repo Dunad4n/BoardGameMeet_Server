@@ -15,19 +15,21 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 @Service
-class EventService {
+class EventService(
 
     @Autowired
-    lateinit var eventRepo: EventRepo
+    private var eventRepo: EventRepo,
 
     @Autowired
-    lateinit var personRepo: PersonRepo
+    private var personRepo: PersonRepo,
 
     @Autowired
-    lateinit var itemRepo: ItemRepo
+    private var itemRepo: ItemRepo,
 
     @Autowired
-    lateinit var roleRepo: RoleRepo
+    private var roleRepo: RoleRepo
+
+) {
 
     private fun mapToMainPageEventsResponseEntity(event: Event): MainPageEventResponseEntity {
         return MainPageEventResponseEntity(event.id,
@@ -54,6 +56,21 @@ class EventService {
                                  event.host == user)
     }
 
+    private fun mapToCreateEventResponseEntity(event: Event): CreateEventResponseEntity {
+        return CreateEventResponseEntity(event.id,
+                                         event.name,
+                                         event.game,
+                                         event.city,
+                                         event.address,
+                                         event.date,
+                                         event.members.size,
+                                         event.maxPersonCount,
+                                         event.minAge,
+                                         event.maxAge,
+                                         event.description,
+                                         event.host.id)
+    }
+
     private fun mapToEventResponseEntity(event: Event, items: List<ItemResponseEntity>): EventResponseEntity {
         return EventResponseEntity(event.id,
                                    event.name,
@@ -73,13 +90,16 @@ class EventService {
                                   item.marked)
     }
 
-    fun getEvent(id: Long): EventResponseEntity {
+    fun getEvent(id: Long?): EventResponseEntity {
+        if (id == null) {
+            throw Exception("id is null")
+        }
         val event = eventRepo.findById(id).get()
         val items = event.items
         return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) })
     }
 
-    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?) {
+    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?): CreateEventResponseEntity {
         if (hostId == null) {
             throw Exception("person id is null")
         }
@@ -95,7 +115,7 @@ class EventService {
                           createEventRequest.maxAge,
                           createEventRequest.description)
         event.members.add(host)
-        eventRepo.save(event)
+        return mapToCreateEventResponseEntity(eventRepo.save(event))
     }
 
     fun updateEvent(updateRequest: UpdateEventRequest) {
