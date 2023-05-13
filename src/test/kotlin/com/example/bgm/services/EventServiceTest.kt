@@ -3,7 +3,6 @@ package com.example.bgm.services
 import com.example.bgm.IntegrationEnvironment
 import com.example.bgm.controller.dto.CreateEventRequestEntity
 import com.example.bgm.entities.Event
-import com.example.bgm.entities.Item
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.enums.Gender
 import com.example.bgm.repositories.EventRepo
@@ -11,13 +10,12 @@ import com.example.bgm.repositories.ItemRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import org.hamcrest.MatcherAssert.assertThat
-
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
-import org.testcontainers.shaded.org.hamcrest.Matchers.hasSize
 import java.time.LocalDateTime
 
 @SpringBootTest
@@ -82,6 +80,10 @@ class EventServiceTest: IntegrationEnvironment()
         assert(responseEvent.minAge == null)
         assert(responseEvent.maxAge == null)
         assert(responseEvent.items.isEmpty())
+
+        assertThat(responseEvent.maxAge, `is`(nullValue()))
+        assertThat(responseEvent.name, `is`(equalTo(name)))
+        assertThat(responseEvent.items, `is`(empty()))
     }
 
     @Test
