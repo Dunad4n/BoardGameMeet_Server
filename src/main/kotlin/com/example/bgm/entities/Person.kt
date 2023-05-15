@@ -5,6 +5,7 @@ import com.example.bgm.entities.jwt.Token
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import org.hibernate.validator.constraints.UniqueElements
 
 @Entity
 @Table(name = "person")
@@ -15,6 +16,7 @@ data class Person(
     var name: String,
 
     @NotBlank
+    @UniqueElements
     @Column(name = "nickname", nullable = false)
     var nickname: String,
 
@@ -77,4 +79,13 @@ data class Person(
 
     @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
     var tokens = mutableListOf<Token>()
+
+    fun getStringRole(): String {
+        for (role in roles) {
+            if (role.name == "ROLE_ADMIN") {
+                return "ROLE_ADMIN"
+            }
+        }
+        return "ROLE_USER"
+    }
 }

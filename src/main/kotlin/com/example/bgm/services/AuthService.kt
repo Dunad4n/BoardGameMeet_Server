@@ -62,7 +62,7 @@ class AuthService {
                 ?: throw UsernameNotFoundException("Person with nickname: $nickname not found")
             val token = jwtTokenProvider.createToken(nickname, person.roles)
             tokenRepo.save(Token(token, person))
-            AuthenticationResponseEntity(nickname, token)
+            AuthenticationResponseEntity(nickname, token, person.getStringRole())
         } catch (e: AuthenticationException) {
             throw BadCredentialsException("Invalid nickname or password")
         }

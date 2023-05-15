@@ -81,12 +81,12 @@ class RequestValidationService {
             return false
         }
         // можно добавить проверки на max значение
-        if(request.minAge < 0) {
-            message = "minAge must bo positive"
+        if (request.minAge != null && request.minAge < 0) {
+            message = "minAge must be positive"
             return false
         }
-        if(request.maxAge < 0) {
-            message = "maxAge must bo positive"
+        if(request.maxAge != null && request.maxAge < 0) {
+            message = "maxAge must be positive"
             return false
         }
         if(request.maxPersonCount < 2) {

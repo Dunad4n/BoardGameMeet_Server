@@ -22,15 +22,15 @@ data class CreateEventRequestEntity(val name: String,
                                     val maxAge: Int?,
                                     val description: String)
 
-data class UpdateEventRequest(val id: Long,
+data class UpdateEventRequest(val id: Long?,
                               val name: String,
                               val game: String,
                               val city: String,
                               val address: String,
                               val date: LocalDateTime,
                               val maxPersonCount: Int,
-                              val minAge: Int,
-                              val maxAge: Int,
+                              val minAge: Int?,
+                              val maxAge: Int?,
                               val description: String)
 
 data class EditItemsRequestEntity(val name: String,
