@@ -188,7 +188,7 @@ class EventService(
         return res
     }
 
-    fun banPerson(eventId: Long, userNickname: String) {
+    fun banPerson(eventId: Long?, userNickname: String) {
         val user = personRepo.findByNickname(userNickname)
         if (user != null) {
             eventRepo.findById(eventId).get().ban(user)

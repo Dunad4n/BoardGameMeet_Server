@@ -71,4 +71,4 @@ data class ChangePasswordRequestEntity(val newPassword: String,
  */
 
 data class CreateMessageRequestEntity(val text: String,
-                                      val userid: Long)
+                                      val userid: Long?)

@@ -28,7 +28,7 @@ class MessageService {
                                      person.avatarId)
     }
 
-    fun getMessages(eventId: Long): ArrayList<MessageResponseEntity> {
+    fun getMessages(eventId: Long?): ArrayList<MessageResponseEntity> {
         val event = eventRepo.findById(eventId).get()
         var messages = arrayListOf<MessageResponseEntity>()
         for (message in event.messages) {
@@ -37,7 +37,11 @@ class MessageService {
         return messages
     }
 
-    fun createMessage(createMessageRequest: CreateMessageRequestEntity) {
+    fun createMessage(createMessageRequest: CreateMessageRequestEntity)
+    {
+        if (createMessageRequest.userid == null) {
+            throw Exception("user id can not be null")
+        }
         val user = personRepo.findById(createMessageRequest.userid).get()
         messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), user))
     }

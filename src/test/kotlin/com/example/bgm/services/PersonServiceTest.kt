@@ -1,10 +1,6 @@
 package com.example.bgm.services
 
-import com.example.bgm.IntegrationEnvironment
-import com.example.bgm.controller.dto.CreateEventRequestEntity
-import com.example.bgm.controller.dto.UpdateEventRequest
 import com.example.bgm.entities.Event
-import com.example.bgm.entities.Item
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.enums.Gender
 import com.example.bgm.repositories.*
@@ -16,12 +12,237 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
-import org.testcontainers.shaded.org.hamcrest.Matchers.hasSize
 import java.time.LocalDateTime
 
 @SpringBootTest
 class PersonServiceTest
 {
     @Autowired
-    private lateinit var messageRepo: MessageRepo
+    private lateinit var personRepo: PersonRepo
+
+    @Autowired
+    private lateinit var eventRepo: EventRepo
+
+    @Autowired
+    private lateinit var roleRepo: RoleRepo
+
+    @Autowired
+    private lateinit var personService: PersonService
+
+    @Test
+    @Rollback
+    @Transactional
+    //complete
+    fun getPersonByIdTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+
+        /** when **/
+        val resPerson = personService.getPerson(person.id)
+
+        /** then **/
+        assertThat(person.name, `is`(equalTo(personName)))
+        assertThat(person.nickname, `is`(equalTo(personNickname)))
+        assertThat(person.password, `is`(equalTo(personPassword)))
+        assertThat(person.secretWord, `is`(equalTo(secretWord)))
+        assertThat(person.gender, `is`(equalTo(gender)))
+        assertThat(person.city, `is`(equalTo(userCity)))
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    //complete
+    fun getAllMembersTest() {
+        /** given **/
+        val name = "event"
+        val game = "game"
+        val city = "Voronezh"
+        val maxPersonCount = 10
+        val address = "address"
+        val date = LocalDateTime.now()
+        val minAge = 18
+        val maxAge = 25
+        val description = "gogogo"
+
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val personName1 = "Ivan1"
+        val personNickname1 = "Vanius1"
+        val personPassword1 = "12341"
+        val secretWord1 = "secret1"
+        val gender1 = Gender.MALE
+        val userCity1 = "Voronezh1"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val person1 = personRepo.save(Person(personName1, personNickname1, personPassword1, secretWord1, gender1, userCity1))
+        personRepo.flush()
+        val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
+        eventRepo.flush()
+        event.host = person
+        event.members.add(person)
+        event.members.add(person1)
+
+        /** when **/
+        val members = personService.getAllMembers(event.id)
+
+        /** then **/
+        assertThat(members[0].nickname, `is`(equalTo(personNickname)))
+        assertThat(members[0].host, `is`(equalTo(true)))
+        assertThat(members[1].nickname, `is`(equalTo(personNickname1)))
+        assertThat(members[1].host, `is`(equalTo(false)))
+
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    //complete
+    fun getProfileTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val name = "event"
+        val game = "game"
+        val city = "Voronezh"
+        val maxPersonCount = 10
+        val address = "address"
+        val date = LocalDateTime.now()
+        val minAge = 18
+        val maxAge = 25
+        val description = "gogogo"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+
+        val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
+        eventRepo.flush()
+
+        /** when **/
+        val profile = personService.getProfile(person.nickname)
+
+        /** then **/
+        assertThat(profile.name, `is`(equalTo(personName)))
+        assertThat(profile.nickname, `is`(equalTo(personNickname)))
+        assertThat(profile.city, `is`(equalTo(userCity)))
+        assertThat(profile.gender, `is`(equalTo(gender)))
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    //complete
+    fun getByNicknameTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+
+        /** when **/
+        val resPerson = personService.getByNickname(person.nickname)
+
+        /** then **/
+        assertThat(resPerson.name, `is`(equalTo(personName)))
+        assertThat(resPerson.nickname, `is`(equalTo(personNickname)))
+        assertThat(resPerson.password, `is`(equalTo(personPassword)))
+        assertThat(resPerson.secretWord, `is`(equalTo(secretWord)))
+        assertThat(resPerson.gender, `is`(equalTo(gender)))
+        assertThat(resPerson.city, `is`(equalTo(userCity)))
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    //complete
+    fun joinToEventTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val personName1 = "Ivan1"
+
+        val personName2 = "Ivan2"
+
+        val name = "event"
+        val game = "game"
+        val city = "Voronezh"
+        val maxPersonCount = 10
+        val address = "address"
+        val date = LocalDateTime.now()
+        val minAge = 18
+        val maxAge = 25
+        val description = "gogogo"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val person1 = personRepo.save(Person(personName1, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val person2 = personRepo.save(Person(personName2, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
+        eventRepo.flush()
+        //event.bannedMembers.add(person)
+        //event.members.add(person2)
+
+        /** when **/
+        personService.joinToEvent(person1.id, event.id)
+        //personService.joinToEvent(person1.id, event.id)
+        //personService.joinToEvent(person2.id, event.id)
+
+        /** then **/
+        assertThat(event.members[0].name, `is`(equalTo(personName1)))
+        assertThat(event.members[0].nickname, `is`(equalTo(personNickname)))
+        assertThat(event.members[0].password, `is`(equalTo(personPassword)))
+        assertThat(event.members[0].secretWord, `is`(equalTo(secretWord)))
+        assertThat(event.members[0].gender, `is`(equalTo(gender)))
+        assertThat(event.members[0].city, `is`(equalTo(userCity)))
+
+
+
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

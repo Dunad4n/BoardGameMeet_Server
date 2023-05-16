@@ -46,7 +46,10 @@ class PersonService {
     }
 
 
-    fun getPerson(id: Long): Person? {
+    fun getPerson(id: Long?): Person? {
+        if (id == null) {
+            throw Exception("id can not be null")
+        }
         return personRepo.findById(id).get()
     }
 
@@ -73,7 +76,7 @@ class PersonService {
         personRepo.deleteByNickname(nickname)
     }
 
-    fun getAllMembers(eventId: Long): ArrayList<MemberResponseEntity> {
+    fun getAllMembers(eventId: Long?): ArrayList<MemberResponseEntity> {
         val event = eventRepo.findById(eventId).get()
         val members = arrayListOf<MemberResponseEntity>()
         for (person in event.members) {
@@ -95,7 +98,10 @@ class PersonService {
             ?: throw UsernameNotFoundException("person with nickname $nickname not found")
     }
 
-    fun joinToEvent(userId: Long, eventId: Long) {
+    fun joinToEvent(userId: Long?, eventId: Long?) {
+        if (userId == null) {
+            throw Exception("user id can not be null")
+        }
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findById(userId).get()
         if (!event.bannedMembers.contains(person) && !event.members.contains(person)) {
