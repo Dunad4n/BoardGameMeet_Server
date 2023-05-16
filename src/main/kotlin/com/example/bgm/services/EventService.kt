@@ -119,6 +119,9 @@ class EventService(
     }
 
     fun updateEvent(updateRequest: UpdateEventRequest) {
+        if (updateRequest.id == null) {
+            throw Exception("id can not be null")
+        }
         val event = eventRepo.findById(updateRequest.id).get()
         event.name = updateRequest.name
         event.game = updateRequest.game
@@ -128,7 +131,7 @@ class EventService(
         event.maxPersonCount = updateRequest.maxPersonCount
         event.maxAge = updateRequest.maxAge
         event.minAge = updateRequest.minAge
-        event.description = updateRequest.name
+        event.description = updateRequest.description
         eventRepo.save(event)
     }
 

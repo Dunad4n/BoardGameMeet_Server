@@ -22,7 +22,7 @@ data class CreateEventRequestEntity(val name: String,
                                     val maxAge: Int?,
                                     val description: String)
 
-data class UpdateEventRequest(val id: Long,
+data class UpdateEventRequest(val id: Long?,
                               val name: String,
                               val game: String,
                               val city: String,
