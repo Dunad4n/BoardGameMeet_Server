@@ -1,40 +1,91 @@
 package com.example.bgm.entities
 
-import com.example.bgm.Gender
+import com.example.bgm.entities.enums.Gender
+import com.example.bgm.entities.jwt.Token
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import org.hibernate.validator.constraints.UniqueElements
 
 @Entity
 @Table(name = "person")
 data class Person(
 
-    @Column(name = "name")
-    private val name: String,
+    @NotBlank
+    @Column(name = "name", nullable = false)
+    var name: String,
 
-    @Column(name = "nickname")
-    private val nickname: String,
+    @NotBlank
+    @UniqueElements
+    @Column(name = "nickname", nullable = false)
+    var nickname: String,
 
-    @Column(name = "password")
-    private val password: String,
+    @NotBlank
+    @Column(name = "password", nullable = false)
+    var password: String,
 
-    @Column(name = "secret_word")
-    private val secretWord: String,
+    @NotBlank
+    @Column(name = "secret_word", nullable = false)
+    var secretWord: String,
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
-    private val gender: Gender,
+    @Column(name = "gender", nullable = false)
+    var gender: Gender,
 
-    @Column(name = "age")
-    private val age: Int,
-
-    @Column(name = "city")
-    private val city: String,
-
-    @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
-    private val events: List<Event>
+    @NotBlank
+    @Column(name = "city", nullable = false)
+    var city: String,
 )
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private val id = -1;
+    @Column(name = "person_id")
+    var id: Long? = null
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "members_events",
+        joinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")],
+        inverseJoinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")]
+    )
+    var events = mutableListOf<Event>()
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "person_banned_in_events",
+        joinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")],
+        inverseJoinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")]
+    )
+    var banedIn = mutableListOf<Event>()
+
+    @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
+    var messages = mutableListOf<Message>()
+
+    @Column(name = "avatar_id")
+    var avatarId: Long? = null
+
+    @Column(name = "age")
+    var age: Int? = null
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "person_roles",
+        joinColumns = [ JoinColumn(name = "person_id", referencedColumnName = "person_id") ],
+        inverseJoinColumns = [ JoinColumn(name = "role_id", referencedColumnName = "role_id") ])
+    var roles = mutableListOf<Role>()
+
+    @OneToMany(mappedBy = "host", cascade = [CascadeType.ALL])
+    var hostIn = mutableListOf<Event>()
+
+    @OneToMany(mappedBy = "person", cascade = [CascadeType.ALL])
+    var tokens = mutableListOf<Token>()
+
+    fun getStringRole(): String {
+        for (role in roles) {
+            if (role.name == "ROLE_ADMIN") {
+                return "ROLE_ADMIN"
+            }
+        }
+        return "ROLE_USER"
+    }
 }

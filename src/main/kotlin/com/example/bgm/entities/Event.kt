@@ -1,58 +1,136 @@
 package com.example.bgm.entities
 
+import com.example.bgm.controller.dto.EditItemsRequestEntity
 import jakarta.persistence.*
-import java.sql.Date
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import lombok.Data
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Table(name = "event")
+@Data
 @Entity
 data class Event(
 
+    @NotBlank
     @Column(name = "name")
-    private val name: String,
+    var name: String,
 
+    @NotBlank
     @Column(name = "game")
-    private val game: String,
+    var game: String,
 
+    @NotBlank
+    @Column(name = "city")
+    var city: String,
+
+    @NotBlank
     @Column(name = "address")
-    private val address: String,
+    var address: String,
 
+    @NotNull
     @Column(name = "date")
-    private val date: Date,
+    var date: LocalDateTime,
 
-    @Column(name = "maxPersonCount")
-    private val maxPersonCount: Int,
+    @NotNull
+    @Column(name = "max_person_count")
+    var maxPersonCount: Int,
 
-    @Column(name = "minAge")
-    private val minAge: Int,
-
-    @Column(name = "maxAge")
-    private val maxAge: Int,
-
-    @OneToOne(cascade = [CascadeType.ALL])
-    @Column(name = "host")
-    private val host: Person,
-
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    private val people: List<Person>,
-
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    private val bannedPeople: List<Person>,
-
-    @Column(name = "description")
-    private val description: String,
-
-    @Column(name = "items")
-    private val items: String,
-
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
-    private val messages: List<Message>,
-
-    @Column(name = "active")
-    private val isActive: Boolean
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "host")
+    var host: Person
 ) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private val id = -1;
+    @Column(name = "event_id")
+    var id: Long? = null
+
+    @Column(name = "min_age")
+    var minAge: Int? = null
+
+    @Column(name = "max_age")
+    var maxAge: Int? = null
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "members_events",
+        joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")],
+        inverseJoinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")]
+    )
+    var members = mutableListOf<Person>()
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "person_banned_in_events",
+        joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")],
+        inverseJoinColumns = [JoinColumn(name = "person_id", referencedColumnName = "person_id")]
+    )
+    var bannedMembers = mutableListOf<Person>()
+
+    @Column(name = "description")
+    lateinit var description: String
+
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
+    var items = mutableListOf<Item>()
+
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
+    var messages = mutableListOf<Message>()
+
+    constructor(
+        name: String,
+        game: String,
+        city: String,
+        address: String,
+        date: LocalDateTime,
+        maxPersonCount: Int,
+        host: Person,
+        minAge: Int?,
+        maxAge: Int?,
+        description: String
+    )
+            : this(name, game, city, address, date, maxPersonCount, host) {
+        this.description = description
+        this.minAge = minAge
+        this.maxAge = maxAge
+    }
+
+    fun membersForFull(): Int {
+        return maxPersonCount - members.size
+    }
+
+    fun isActive(): Boolean {
+        return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) < date.toEpochSecond(ZoneOffset.UTC)
+    }
+
+    fun ban(user: Person) {
+        members.remove(user)
+        bannedMembers.add(user)
+    }
+
+    fun kick(user: Person) {
+        members.remove(user)
+    }
+
+    fun addPerson(user: Person) {
+        members.add(user)
+    }
+
+    fun getItemsList(): List<String?> {
+        return items.map { it.name }
+    }
+
+    fun editItems(items: List<EditItemsRequestEntity>) {
+        for (i in items.indices) {
+            if (i >= this.items.size) {
+                this.items.add(Item(items[i].name, items[i].marked))
+            }
+            this.items[i].name = items[i].name
+            this.items[i].marked = items[i].marked
+            this.items[i].event = this
+        }
+    }
+
 }
