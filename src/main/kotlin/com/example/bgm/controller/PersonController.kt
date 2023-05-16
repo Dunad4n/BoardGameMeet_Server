@@ -5,6 +5,8 @@ import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.PersonService
 import com.example.bgm.services.RequestValidationService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -54,8 +56,8 @@ class PersonController {
 
     /** Person Все участники **/
     @GetMapping("/getAllMembersIn/{eventId}")
-    fun getAllMembers(@PathVariable eventId: Long): ArrayList<MemberResponseEntity> {
-        return personService.getAllMembers(eventId)
+    fun getAllMembers(@PathVariable eventId: Long, @PageableDefault() pageable: Pageable): ArrayList<MemberResponseEntity> {
+        return personService.getAllMembers(eventId, pageable)
     }
 
     /** Person Удалить пользователя **/

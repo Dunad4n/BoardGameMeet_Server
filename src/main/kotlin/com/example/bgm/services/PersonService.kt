@@ -10,6 +10,7 @@ import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -73,13 +74,14 @@ class PersonService {
         personRepo.deleteByNickname(nickname)
     }
 
-    fun getAllMembers(eventId: Long): ArrayList<MemberResponseEntity> {
+    fun getAllMembers(eventId: Long, pageable: Pageable): ArrayList<MemberResponseEntity> {
         val event = eventRepo.findById(eventId).get()
-        val members = arrayListOf<MemberResponseEntity>()
-        for (person in event.members) {
-            members.add(mapToMemberResponseEntity(person, event))
+        val members = personRepo.findAllByEventsContaining(event, pageable)
+        val res = arrayListOf<MemberResponseEntity>()
+        for (person in members) {
+            res. add(mapToMemberResponseEntity(person, event))
         }
-        return members
+        return res
     }
 
     fun getProfile(nickname: String): ProfileResponseEntity {
