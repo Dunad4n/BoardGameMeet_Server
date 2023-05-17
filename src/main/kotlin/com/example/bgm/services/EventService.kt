@@ -10,6 +10,8 @@ import com.example.bgm.repositories.ItemRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -123,45 +125,52 @@ class EventService {
 
     fun getMainPageEvents(city: String,
                           search: String?,
+                          pageable: Pageable,
                           authPerson: JwtPerson?): List<MainPageEventResponseEntity> {
-        var events = if (search != null) {
-            eventRepo.findAllByCityAndName(city, search)
-        } else {
-            eventRepo.findAllByCity(city)
-        }
-        if (events == null) {
-            return arrayListOf()
-        }
-        events = sortEventsForMainPage(filterEventsForActiveStatus(events))
-        events = if (authPerson != null) {
-            val person = personRepo.findByNickname(authPerson.username)
-            if (person?.age != null) {
-                filterEventsForAge(events, person)
+        var events: Page<Event>? = null
+        if (authPerson == null){
+            events = if (search != null) {
+                eventRepo.findAllByCityAndNameContainingAndDateAfter(city, search, pageable)
             } else {
-                filterEventsForNullAge(events)
+                eventRepo.findAllByCityAndDateAfter(city, pageable)
             }
-        } else {
-            filterEventsForNullAge(events)
         }
-        return events.map { mapToMainPageEventsResponseEntity(it) }
+        else{
+            val person = personRepo.findByNickname(authPerson.username)
+            if (person != null) {
+                events = if(person.age != null) {
+                    if (search != null) {
+                        eventRepo.findAllByCityAndNameContainingAndMinAgeBeforeAndMaxAgeAfterAndDateAfter(city, search, person.age!!, person.age!!, pageable)
+                    } else {
+                        eventRepo.findAllByCityAndMinAgeBeforeAndMaxAgeAfterAndDateAfter(city, person.age!!, person.age!!, pageable)
+                    }
+                } else{
+                    if (search != null) {
+                        eventRepo.findAllByCityAndNameContainingAndDateAfter(city, search, pageable)
+                    } else {
+                        eventRepo.findAllByCityAndDateAfter(city, pageable)
+                    }
+                }
+            }
+        }
+        if (events != null)
+            return sortEventsForMainPage(events).map { mapToMainPageEventsResponseEntity(it) }
+        return arrayListOf()
     }
 
-//    // поменять events на запрос к бд
-//    fun getEventsWithSearch(user: Int, start: Int, search: String): ArrayList<EventsResponseEntity> {
-//        val res: ArrayList<EventsResponseEntity> = arrayListOf()
-//        for(event in events)
-//            res.add(mapToEventsResponseEntity(event))
-//        return res
-//    }
+    private fun sortEventsForMainPage(events: Page<Event>): List<Event> {
+        return events.sortedWith(compareBy({ it.date.dayOfYear }, { it.date.year }, { it.membersForFull() }))
+    }
 
-    fun getMyEventsPageEvent(authPerson: JwtPerson): ArrayList<MyEventsResponseEntity> {
+    fun getMyEventsPageEvent(authPerson: JwtPerson, pageable: Pageable): ArrayList<MyEventsResponseEntity> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
-        val myEvents = person.events
+        val myEvents = eventRepo.findAllByMembersContains(person, pageable)
         val res = arrayListOf<MyEventsResponseEntity>()
-        for (event in sortEventsForMyEventPage(myEvents)) {
-            res.add(mapToMyEventsResponseEntity(event, person))
-        }
+        if (myEvents != null)
+            for (event in sortEventsForMyEventPage(myEvents)) {
+                res.add(mapToMyEventsResponseEntity(event, person))
+            }
         return res
     }
 
@@ -172,9 +181,10 @@ class EventService {
         }
     }
 
-    fun getItems(id: Long): List<ItemResponseEntity> {
-        val items = eventRepo.findById(id).get().items
-        return items.map { mapToItemResponseEntity(it) }
+    fun getItems(id: Long, pageable: Pageable): List<ItemResponseEntity> {
+//        val items = eventRepo.findById(id).get().items
+        val items = itemRepo.findAllByEvent(eventRepo.findById(id).get(), pageable)
+        return items.toList().map { mapToItemResponseEntity(it) }
     }
 
     fun editItems(id: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
@@ -209,11 +219,7 @@ class EventService {
         }
     }
 
-    private fun sortEventsForMainPage(events: List<Event>): List<Event> {
-        return events.sortedWith(compareBy({ it.date.year }, { it.date.dayOfYear }, { it.membersForFull() }))
-    }
-
-    private fun sortEventsForMyEventPage(events: List<Event>): List<Event> {
+    private fun sortEventsForMyEventPage(events: Page<Event>): List<Event> {
         val activeEvents = mutableListOf<Event>()
         val inactiveEvents = mutableListOf<Event>()
         val resultEvents = mutableListOf<Event>()
@@ -227,23 +233,5 @@ class EventService {
         resultEvents.addAll(activeEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) }))
         resultEvents.addAll(inactiveEvents.sortedWith(compareBy { -it.date.toEpochSecond(ZoneOffset.UTC) }))
         return resultEvents
-    }
-
-    private fun filterEventsForActiveStatus(events: List<Event>): List<Event> {
-        return events.filter { it.isActive() }
-    }
-
-    /** Если у пользователя указан возраст **/
-    private fun filterEventsForAge(events: List<Event>, person: Person): List<Event> {
-        if (person.age == null) {
-            throw Exception("age of this person is null")
-        }
-        return events.filter { it.minAge != null && it.maxAge != null }
-                     .filter { it.minAge!! <= person.age!! && it.maxAge!! >= person.age!! }
-    }
-
-    /** Если пользователь неавторизован или возраст не указан **/
-    private fun filterEventsForNullAge(events: List<Event>): List<Event> {
-        return events.filter { it.minAge == null && it.maxAge == null }
     }
 }

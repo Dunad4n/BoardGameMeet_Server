@@ -4,9 +4,9 @@ import com.example.bgm.controller.dto.*
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.EventService
 import com.example.bgm.services.RequestValidationService
-import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -18,22 +18,22 @@ class EventController {
     @Autowired
     lateinit var eventService: EventService
 
-
-
     @Autowired
     lateinit var requestValidationService: RequestValidationService
 
     /** Event Мероприятия на главной странице **/
     @GetMapping("/events")
     fun allEvents(@RequestBody mainPageEventsRequest: MainPageEventsRequestEntity,
-                  @AuthenticationPrincipal authPerson: JwtPerson): List<MainPageEventResponseEntity>? {
-        return eventService.getMainPageEvents(mainPageEventsRequest.city, mainPageEventsRequest.search, authPerson)
+                  @AuthenticationPrincipal authPerson: JwtPerson?,
+                  @PageableDefault() pageable: Pageable
+    ): List<MainPageEventResponseEntity>? {
+        return eventService.getMainPageEvents(mainPageEventsRequest.city, mainPageEventsRequest.search, pageable, authPerson)
     }
 
     /** Event Мои мероприятия **/
     @GetMapping("/myEvents")
-    fun myEvents(@AuthenticationPrincipal authPerson: JwtPerson): List<MyEventsResponseEntity> {
-        return eventService.getMyEventsPageEvent(authPerson)
+    fun myEvents(@AuthenticationPrincipal authPerson: JwtPerson, @PageableDefault() pageable: Pageable): List<MyEventsResponseEntity> {
+        return eventService.getMyEventsPageEvent(authPerson, pageable)
     }
 
     /** Event Конкретное мероприятие **/
@@ -55,8 +55,8 @@ class EventController {
 
     /** Event Получить все предметы мероприятия **/
     @GetMapping("/getItemsIn/{eventId}")
-    fun getItems(@PathVariable eventId: Long): List<ItemResponseEntity> {
-        return eventService.getItems(eventId)
+    fun getItems(@PathVariable eventId: Long, @PageableDefault() pageable: Pageable): List<ItemResponseEntity> {
+        return eventService.getItems(eventId, pageable)
     }
 
     /** Event Редактировать предметы мероприятия **/
@@ -99,5 +99,4 @@ class EventController {
                   @RequestBody markItemsRequest: MarkItemsRequestEntity) {
         eventService.markItems(eventId, markItemsRequest)
     }
-
 }

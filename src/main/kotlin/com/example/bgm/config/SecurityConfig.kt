@@ -44,7 +44,7 @@ class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeHttpRequests()
-            .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+            .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
             .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/events").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
