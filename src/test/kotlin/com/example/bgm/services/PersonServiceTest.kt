@@ -72,7 +72,7 @@ class PersonServiceTest
         val gender = Gender.MALE
         val userCity = "Voronezh"
         val age = 18
-        val avararId = 1L
+        val avatarId = 1L
 
         val upPersonName = "Ivan1"
         val upPersonNickname = "Vanius1"
@@ -84,7 +84,7 @@ class PersonServiceTest
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
         person.age = age
-        person.avatarId = avararId
+        person.avatarId = avatarId
         val jwtPerson = JwtPerson(person.id, person.nickname, person.password, listOf())
         val upPerson = UpdatePersonRequestEntity(upPersonName, upPersonNickname, upUserCity, upAge, upGender, upAvatarId)
 
@@ -112,9 +112,6 @@ class PersonServiceTest
         val maxPersonCount = 10
         val address = "address"
         val date = LocalDateTime.now()
-        val minAge = 18
-        val maxAge = 25
-        val description = "gogogo"
 
         val personName = "Ivan"
         val personNickname = "Vanius"
