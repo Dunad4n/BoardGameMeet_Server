@@ -112,7 +112,10 @@ class PersonService {
         }
     }
 
-    fun leaveFromEvent(userId: Long, eventId: Long) {
+    fun leaveFromEvent(userId: Long?, eventId: Long?) {
+        if (userId == null) {
+            throw Exception("user id can not be null")
+        }
         val person = personRepo.findById(userId).get()
         val event = eventRepo.findById(eventId).get()
         if (event.members.contains(person) && event.host.id != person.id) {

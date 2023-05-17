@@ -1,8 +1,10 @@
 package com.example.bgm.services
 
+import com.example.bgm.controller.dto.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.enums.Gender
+import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
@@ -55,6 +57,47 @@ class PersonServiceTest
         assertThat(person.secretWord, `is`(equalTo(secretWord)))
         assertThat(person.gender, `is`(equalTo(gender)))
         assertThat(person.city, `is`(equalTo(userCity)))
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    //complete (уточнить у дена про обязательность возраста и аватара)
+    fun updatePersonTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+        val age = 18
+        val avararId = 1L
+
+        val upPersonName = "Ivan1"
+        val upPersonNickname = "Vanius1"
+        val upAge = 20
+        val upAvatarId = 2L
+        val upGender = Gender.MALE
+        val upUserCity = "Voronezh1"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        person.age = age
+        person.avatarId = avararId
+        val jwtPerson = JwtPerson(person.id, person.nickname, person.password, listOf())
+        val upPerson = UpdatePersonRequestEntity(upPersonName, upPersonNickname, upUserCity, upAge, upGender, upAvatarId)
+
+        /** when **/
+        personService.updatePerson(upPerson, jwtPerson)
+
+        /** then **/
+        assertThat(person.name, `is`(equalTo(upPersonName)))
+        assertThat(person.nickname, `is`(equalTo(upPersonNickname)))
+        assertThat(person.city, `is`(equalTo(upUserCity)))
+        assertThat(person.age, `is`(equalTo(upAge)))
+        assertThat(person.avatarId, `is`(equalTo(upAvatarId)))
+
     }
 
     @Test
@@ -178,7 +221,7 @@ class PersonServiceTest
     @Test
     @Rollback
     @Transactional
-    //complete
+    // TODO: assert exception 
     fun joinToEventTest() {
         /** given **/
         val personName = "Ivan"
@@ -225,9 +268,47 @@ class PersonServiceTest
         assertThat(event.members[0].secretWord, `is`(equalTo(secretWord)))
         assertThat(event.members[0].gender, `is`(equalTo(gender)))
         assertThat(event.members[0].city, `is`(equalTo(userCity)))
+    }
 
+    @Test
+    @Rollback
+    @Transactional
+    //complete
+    fun leaveFromEventTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
 
+        val personName1 = "Ivan1"
 
+        val name = "event"
+        val game = "game"
+        val city = "Voronezh"
+        val maxPersonCount = 10
+        val address = "address"
+        val date = LocalDateTime.now()
+        val minAge = 18
+        val maxAge = 25
+        val description = "gogogo"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val person1 = personRepo.save(Person(personName1, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
+        eventRepo.flush()
+        event.members.add(person)
+        event.members.add(person1)
+
+        /** when **/
+        personService.leaveFromEvent(person1.id, event.id)
+
+        /** then **/
+        assertThat(event.members.size, `is`(equalTo(1)))
     }
 }
 
