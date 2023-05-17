@@ -24,7 +24,7 @@ class SwaggerConfig {
                     )
             )
             .info(
-                Info().title("Backend of University timetable app")
+                Info().title("BoardGameMeet")
                     .version(0.1.toString())
             )
     }

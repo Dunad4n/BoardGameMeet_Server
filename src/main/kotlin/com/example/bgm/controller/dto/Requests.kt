@@ -47,12 +47,13 @@ data class CreatePersonRequestEntity(val name: String,
                                      val password: String,
                                      val secretWord: String,
                                      val gender: Gender,
-                                     val city: String)
+                                     val city: String,
+                                     val age: Int?)
 
 data class UpdatePersonRequestEntity(val name: String,
                                      val nickname: String,
                                      val city: String,
-                                     val age: Int,
+                                     val age: Int?,
                                      val gender: Gender,
                                      val avatarId: Long)
 
