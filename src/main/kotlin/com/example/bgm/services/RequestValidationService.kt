@@ -128,9 +128,11 @@ class RequestValidationService {
             return false
         }
         // можно добавить проверки на max значение
-        if(request.age < 0) {
-            message = "minAge must bo positive"
-            return false
+        if(request.age != null) {
+            if (request.age < 0 || request.age > 100) {
+                message = "the age can not be less than 0 and greatest than 100"
+                return false
+            }
         }
         return true
     }
@@ -155,6 +157,12 @@ class RequestValidationService {
         if(request.password.length > 255) {
             message = "the password must be shorter than 255 characters"
             return false
+        }
+        if(request.age != null) {
+            if (request.age < 0 || request.age > 100) {
+                message = "the age can not be less than 0 and greatest than 100"
+                return false
+            }
         }
         return true
     }

@@ -39,16 +39,14 @@ class AuthService {
 
     fun createPerson(createPersonRequest: CreatePersonRequestEntity, role: Role) {
         if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
-            personRepo.save(
-                Person(
-                    createPersonRequest.name,
-                    createPersonRequest.nickname,
-                    passwordEncoder.encode(createPersonRequest.password),
-                    createPersonRequest.secretWord,
-                    createPersonRequest.gender,
-                    createPersonRequest.city
-                )
-            )
+            val person = Person(createPersonRequest.name,
+                                createPersonRequest.nickname,
+                                passwordEncoder.encode(createPersonRequest.password),
+                                createPersonRequest.secretWord,
+                                createPersonRequest.gender,
+                                createPersonRequest.city)
+            person.age = createPersonRequest.age
+            personRepo.save(person)
         } else {
             throw Exception("this nickname is occupied")
         }

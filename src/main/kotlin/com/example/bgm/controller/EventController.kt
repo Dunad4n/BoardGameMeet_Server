@@ -4,6 +4,8 @@ import com.example.bgm.controller.dto.*
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.EventService
 import com.example.bgm.services.RequestValidationService
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -24,8 +26,7 @@ class EventController {
     /** Event Мероприятия на главной странице **/
     @GetMapping("/events")
     fun allEvents(@RequestBody mainPageEventsRequest: MainPageEventsRequestEntity,
-                  @AuthenticationPrincipal authPerson: JwtPerson?
-    ): List<MainPageEventResponseEntity>? {
+                  @AuthenticationPrincipal authPerson: JwtPerson): List<MainPageEventResponseEntity>? {
         return eventService.getMainPageEvents(mainPageEventsRequest.city, mainPageEventsRequest.search, authPerson)
     }
 
