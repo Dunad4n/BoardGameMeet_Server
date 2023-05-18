@@ -140,9 +140,9 @@ class EventService {
             if (person != null) {
                 events = if(person.age != null) {
                     if (search != null) {
-                        eventRepo.findAllByCityAndNameContainingAndMinAgeBeforeAndMaxAgeAfterAndDateAfter(city, search, person.age!!, person.age!!, pageable)
+                        eventRepo.findAllByCityAndNameContainingAndMinAgeLessThanEqualAndMaxAgeGreaterThanEqualAndMembersNotContainingAndDateAfter(city, search, person.age!!, person.age!!, pageable, person)
                     } else {
-                        eventRepo.findAllByCityAndMinAgeBeforeAndMaxAgeAfterAndDateAfter(city, person.age!!, person.age!!, pageable)
+                        eventRepo.findAllByCityAndMinAgeLessThanEqualAndMaxAgeGreaterThanEqualAndMembersNotContainingAndDateAfter(city, person.age!!, person.age!!, pageable, person)
                     }
                 } else{
                     if (search != null) {

@@ -25,9 +25,9 @@ interface EventRepo: JpaRepository<Event, Long> {
     // поиск
     fun findAllByCityAndNameContainingAndDateAfter(city: String, name: String, pageable: Pageable, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
     // возраст
-    fun findAllByCityAndNameContainingAndMinAgeBeforeAndMaxAgeAfterAndDateAfter(city: String, name: String, minAge: Int, maxAge: Int, pageable: Pageable, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
+    fun findAllByCityAndNameContainingAndMinAgeLessThanEqualAndMaxAgeGreaterThanEqualAndMembersNotContainingAndDateAfter(city: String, name: String, minAge: Int, maxAge: Int, pageable: Pageable, person: Person, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
     // возраст и поиск
-    fun findAllByCityAndMinAgeBeforeAndMaxAgeAfterAndDateAfter(city: String, minAge: Int, maxAge: Int, pageable: Pageable, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
+    fun findAllByCityAndMinAgeLessThanEqualAndMaxAgeGreaterThanEqualAndMembersNotContainingAndDateAfter(city: String, minAge: Int, maxAge: Int, pageable: Pageable, person: Person, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
 
     fun findAllByMembersContains(person: Person, pageable: Pageable): Page<Event>?
 
