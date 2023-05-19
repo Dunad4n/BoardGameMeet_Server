@@ -23,11 +23,15 @@ class EventController {
 
     /** Event Мероприятия на главной странице **/
     @GetMapping("/events")
-    fun allEvents(@RequestBody mainPageEventsRequest: MainPageEventsRequestEntity,
+    fun allEvents(@RequestParam city: String,
+                  @RequestParam search: String,
                   @AuthenticationPrincipal authPerson: JwtPerson?,
                   @PageableDefault() pageable: Pageable
     ): List<MainPageEventResponseEntity>? {
-        return eventService.getMainPageEvents(mainPageEventsRequest.city, mainPageEventsRequest.search, pageable, authPerson)
+        if (search == "null") {
+            return eventService.getMainPageEvents(city, null, pageable, authPerson)
+        }
+        return eventService.getMainPageEvents(city, search, pageable, authPerson)
     }
 
     /** Event Мои мероприятия **/
@@ -73,8 +77,10 @@ class EventController {
 
     /** Event забанить пользователя в мероприятии **/
     @PostMapping("/banPerson")
-    fun banPerson(@RequestBody eventId: Long, @RequestBody userNickname: String) {
-        eventService.banPerson(eventId, userNickname)
+    fun banPerson(@RequestBody eventId: Long,
+                  @RequestBody userNickname: String,
+                  @AuthenticationPrincipal authPerson: JwtPerson) {
+        eventService.banPerson(eventId, userNickname, authPerson)
     }
 
     /** Event Удалить мероприятие **/

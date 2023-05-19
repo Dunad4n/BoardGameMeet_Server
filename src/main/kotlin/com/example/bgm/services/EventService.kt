@@ -174,10 +174,18 @@ class EventService {
         return res
     }
 
-    fun banPerson(eventId: Long, userNickname: String) {
+    fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson) {
+        val host = personRepo.findByNickname(authPerson.username)
+        val event = eventRepo.findById(eventId).get()
+        if (host != event.host) {
+            throw Exception("only host can ban person")
+        }
         val user = personRepo.findByNickname(userNickname)
         if (user != null) {
-            eventRepo.findById(eventId).get().ban(user)
+            if (user == host) {
+                throw Exception("host can not be banned")
+            }
+            event.ban(user)
         }
     }
 
@@ -190,7 +198,7 @@ class EventService {
     fun editItems(id: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
         val event = eventRepo.findById(id).get()
         if(hostId != event.host.id) {
-            throw Exception("this person can not edit chosen event")
+            throw Exception("only host can edit items")
         }
         if(editItemsRequest.size < event.items.size) {
             for (i in editItemsRequest.size until event.items.size) {

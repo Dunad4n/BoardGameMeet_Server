@@ -36,7 +36,7 @@ data class UpdateEventRequest(val id: Long?,
 data class EditItemsRequestEntity(val name: String,
                                   val marked: Boolean)
 
-data class MarkItemsRequestEntity(@JsonProperty("markedStatus") val markedStatuses: List<Boolean>)
+data class MarkItemsRequestEntity(@JsonProperty("markedStatuses") val markedStatuses: List<Boolean>)
 
 /**
  * Person
