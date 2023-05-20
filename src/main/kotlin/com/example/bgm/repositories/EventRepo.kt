@@ -11,4 +11,5 @@ interface EventRepo: JpaRepository<Event, Long> {
     fun findAllByCity(city: String): List<Event>?
     fun findAllByCityAndName(city: String, name: String): List<Event>?
     fun findById(id: Long?): Optional<Event>
+    fun existsById(id: Long?): Boolean
 }

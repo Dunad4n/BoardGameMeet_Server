@@ -135,11 +135,14 @@ class EventService(
         eventRepo.save(event)
     }
 
-    fun deleteEvent(id: Long, authPerson: JwtPerson) {
-        if (authPerson.id != eventRepo.findById(id).get().host.id &&
-            personRepo.findByNickname(authPerson.username)?.roles?.
-            contains(roleRepo.findByName("ROLE_ADMIN")) == false) {
+    fun deleteEvent(id: Long?, authPerson: JwtPerson) {
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+        if (person.id != eventRepo.findById(id).get().host.id && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             throw Exception("this person can not delete event with id $id")
+        }
+        if (id == null) {
+            throw Exception("id can not be null")
         }
         eventRepo.deleteById(id)
     }
@@ -195,12 +198,12 @@ class EventService(
         }
     }
 
-    fun getItems(id: Long): List<ItemResponseEntity> {
+    fun getItems(id: Long?): List<ItemResponseEntity> {
         val items = eventRepo.findById(id).get().items
         return items.map { mapToItemResponseEntity(it) }
     }
 
-    fun editItems(id: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
+    fun editItems(id: Long?, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
         val event = eventRepo.findById(id).get()
         if(hostId != event.host.id) {
             throw Exception("this person can not edit chosen event")
@@ -222,7 +225,7 @@ class EventService(
         eventRepo.save(event)
     }
 
-    fun markItems(eventId: Long, markItemsRequest: MarkItemsRequestEntity) {
+    fun markItems(eventId: Long?, markItemsRequest: MarkItemsRequestEntity) {
         val event = eventRepo.findById(eventId).get()
         if(markItemsRequest.markedStatuses.size < event.items.size) {
             throw Exception("incorrect size of marked statuses")

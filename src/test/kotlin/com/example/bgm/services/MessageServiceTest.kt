@@ -85,8 +85,8 @@ class MessageServiceTest
 
         val event = eventRepo.save(Event(name, game, city, address, eventDate, maxPersonCount, person))
         eventRepo.flush()
-
-        val message = messageRepo.save(Message(text, messageDate, person))
+        val msg = Message(text, messageDate, person)
+        val message = messageRepo.save(msg)
         messageRepo.flush()
 
         event.messages.add(message)

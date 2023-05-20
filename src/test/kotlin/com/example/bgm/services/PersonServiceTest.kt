@@ -10,8 +10,12 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -97,9 +101,9 @@ class PersonServiceTest
         assertThat(person.city, `is`(equalTo(upUserCity)))
         assertThat(person.age, `is`(equalTo(upAge)))
         assertThat(person.avatarId, `is`(equalTo(upAvatarId)))
-
     }
 
+    // TODO: delete test(exceptions)
     @Test
     @Rollback
     @Transactional
@@ -306,6 +310,70 @@ class PersonServiceTest
 
         /** then **/
         assertThat(event.members.size, `is`(equalTo(1)))
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    // TODO: как сравнивать 
+    fun validateSecretWordTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "cat"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val personName1 = "Ivan1"
+        val personNickname1 = "Vanius1"
+        val personPassword1 = "12341"
+        val secretWord1 = "dog"
+        val gender1 = Gender.MALE
+        val userCity1 = "Voronezh"
+
+        val authPerson = JwtPerson(1L, "Vanius", "1234", listOf())
+        val authPerson1 = JwtPerson(2L, "Vanius1", "12341", listOf())
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val person1 = personRepo.save(Person(personName1, personNickname1, personPassword1, secretWord1, gender1, userCity1))
+        personRepo.flush()
+
+        val response = personService.validateSecretWord("cat", authPerson)
+        val response1 = personService.validateSecretWord("cat", authPerson1)
+
+        assertThat(response.body, `is`(equalTo("correct secret word")))
+        assertThat(response1.body, `is`(equalTo("wrong secret word")))
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    // TODO: спросить дена про сравнение пароля(encoder) 
+    fun changePasswordTest() {
+        /** given **/
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "cat"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val newPass = "newpass"
+        val repeatNewPass = "newpass"
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val authPerson = JwtPerson(1L, "Vanius", "1234", listOf())
+        val encoder = BCryptPasswordEncoder()
+
+
+        /** when **/
+        personService.changePassword(newPass, repeatNewPass, authPerson)
+        val sdf = encoder.encode(newPass)
+
+        /** then **/
+        assertThat(person.password, `is`(equalTo(encoder.encode(newPass))))
     }
 }
 
