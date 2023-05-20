@@ -37,11 +37,6 @@ class JwtTokenProvider {
     @Autowired
     lateinit var personService: PersonService
 
-    @Bean
-    fun passwordEncoder(): BCryptPasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
-
     @PostConstruct
     protected fun init() {
         secret = Base64.getEncoder().encodeToString(secret.toByteArray())

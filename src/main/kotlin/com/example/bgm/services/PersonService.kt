@@ -28,7 +28,8 @@ class PersonService {
     @Autowired
     lateinit var roleRepo: RoleRepo
 
-    var encoder = BCryptPasswordEncoder()
+    @Autowired
+    lateinit var encoder: BCryptPasswordEncoder
 
 
     private fun mapToMemberResponseEntity(person: Person, event: Event): MemberResponseEntity {
