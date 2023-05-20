@@ -24,8 +24,14 @@ class PersonController {
 
     /** Person Профиль пользователя **/
     @GetMapping("/profile/{nickname}")
-    fun profile(@PathVariable nickname: String): ProfileResponseEntity {
+    fun profile(@PathVariable nickname: String,
+                @AuthenticationPrincipal authPerson: JwtPerson): ProfileResponseEntity {
         return personService.getProfile(nickname)
+    }
+
+    @GetMapping("/ownProfile")
+    fun ownProfile(@AuthenticationPrincipal authPerson: JwtPerson): ProfileResponseEntity {
+        return personService.getProfile(authPerson.username)
     }
 
     /** Person Покинуть мероприятие **/
