@@ -24,8 +24,7 @@ class PersonController {
 
     /** Person Профиль пользователя **/
     @GetMapping("/profile/{nickname}")
-    fun profile(@PathVariable nickname: String,
-                @AuthenticationPrincipal authPerson: JwtPerson): ProfileResponseEntity {
+    fun profile(@PathVariable nickname: String): ProfileResponseEntity {
         return personService.getProfile(nickname)
     }
 
