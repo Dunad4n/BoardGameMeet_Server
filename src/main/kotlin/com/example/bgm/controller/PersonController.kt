@@ -2,6 +2,7 @@ package com.example.bgm.controller
 
 import com.example.bgm.controller.dto.*
 import com.example.bgm.jwt.JwtPerson
+import com.example.bgm.jwt.JwtTokenProvider
 import com.example.bgm.services.PersonService
 import com.example.bgm.services.RequestValidationService
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +22,9 @@ class PersonController {
 
     @Autowired
     lateinit var requestValidationService: RequestValidationService
+
+    @Autowired
+    lateinit var jwtTokenProvider: JwtTokenProvider
 
     /** Person Профиль пользователя **/
     @GetMapping("/profile/{nickname}")
@@ -75,12 +79,12 @@ class PersonController {
     @PutMapping("/updatePerson")
     fun updatePerson(@RequestBody request: UpdatePersonRequestEntity,
                      @AuthenticationPrincipal authPerson: JwtPerson
-    ) {
+    ): String {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
             )
-        personService.updatePerson(request, authPerson)
+        return personService.updatePerson(request, authPerson, jwtTokenProvider)
     }
 
     /** Person Проверить валидность секретного слова **/

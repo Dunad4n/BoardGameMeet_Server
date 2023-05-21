@@ -5,16 +5,21 @@ import com.example.bgm.controller.dto.ProfileResponseEntity
 import com.example.bgm.controller.dto.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
+import com.example.bgm.entities.jwt.Token
 import com.example.bgm.jwt.JwtPerson
+import com.example.bgm.jwt.JwtTokenProvider
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
+import com.example.bgm.repositories.jwt.TokenRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class PersonService {
@@ -27,6 +32,9 @@ class PersonService {
 
     @Autowired
     lateinit var roleRepo: RoleRepo
+
+    @Autowired
+    lateinit var tokenRepo: TokenRepo
 
     @Autowired
     lateinit var encoder: BCryptPasswordEncoder
@@ -55,15 +63,26 @@ class PersonService {
     /**
      * обсудить реквесты save update
      */
-    fun updatePerson(updateRequest: UpdatePersonRequestEntity, authPerson: JwtPerson) {
+    @Transactional
+    fun updatePerson(updateRequest: UpdatePersonRequestEntity,
+                     authPerson: JwtPerson,
+                     jwtTokenProvider: JwtTokenProvider): String {
         val person = personRepo.findByNickname(authPerson.username)
-            ?: throw Exception("person with nickaname ${authPerson.username} does not exist")
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         person.name = updateRequest.name
         person.nickname = updateRequest.nickname
         person.city = updateRequest.city
         person.age = updateRequest.age
+        person.gender = updateRequest.gender
         person.avatarId = updateRequest.avatarId
         personRepo.save(person)
+
+        tokenRepo.deleteAllByPerson(person)
+        val token = jwtTokenProvider.createToken(person.nickname, person.roles)
+        SecurityContextHolder.getContext().authentication = jwtTokenProvider.getAuthentication(token)
+        tokenRepo.save(Token(token, person))
+
+        return token
     }
 
     fun deletePerson(nickname: String, authPerson: JwtPerson) {

@@ -18,6 +18,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AuthService {
@@ -52,6 +53,7 @@ class AuthService {
         }
     }
 
+    @Transactional
     fun login(authenticationRequest: AuthenticationRequestEntity): AuthenticationResponseEntity {
         return try {
             val nickname = authenticationRequest.nickname
@@ -59,6 +61,7 @@ class AuthService {
             val person: Person = personRepo.findByNickname(nickname)
                 ?: throw UsernameNotFoundException("Person with nickname: $nickname not found")
             val token = jwtTokenProvider.createToken(nickname, person.roles)
+            tokenRepo.deleteAllByPerson(person)
             tokenRepo.save(Token(token, person))
             AuthenticationResponseEntity(nickname, token, person.getStringRole())
         } catch (e: AuthenticationException) {
