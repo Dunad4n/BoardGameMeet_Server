@@ -72,7 +72,7 @@ class PersonController {
     }
 
     /** Person Редактировать профиль **/
-    @PostMapping("/updatePerson")
+    @PutMapping("/updatePerson")
     fun updatePerson(@RequestBody request: UpdatePersonRequestEntity,
                      @AuthenticationPrincipal authPerson: JwtPerson
     ) {

@@ -24,7 +24,7 @@ class EventController {
     /** Event Мероприятия на главной странице **/
     @GetMapping("/events")
     fun allEvents(@RequestParam city: String,
-                  @RequestParam search: String,
+                  @RequestParam(required = false) search: String,
                   @AuthenticationPrincipal authPerson: JwtPerson?,
                   @PageableDefault() pageable: Pageable
     ): List<MainPageEventResponseEntity>? {
