@@ -66,7 +66,7 @@ class PersonService {
     @Transactional
     fun updatePerson(updateRequest: UpdatePersonRequestEntity,
                      authPerson: JwtPerson,
-                     jwtTokenProvider: JwtTokenProvider): String {
+                     jwtTokenProvider: JwtTokenProvider): Map<String, String> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         person.name = updateRequest.name
@@ -82,7 +82,9 @@ class PersonService {
         SecurityContextHolder.getContext().authentication = jwtTokenProvider.getAuthentication(token)
         tokenRepo.save(Token(token, person))
 
-        return token
+        val response = mutableMapOf<String, String>()
+        response["token"] = token
+        return response
     }
 
     fun deletePerson(nickname: String, authPerson: JwtPerson) {

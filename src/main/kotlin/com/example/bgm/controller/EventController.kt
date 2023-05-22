@@ -24,13 +24,10 @@ class EventController {
     /** Event Мероприятия на главной странице **/
     @GetMapping("/events")
     fun allEvents(@RequestParam city: String,
-                  @RequestParam(required = false) search: String,
+                  @RequestParam(required = false) search: String?,
                   @AuthenticationPrincipal authPerson: JwtPerson?,
                   @PageableDefault() pageable: Pageable
     ): List<MainPageEventResponseEntity>? {
-        if (search == "null") {
-            return eventService.getMainPageEvents(city, null, pageable, authPerson)
-        }
         return eventService.getMainPageEvents(city, search, pageable, authPerson)
     }
 
