@@ -141,19 +141,19 @@ class PersonService {
         }
     }
 
-    fun validateSecretWord(secretWord: String, authPerson: JwtPerson): ResponseEntity<String> {
-        if (!personRepo.findByNickname(authPerson.username)?.secretWord.equals(secretWord)) {
+    fun validateSecretWord(secretWord: String, nickname: String): ResponseEntity<String> {
+        if (!personRepo.findByNickname(nickname)?.secretWord.equals(secretWord)) {
             return ResponseEntity.badRequest().body("wrong secret word")
         }
         return ResponseEntity.ok("correct secret word")
     }
 
-    fun changePassword(newPassword: String, repeatNewPassword: String, authPerson: JwtPerson) {
+    fun changePassword(nickname: String, newPassword: String, repeatNewPassword: String) {
         if (newPassword != repeatNewPassword) {
             throw Exception("passwords is not equals")
         }
-        val person = personRepo.findByNickname(authPerson.username)
-            ?: throw Exception("can not find person with nickname ${authPerson.username}")
+        val person = personRepo.findByNickname(nickname)
+            ?: throw Exception("can not find person with nickname $nickname")
         person.password = encoder.encode(newPassword)
         personRepo.save(person)
     }

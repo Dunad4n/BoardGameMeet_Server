@@ -56,7 +56,7 @@ class EventService {
                                  event.host == user)
     }
 
-    private fun mapToEventResponseEntity(event: Event, items: List<ItemResponseEntity>): EventResponseEntity {
+    private fun mapToEventResponseEntity(event: Event, items: List<ItemResponseEntity>, person: Person): EventResponseEntity {
         return EventResponseEntity(event.id,
                                    event.name,
                                    event.game,
@@ -67,7 +67,8 @@ class EventService {
                                    event.minAge,
                                    event.maxAge,
                                    event.description,
-                                   items)
+                                   items,
+                                   event.host == person)
     }
 
     private fun mapToItemResponseEntity(item: Item): ItemResponseEntity {
@@ -75,10 +76,12 @@ class EventService {
                                   item.marked)
     }
 
-    fun getEvent(id: Long): EventResponseEntity {
+    fun getEvent(id: Long, authPerson: JwtPerson): EventResponseEntity {
         val event = eventRepo.findById(id).get()
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         val items = event.items
-        return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) })
+        return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) }, person)
     }
 
     fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?) {

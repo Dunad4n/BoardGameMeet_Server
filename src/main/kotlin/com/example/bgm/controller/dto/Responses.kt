@@ -37,7 +37,8 @@ data class EventResponseEntity(val id: Long?,
                                val ageMin: Int?,
                                val ageMax: Int?,
                                val description: String,
-                               val items: List<ItemResponseEntity>)
+                               val items: List<ItemResponseEntity>,
+                               val host: Boolean)
 
 data class ItemResponseEntity(val name: String,
                               val marked: Boolean)

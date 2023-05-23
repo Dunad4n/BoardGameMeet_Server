@@ -65,7 +65,8 @@ data class AuthenticationRequestEntity(val nickname: String,
 data class ValidateSecretWordRequestEntity(@JsonProperty("secretWord")val secretWord: String)
 
 data class ChangePasswordRequestEntity(val newPassword: String,
-                                       val repeatNewPassword: String)
+                                       val repeatNewPassword: String,
+                                       val nickname: String)
 
 /**
  * Message

@@ -39,8 +39,8 @@ class EventController {
 
     /** Event Конкретное мероприятие **/
     @GetMapping("/event/{eventId}")
-    fun event(@PathVariable eventId: Long): EventResponseEntity {
-        return eventService.getEvent(eventId)
+    fun event(@PathVariable eventId: Long, @AuthenticationPrincipal authPerson: JwtPerson): EventResponseEntity {
+        return eventService.getEvent(eventId, authPerson)
     }
 
     /** Event создание мероприятия **/

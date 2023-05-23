@@ -45,7 +45,7 @@ class SecurityConfig {
             .and()
             .authorizeHttpRequests()
             .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
-            .requestMatchers("/auth/**").permitAll()
+            .requestMatchers("/auth/**", "/validateSecretWord", "/changePassword").permitAll()
             .requestMatchers("/events").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
