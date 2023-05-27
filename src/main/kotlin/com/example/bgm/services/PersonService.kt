@@ -1,5 +1,6 @@
 package com.example.bgm.services
 
+import com.example.bgm.controller.dto.IsMyProfileResponseEntity
 import com.example.bgm.controller.dto.MemberResponseEntity
 import com.example.bgm.controller.dto.ProfileResponseEntity
 import com.example.bgm.controller.dto.UpdatePersonRequestEntity
@@ -156,6 +157,11 @@ class PersonService {
             ?: throw Exception("can not find person with nickname $nickname")
         person.password = encoder.encode(newPassword)
         personRepo.save(person)
+    }
+
+    fun isMyProfile(nickname: String, authPerson: JwtPerson): IsMyProfileResponseEntity {
+        val status = nickname == authPerson.username
+        return IsMyProfileResponseEntity(status)
     }
 
 //    fun register(person: Person): Person? {

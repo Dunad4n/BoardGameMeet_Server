@@ -190,6 +190,7 @@ class EventService {
             }
             event.ban(user)
         }
+        eventRepo.save(event);
     }
 
     fun getItems(id: Long, pageable: Pageable): List<ItemResponseEntity> {

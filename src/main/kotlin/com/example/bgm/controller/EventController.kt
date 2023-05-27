@@ -73,11 +73,10 @@ class EventController {
     }
 
     /** Event забанить пользователя в мероприятии **/
-    @PostMapping("/banPerson")
-    fun banPerson(@RequestBody eventId: Long,
-                  @RequestBody userNickname: String,
+    @PostMapping("/kickPerson")
+    fun banPerson(@RequestBody kickPersonRequest: KickPersonRequestEntity,
                   @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.banPerson(eventId, userNickname, authPerson)
+        eventService.banPerson(kickPersonRequest.eventId, kickPersonRequest.userNickname, authPerson)
     }
 
     /** Event Удалить мероприятие **/

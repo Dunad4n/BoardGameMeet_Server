@@ -1,6 +1,7 @@
 package com.example.bgm.controller.dto
 
 import com.example.bgm.entities.enums.Gender
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDateTime
 
 /**
@@ -62,6 +63,8 @@ data class MemberResponseEntity(val nickname: String,
 data class AuthenticationResponseEntity(val nickname: String,
                                         val token: String,
                                         val role: String)
+
+data class IsMyProfileResponseEntity(@JsonProperty("isMyProfile")val isMyProfile: Boolean)
 
 /**
  * Message

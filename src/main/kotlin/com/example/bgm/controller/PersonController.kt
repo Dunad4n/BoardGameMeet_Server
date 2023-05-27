@@ -89,10 +89,10 @@ class PersonController {
 
     /** Person Проверить валидность секретного слова **/
     @PostMapping("/validateSecretWord")
-    fun validateSecretWord(@RequestBody nickname: String,
-                           @RequestBody secretWord: String,
+    fun validateSecretWord(@RequestBody validateSecretWordRequest: ValidateSecretWordRequestEntity
     ): ResponseEntity<String> {
-        return personService.validateSecretWord(secretWord, nickname)
+        return personService.validateSecretWord(validateSecretWordRequest.secretWord,
+                                                validateSecretWordRequest.nickname)
     }
 
     /** Person Сменить пароль **/
@@ -101,6 +101,12 @@ class PersonController {
     ) {
         return personService.changePassword(changePasswordRequest.newPassword,
             changePasswordRequest.repeatNewPassword, changePasswordRequest.nickname)
+    }
+
+    @GetMapping("/isProfileOf/{nickname}")
+    fun isMyProfile(@PathVariable(name = "nickname") nickname: String,
+                    @AuthenticationPrincipal authPerson: JwtPerson): IsMyProfileResponseEntity {
+        return personService.isMyProfile(nickname, authPerson)
     }
 
 }

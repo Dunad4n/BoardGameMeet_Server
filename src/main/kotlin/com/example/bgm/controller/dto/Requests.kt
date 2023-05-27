@@ -38,6 +38,9 @@ data class EditItemsRequestEntity(val name: String,
 
 data class MarkItemsRequestEntity(@JsonProperty("markedStatuses") val markedStatuses: List<Boolean>)
 
+data class KickPersonRequestEntity(val eventId: Long,
+                                   val userNickname: String)
+
 /**
  * Person
  */
@@ -62,7 +65,8 @@ data class JoinOrLeaveEventRequestEntity(@JsonProperty("eventId")val eventId: Lo
 data class AuthenticationRequestEntity(val nickname: String,
                                        val password: String)
 
-data class ValidateSecretWordRequestEntity(@JsonProperty("secretWord")val secretWord: String)
+data class ValidateSecretWordRequestEntity(val secretWord: String,
+                                           val nickname: String)
 
 data class ChangePasswordRequestEntity(val newPassword: String,
                                        val repeatNewPassword: String,
