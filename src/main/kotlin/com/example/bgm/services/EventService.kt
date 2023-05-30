@@ -103,8 +103,11 @@ class EventService {
         eventRepo.save(event)
     }
 
-    fun updateEvent(updateRequest: UpdateEventRequest) {
-        val event = eventRepo.findById(updateRequest.id).get()
+    fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson) {
+        val event = eventRepo.findEventById(updateRequest.id).get()
+        if (personRepo.findByNickname(authPerson.username) != event.host) {
+            throw Exception("only host can edit event")
+        }
         event.name = updateRequest.name
         event.game = updateRequest.game
         event.city = updateRequest.city
@@ -193,7 +196,12 @@ class EventService {
         eventRepo.save(event);
     }
 
-    fun getItems(id: Long, pageable: Pageable): List<ItemResponseEntity> {
+    fun getItems(id: Long, pageable: Pageable, authPerson: JwtPerson): List<ItemResponseEntity> {
+        val event = eventRepo.findById(id).get()
+        val person = personRepo.findByNickname(authPerson.username)
+        if (!event.members.contains(person)) {
+            throw Exception("only members can get items")
+        }
 //        val items = eventRepo.findById(id).get().items
         val items = itemRepo.findAllByEvent(eventRepo.findById(id).get(), pageable)
         return items.toList().map { mapToItemResponseEntity(it) }
@@ -221,8 +229,12 @@ class EventService {
         eventRepo.save(event)
     }
 
-    fun markItems(eventId: Long, markItemsRequest: MarkItemsRequestEntity) {
+    fun markItems(eventId: Long, markItemsRequest: MarkItemsRequestEntity, authPerson: JwtPerson) {
+        val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
+        if (!event.members.contains(person)) {
+            throw Exception("only member can mark items")
+        }
         if(markItemsRequest.markedStatuses.size < event.items.size) {
             throw Exception("incorrect size of marked statuses")
         }

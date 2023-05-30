@@ -2,6 +2,7 @@ package com.example.bgm.controller.dto
 
 import com.example.bgm.entities.enums.Gender
 import com.fasterxml.jackson.annotation.JsonProperty
+import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 
@@ -63,7 +64,10 @@ data class UpdatePersonRequestEntity(val name: String,
 data class JoinOrLeaveEventRequestEntity(@JsonProperty("eventId")val eventId: Long)
 
 data class AuthenticationRequestEntity(val nickname: String,
-                                       val password: String)
+                                       val password: String) {
+
+    constructor(): this("", "")
+}
 
 data class ValidateSecretWordRequestEntity(val secretWord: String,
                                            val nickname: String)
@@ -72,9 +76,12 @@ data class ChangePasswordRequestEntity(val newPassword: String,
                                        val repeatNewPassword: String,
                                        val nickname: String)
 
+data class VerifyTokenRequestEntity(val token: String,
+                                    val nickname: String)
+
 /**
  * Message
  */
 
 data class CreateMessageRequestEntity(val text: String,
-                                      val userid: Long)
+                                      val eventId: Long)

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class AuthService {
+open class AuthService {
 
     @Autowired
     lateinit var passwordEncoder: BCryptPasswordEncoder
@@ -54,7 +54,7 @@ class AuthService {
     }
 
     @Transactional
-    fun login(authenticationRequest: AuthenticationRequestEntity): AuthenticationResponseEntity {
+    open fun login(authenticationRequest: AuthenticationRequestEntity): AuthenticationResponseEntity {
         return try {
             val nickname = authenticationRequest.nickname
             authenticationManager.authenticate(UsernamePasswordAuthenticationToken(nickname, authenticationRequest.password))
@@ -65,6 +65,7 @@ class AuthService {
             tokenRepo.save(Token(token, person))
             AuthenticationResponseEntity(nickname, token, person.getStringRole())
         } catch (e: AuthenticationException) {
+            print(e.message)
             throw BadCredentialsException("Invalid nickname or password")
         }
     }

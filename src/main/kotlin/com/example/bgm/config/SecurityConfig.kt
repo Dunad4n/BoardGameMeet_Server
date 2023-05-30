@@ -23,20 +23,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig {
+open class SecurityConfig {
 
     @Autowired
     lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Bean
     @Throws(Exception::class)
-    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
+    open fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
         return authenticationConfiguration.authenticationManager
     }
 
     @Bean
     @Throws(Exception::class)
-    fun configure(http: HttpSecurity): SecurityFilterChain {
+    open fun configure(http: HttpSecurity): SecurityFilterChain {
         return http
             .cors(Customizer.withDefaults<CorsConfigurer<HttpSecurity>>())
             .httpBasic().disable()
@@ -55,7 +55,7 @@ class SecurityConfig {
     }
 
     @Bean
-    fun corsConfigurationSource(): CorsConfigurationSource {
+    open fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf("http://localhost:8080")
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE")

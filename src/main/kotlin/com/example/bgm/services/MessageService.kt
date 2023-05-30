@@ -4,6 +4,7 @@ import com.example.bgm.controller.dto.CreateMessageRequestEntity
 import com.example.bgm.controller.dto.MessageResponseEntity
 import com.example.bgm.entities.Message
 import com.example.bgm.entities.Person
+import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.MessageRepo
 import com.example.bgm.repositories.PersonRepo
@@ -37,8 +38,11 @@ class MessageService {
         return messages
     }
 
-    fun createMessage(createMessageRequest: CreateMessageRequestEntity) {
-        val user = personRepo.findById(createMessageRequest.userid).get()
-        messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), user))
+    fun createMessage(createMessageRequest: CreateMessageRequestEntity, authPerson: JwtPerson): MessageResponseEntity {
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+        val event = eventRepo.findById(createMessageRequest.eventId).get()
+        val message = messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), person, event))
+        return mapToMessageResponseEntity(message, person)
     }
 }

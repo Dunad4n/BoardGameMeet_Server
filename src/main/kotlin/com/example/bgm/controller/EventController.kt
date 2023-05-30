@@ -56,8 +56,10 @@ class EventController {
 
     /** Event Получить все предметы мероприятия **/
     @GetMapping("/getItemsIn/{eventId}")
-    fun getItems(@PathVariable eventId: Long, @PageableDefault() pageable: Pageable): List<ItemResponseEntity> {
-        return eventService.getItems(eventId, pageable)
+    fun getItems(@PathVariable eventId: Long,
+                 @PageableDefault() pageable: Pageable,
+                 @AuthenticationPrincipal authPerson: JwtPerson): List<ItemResponseEntity> {
+        return eventService.getItems(eventId, pageable, authPerson)
     }
 
     /** Event Редактировать предметы мероприятия **/
@@ -87,18 +89,20 @@ class EventController {
 
     /** Event Редактировать мероприятие **/
     @PutMapping("/updateEvent")
-    fun updateEvent(@RequestBody request: UpdateEventRequest) {
+    fun updateEvent(@RequestBody request: UpdateEventRequest,
+                    @AuthenticationPrincipal authPerson: JwtPerson) {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
             )
-        eventService.updateEvent(request)
+        eventService.updateEvent(request, authPerson)
     }
 
     /** Event Отметить предмет **/
     @PutMapping("/markItemsIn/{eventId}")
     fun markItems(@PathVariable eventId: Long,
-                  @RequestBody markItemsRequest: MarkItemsRequestEntity) {
-        eventService.markItems(eventId, markItemsRequest)
+                  @RequestBody markItemsRequest: MarkItemsRequestEntity,
+                  @AuthenticationPrincipal authPerson: JwtPerson) {
+        eventService.markItems(eventId, markItemsRequest, authPerson)
     }
 }

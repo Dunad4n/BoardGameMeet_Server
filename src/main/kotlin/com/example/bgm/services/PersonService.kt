@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class PersonService {
+open class PersonService {
 
     @Autowired
     lateinit var personRepo: PersonRepo
@@ -65,9 +65,9 @@ class PersonService {
      * обсудить реквесты save update
      */
     @Transactional
-    fun updatePerson(updateRequest: UpdatePersonRequestEntity,
-                     authPerson: JwtPerson,
-                     jwtTokenProvider: JwtTokenProvider): Map<String, String> {
+    open fun updatePerson(updateRequest: UpdatePersonRequestEntity,
+                          authPerson: JwtPerson,
+                          jwtTokenProvider: JwtTokenProvider): Map<String, String> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         person.name = updateRequest.name
@@ -162,6 +162,13 @@ class PersonService {
     fun isMyProfile(nickname: String, authPerson: JwtPerson): IsMyProfileResponseEntity {
         val status = nickname == authPerson.username
         return IsMyProfileResponseEntity(status)
+    }
+
+    fun verifyToken(token: String, nickname: String): Boolean {
+        val person = personRepo.findByNickname(nickname)
+            ?: throw Exception("can not find person with nickname $nickname")
+        val tokens = tokenRepo.findAllByPerson(person)
+        return tokens[token.length - 1].value == token
     }
 
 //    fun register(person: Person): Person? {

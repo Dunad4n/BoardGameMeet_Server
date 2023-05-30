@@ -109,4 +109,9 @@ class PersonController {
         return personService.isMyProfile(nickname, authPerson)
     }
 
+    @PostMapping("/verifyToken")
+    fun verifyToken(@RequestBody verifyTokenRequest: VerifyTokenRequestEntity): Boolean {
+        return personService.verifyToken(verifyTokenRequest.token, verifyTokenRequest.nickname)
+    }
+
 }

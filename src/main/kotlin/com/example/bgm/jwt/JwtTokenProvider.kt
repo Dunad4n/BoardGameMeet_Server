@@ -20,7 +20,7 @@ import javax.annotation.PostConstruct
 
 
 @Component
-class JwtTokenProvider {
+open class JwtTokenProvider {
 
     @Value("\${jwt.token.secret}")
     lateinit var secret: String
