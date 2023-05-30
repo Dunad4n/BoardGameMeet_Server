@@ -37,14 +37,18 @@ class RequestValidationService {
             message = "outdated"
             return false
         }
-        // можно добавить проверки на max значение
-        if(request.minAge != null && request.minAge < 0) {
-            message = "minAge must bo positive"
-            return false
+        if (request.minAge!= null) {
+            // можно добавить проверки на max значение
+            if (request.minAge < 0 || request.minAge > 100) {
+                message = "minAge must be grater than 0 or less the 100"
+                return false
+            }
         }
-        if(request.maxAge != null && request.maxAge < 0) {
-            message = "maxAge must bo positive"
-            return false
+        if (request.maxAge != null) {
+            if (request.maxAge < 0 || request.maxAge > 100) {
+                message = "maxAge must be grater than 0 or less the 100"
+                return false
+            }
         }
         if(request.maxPersonCount < 2) {
             message = "maxPersonCount must bo more than 1"
@@ -81,13 +85,17 @@ class RequestValidationService {
             return false
         }
         // можно добавить проверки на max значение
-        if (request.minAge != null && request.minAge < 0) {
-            message = "minAge must be positive"
-            return false
+        if (request.minAge != null) {
+            if (request.minAge < 0 || request.minAge > 100) {
+                message = "minAge must be grater than 0 or less the 100"
+                return false
+            }
         }
-        if(request.maxAge != null && request.maxAge < 0) {
-            message = "maxAge must be positive"
-            return false
+        if (request.maxAge != null) {
+            if (request.maxAge < 0 || request.maxAge > 100) {
+                message = "maxAge must be grater than 0 or less the 100"
+                return false
+            }
         }
         if(request.maxPersonCount < 2) {
             message = "maxPersonCount must bo more than 1"
