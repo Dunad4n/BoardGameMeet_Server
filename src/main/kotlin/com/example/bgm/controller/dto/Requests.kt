@@ -33,8 +33,7 @@ data class UpdateEventRequest(val id: Long?,
                               val maxAge: Int?,
                               val description: String)
 
-data class EditItemsRequestEntity(val itemId: Long,
-                                  val name: String,
+data class EditItemsRequestEntity(val name: String,
                                   val marked: Boolean)
 
 data class MarkItemRequestEntity(val itemId: Long,

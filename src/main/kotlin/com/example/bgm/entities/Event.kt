@@ -75,7 +75,7 @@ data class Event(
     @Column(name = "description")
     lateinit var description: String
 
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], orphanRemoval = true)
     var items = mutableListOf<Item>()
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])

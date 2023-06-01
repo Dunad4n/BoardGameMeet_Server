@@ -238,12 +238,13 @@ class EventService {
             itemRepo.delete(item)
         }
         itemRepo.flush()
-        event.items.clear()
-        event.items = mapToItems(editItemsRequest, event)
+        for(item in mapToItems(editItemsRequest, event)) {
+            itemRepo.save(item)
+        }
 //        for (item in event.items) {
 //            itemRepo.save(item)
 //        }
-        eventRepo.save(event)
+//        eventRepo.save(event)
     }
 
     fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {
