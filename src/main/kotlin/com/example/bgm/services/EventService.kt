@@ -72,6 +72,21 @@ class EventService {
                                    event.host == person)
     }
 
+    private fun mapToCreateEventResponseEntity(event: Event): CreateEventResponseEntity {
+        return CreateEventResponseEntity(event.id,
+                                         event.name,
+                                         event.game,
+                                         event.city,
+                                         event.address,
+                                         event.date,
+                                         event.members.size,
+                                         event.maxPersonCount,
+                                         event.minAge,
+                                         event.maxAge,
+                                         event.description,
+                                         event.host.id)
+    }
+
     private fun mapToItemResponseEntity(item: Item): ItemResponseEntity {
         return ItemResponseEntity(item.id,
                                   item.name,
@@ -97,7 +112,7 @@ class EventService {
         return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) }, person)
     }
 
-    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?) {
+    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?): CreateEventResponseEntity {
         if (hostId == null) {
             throw Exception("person id is null")
         }
@@ -113,7 +128,7 @@ class EventService {
                           createEventRequest.maxAge,
                           createEventRequest.description)
         event.members.add(host)
-        eventRepo.save(event)
+        return mapToCreateEventResponseEntity(eventRepo.save(event))
     }
 
     fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson) {
@@ -129,7 +144,7 @@ class EventService {
         event.maxPersonCount = updateRequest.maxPersonCount
         event.maxAge = updateRequest.maxAge
         event.minAge = updateRequest.minAge
-        event.description = updateRequest.name
+        event.description = updateRequest.description
         eventRepo.save(event)
     }
 
@@ -272,5 +287,23 @@ class EventService {
         resultEvents.addAll(activeEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) }))
         resultEvents.addAll(inactiveEvents.sortedWith(compareBy { -it.date.toEpochSecond(ZoneOffset.UTC) }))
         return resultEvents
+    }
+
+    private fun filterEventsForActiveStatus(events: List<Event>): List<Event> {
+        return events.filter { it.isActive() }
+    }
+
+    /** Если у пользователя указан возраст **/
+    private fun filterEventsForAge(events: List<Event>, person: Person): List<Event> {
+        if (person.age == null) {
+            throw Exception("age of this person is null")
+        }
+        return events.filter { it.minAge != null && it.maxAge != null }
+                     .filter { it.minAge!! <= person.age!! && it.maxAge!! >= person.age!! }
+    }
+
+    /** Если пользователь неавторизован или возраст не указан **/
+    private fun filterEventsForNullAge(events: List<Event>): List<Event> {
+        return events.filter { it.minAge == null && it.maxAge == null }
     }
 }

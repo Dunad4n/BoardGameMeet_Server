@@ -18,9 +18,6 @@ class AuthorizationController {
     @Autowired
     lateinit var authService: AuthService
 
-    @Autowired
-    lateinit var roleRepo: RoleRepo
-
 
     /** Авторизация **/
     @PostMapping("/auth/login")
@@ -38,6 +35,6 @@ class AuthorizationController {
     @PostMapping("/auth/registration")
     @Throws(Exception::class)
     fun registration(@RequestBody createPersonRequest: CreatePersonRequestEntity) {
-        return authService.createPerson(createPersonRequest, roleRepo.findByName("ROLE_USER"))
+        return authService.createPerson(createPersonRequest)
     }
 }

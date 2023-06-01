@@ -73,7 +73,7 @@ data class Event(
     var bannedMembers = mutableListOf<Person>()
 
     @Column(name = "description")
-    lateinit var description: String
+    var description: String = ""
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], orphanRemoval = true)
     var items = mutableListOf<Item>()

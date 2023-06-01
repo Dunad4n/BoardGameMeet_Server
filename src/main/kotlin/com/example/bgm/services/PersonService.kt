@@ -23,16 +23,16 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-open class PersonService {
+class PersonService {
 
     @Autowired
-    lateinit var personRepo: PersonRepo
+    private lateinit var personRepo: PersonRepo
 
     @Autowired
-    lateinit var eventRepo: EventRepo
+    private lateinit var eventRepo: EventRepo
 
     @Autowired
-    lateinit var roleRepo: RoleRepo
+    private lateinit var roleRepo: RoleRepo
 
     @Autowired
     lateinit var tokenRepo: TokenRepo
@@ -57,7 +57,10 @@ open class PersonService {
     }
 
 
-    fun getPerson(id: Long): Person? {
+    fun getPerson(id: Long?): Person? {
+        if (id == null) {
+            throw Exception("id can not be null")
+        }
         return personRepo.findById(id).get()
     }
 
@@ -88,6 +91,7 @@ open class PersonService {
         return response
     }
 
+    @Transactional
     fun deletePerson(nickname: String, authPerson: JwtPerson) {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
@@ -123,12 +127,12 @@ open class PersonService {
     fun joinToEvent(userId: Long, eventId: Long) {
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findById(userId).get()
-        if (!event.bannedMembers.contains(person) && !event.members.contains(person)) {
-            event.addPerson(person)
-            eventRepo.save(event)
-        } else {
-            throw Exception("this person can not join to chosen event")
-        }
+//        if (!event.bannedMembers.contains(person) && !event.members.contains(person)) {
+        event.addPerson(person)
+        eventRepo.save(event)
+//        } else {
+//            throw Exception("this person can not join to chosen event")
+//        }
     }
 
     fun leaveFromEvent(userId: Long, eventId: Long) {

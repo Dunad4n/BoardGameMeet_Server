@@ -9,6 +9,7 @@ import com.example.bgm.entities.jwt.Token
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.jwt.JwtTokenProvider
 import com.example.bgm.repositories.PersonRepo
+import com.example.bgm.repositories.RoleRepo
 import com.example.bgm.repositories.jwt.TokenRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.AuthenticationManager
@@ -24,21 +25,24 @@ import org.springframework.transaction.annotation.Transactional
 open class AuthService {
 
     @Autowired
-    lateinit var passwordEncoder: BCryptPasswordEncoder
+    private lateinit var passwordEncoder: BCryptPasswordEncoder
 
     @Autowired
-    lateinit var authenticationManager: AuthenticationManager
+    private lateinit var authenticationManager: AuthenticationManager
 
     @Autowired
-    lateinit var jwtTokenProvider: JwtTokenProvider
+    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Autowired
-    lateinit var personRepo: PersonRepo
+    private lateinit var personRepo: PersonRepo
 
     @Autowired
-    lateinit var tokenRepo: TokenRepo
+    private lateinit var tokenRepo: TokenRepo
 
-    fun createPerson(createPersonRequest: CreatePersonRequestEntity, role: Role) {
+    @Autowired
+    private lateinit var roleRepo: RoleRepo
+
+    fun createPerson(createPersonRequest: CreatePersonRequestEntity) {
         if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
             val person = Person(createPersonRequest.name,
                                 createPersonRequest.nickname,
@@ -46,6 +50,7 @@ open class AuthService {
                                 createPersonRequest.secretWord,
                                 createPersonRequest.gender,
                                 createPersonRequest.city)
+            person.roles.add(roleRepo.findByName("ROLE_USER"))
             person.age = createPersonRequest.age
             personRepo.save(person)
         } else {
