@@ -451,7 +451,7 @@ class EventServiceTest
         event.items.add(item1)
         event.items.add(item2)
 
-        val upList = listOf<EditItemsRequestEntity>(EditItemsRequestEntity(upItem1Name, upItem1Marked),
+        val upList = listOf(EditItemsRequestEntity(upItem1Name, upItem1Marked),
             EditItemsRequestEntity(upItem2Name, upItem2Marked))
 
         eventService.editItems(event.id, upList, person.id)
@@ -503,7 +503,7 @@ class EventServiceTest
         event.items.add(item1)
         event.items.add(item2)
 
-        val markList = listOf<Boolean>(mark1, mark2)
+        val markList = listOf(mark1, mark2)
         val markRequest = MarkItemsRequestEntity(markList)
 
         eventService.markItems(event.id, markRequest)
