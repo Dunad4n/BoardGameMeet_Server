@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -72,9 +73,21 @@ class EventService {
     }
 
     private fun mapToItemResponseEntity(item: Item): ItemResponseEntity {
-        return ItemResponseEntity(item.name,
+        return ItemResponseEntity(item.id,
+                                  item.name,
                                   item.marked)
     }
+
+    private fun mapToItems(editItemsRequest: List<EditItemsRequestEntity>, event: Event): MutableList<Item> {
+        var items = mutableListOf<Item>()
+        for (item in editItemsRequest) {
+            val newItem = Item(item.name, item.marked)
+            newItem.event = event
+            items.add(newItem)
+        }
+        return items
+    }
+
 
     fun getEvent(id: Long, authPerson: JwtPerson): EventResponseEntity {
         val event = eventRepo.findById(id).get()
@@ -207,40 +220,41 @@ class EventService {
         return items.toList().map { mapToItemResponseEntity(it) }
     }
 
-    fun editItems(id: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
-        val event = eventRepo.findById(id).get()
+    @Transactional
+    fun deleteItems(eventId: Long, authPerson: JwtPerson) {
+        val event = eventRepo.findEventById(eventId).get()
+        if (event.host.id != authPerson.id) {
+            throw Exception("only host can delete items")
+        }
+        itemRepo.deleteAllByEvent(event)
+    }
+
+    fun editItems(eventId: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
+        val event = eventRepo.findById(eventId).get()
         if(hostId != event.host.id) {
             throw Exception("only host can edit items")
         }
-        if(editItemsRequest.size < event.items.size) {
-            for (i in editItemsRequest.size until event.items.size) {
-                itemRepo.delete(event.items[i])
-            }
-        }
-//        else if (editItemsRequest.size > event.items.size) {
-//            for (i in event.items.size until editItemsRequest.size) {
-//                event.items.add(Item(null, null))
-//            }
-//        }
-        event.editItems(editItemsRequest)
         for (item in event.items) {
-            itemRepo.save(item)
+            itemRepo.delete(item)
         }
+        itemRepo.flush()
+        event.items.clear()
+        event.items = mapToItems(editItemsRequest, event)
+//        for (item in event.items) {
+//            itemRepo.save(item)
+//        }
         eventRepo.save(event)
     }
 
-    fun markItems(eventId: Long, markItemsRequest: MarkItemsRequestEntity, authPerson: JwtPerson) {
+    fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {
         val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
         if (!event.members.contains(person)) {
             throw Exception("only member can mark items")
         }
-        if(markItemsRequest.markedStatuses.size < event.items.size) {
-            throw Exception("incorrect size of marked statuses")
-        }
-        for (i in event.items.indices){
-            event.items[i].marked = markItemsRequest.markedStatuses[i]
-        }
+        val item = itemRepo.findById(markItemRequest.itemId).get()
+        item.marked = markItemRequest.markedStatus;
+        itemRepo.save(item)
     }
 
     private fun sortEventsForMyEventPage(events: Page<Event>): List<Event> {

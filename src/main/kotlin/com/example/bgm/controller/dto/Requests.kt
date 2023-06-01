@@ -2,7 +2,6 @@ package com.example.bgm.controller.dto
 
 import com.example.bgm.entities.enums.Gender
 import com.fasterxml.jackson.annotation.JsonProperty
-import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 
@@ -34,10 +33,12 @@ data class UpdateEventRequest(val id: Long?,
                               val maxAge: Int?,
                               val description: String)
 
-data class EditItemsRequestEntity(val name: String,
+data class EditItemsRequestEntity(val itemId: Long,
+                                  val name: String,
                                   val marked: Boolean)
 
-data class MarkItemsRequestEntity(@JsonProperty("markedStatuses") val markedStatuses: List<Boolean>)
+data class MarkItemRequestEntity(val itemId: Long,
+                                 val markedStatus: Boolean)
 
 data class KickPersonRequestEntity(val eventId: Long,
                                    val userNickname: String)
@@ -84,4 +85,5 @@ data class VerifyTokenRequestEntity(val token: String,
  */
 
 data class CreateMessageRequestEntity(val text: String,
-                                      val eventId: Long)
+                                      val eventId: Long,
+                                      val personNickname: String)

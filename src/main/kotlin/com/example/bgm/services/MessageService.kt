@@ -29,8 +29,11 @@ class MessageService {
                                      person.avatarId)
     }
 
-    fun getMessages(eventId: Long): ArrayList<MessageResponseEntity> {
+    fun getMessages(eventId: Long, authPerson: JwtPerson): ArrayList<MessageResponseEntity> {
         val event = eventRepo.findById(eventId).get()
+        if (!event.members.contains(personRepo.findByNickname(authPerson.username))) {
+            throw Exception("person can read messages only from event where he is member")
+        }
         var messages = arrayListOf<MessageResponseEntity>()
         for (message in event.messages) {
             messages.add(mapToMessageResponseEntity(message, message.person))
@@ -38,9 +41,9 @@ class MessageService {
         return messages
     }
 
-    fun createMessage(createMessageRequest: CreateMessageRequestEntity, authPerson: JwtPerson): MessageResponseEntity {
-        val person = personRepo.findByNickname(authPerson.username)
-            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+    fun createMessage(createMessageRequest: CreateMessageRequestEntity): MessageResponseEntity {
+        val person = personRepo.findByNickname(createMessageRequest.personNickname)
+            ?: throw Exception("person with nickname ${createMessageRequest.personNickname} does not exist")
         val event = eventRepo.findById(createMessageRequest.eventId).get()
         val message = messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), person, event))
         return mapToMessageResponseEntity(message, person)

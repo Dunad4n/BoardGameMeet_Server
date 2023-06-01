@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository
 interface ItemRepo: JpaRepository<Item, Long> {
 
     fun findAllByEvent(event: Event, pageable: Pageable): Page<Item>
+    fun deleteAllByEvent(event: Event)
 }

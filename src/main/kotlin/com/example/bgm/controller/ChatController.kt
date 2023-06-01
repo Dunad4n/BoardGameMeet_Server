@@ -9,21 +9,30 @@ import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
-@RestController
+@Controller
 class ChatController {
 
     @Autowired
     private lateinit var messageService: MessageService
 
-    @MessageMapping("createMessage")
-    @SendTo("/topic/chat")
-    fun chatting(@Payload messageRequestEntity: CreateMessageRequestEntity,
-                 @AuthenticationPrincipal authPerson: JwtPerson): MessageResponseEntity {
-        Thread.sleep(1000)
-        return messageService.createMessage(messageRequestEntity, authPerson)
+    @MessageMapping("/chat")
+//    @SendTo("/topic/chat")
+    fun chatting(
+        @Payload messageRequestEntity: CreateMessageRequestEntity,
+    ): MutableMap<String, String> {
+        println(messageRequestEntity.text)
+        println(messageRequestEntity.eventId)
+        println(messageRequestEntity.personNickname)
+        val message = messageService.createMessage(messageRequestEntity)
+        val map = mutableMapOf<String, String>()
+        map["text"] = message.text
+        map["eventId"] = messageRequestEntity.eventId.toString()
+        map["nickname"] = messageRequestEntity.personNickname
+        return map
     }
 
 }

@@ -16,15 +16,16 @@ class MessageController {
 
 
     @GetMapping("messagesIn/{eventId}")
-    fun getAllMessages(@PathVariable eventId: Long): ArrayList<MessageResponseEntity> {
-        return messageService.getMessages(eventId)
+    fun getAllMessages(@PathVariable eventId: Long,
+                       @AuthenticationPrincipal authPerson: JwtPerson): ArrayList<MessageResponseEntity> {
+        return messageService.getMessages(eventId, authPerson)
     }
 
 
-    @PostMapping("createMessage")
-    fun createMessage(@RequestBody createMessageRequest: CreateMessageRequestEntity,
-                      @AuthenticationPrincipal authPerson: JwtPerson): MessageResponseEntity {
-        return messageService.createMessage(createMessageRequest, authPerson)
-    }
+//    @PostMapping("createMessage")
+//    fun createMessage(@RequestBody createMessageRequest: CreateMessageRequestEntity,
+//                      @AuthenticationPrincipal authPerson: JwtPerson): MessageResponseEntity {
+//        return messageService.createMessage(createMessageRequest, authPerson)
+//    }
 
 }

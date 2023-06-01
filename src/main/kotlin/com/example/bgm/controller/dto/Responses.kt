@@ -41,7 +41,8 @@ data class EventResponseEntity(val id: Long?,
                                val items: List<ItemResponseEntity>,
                                val host: Boolean)
 
-data class ItemResponseEntity(val name: String,
+data class ItemResponseEntity(val itemId: Long?,
+                              val name: String,
                               val marked: Boolean)
 
 /**

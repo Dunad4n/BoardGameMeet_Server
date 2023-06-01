@@ -125,13 +125,9 @@ data class Event(
     }
 
     fun editItems(items: List<EditItemsRequestEntity>) {
-        for (i in items.indices) {
-            if (i >= this.items.size) {
-                this.items.add(Item(items[i].name, items[i].marked))
-            }
-            this.items[i].name = items[i].name
-            this.items[i].marked = items[i].marked
-            this.items[i].event = this
+        this.items.clear()
+        for (item in items) {
+            this.items.add(Item(item.name, item.marked))
         }
     }
 

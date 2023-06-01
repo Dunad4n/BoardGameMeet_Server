@@ -98,11 +98,17 @@ class EventController {
         eventService.updateEvent(request, authPerson)
     }
 
+    @DeleteMapping("/deleteItemsIn/{eventId}")
+    fun deleteItems(@PathVariable eventId: Long,
+                    @AuthenticationPrincipal authPerson: JwtPerson) {
+        eventService.deleteItems(eventId, authPerson)
+    }
+
     /** Event Отметить предмет **/
-    @PutMapping("/markItemsIn/{eventId}")
+    @PutMapping("/markItemIn/{eventId}")
     fun markItems(@PathVariable eventId: Long,
-                  @RequestBody markItemsRequest: MarkItemsRequestEntity,
+                  @RequestBody markItemsRequest: MarkItemRequestEntity,
                   @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.markItems(eventId, markItemsRequest, authPerson)
+        eventService.markItem(eventId, markItemsRequest, authPerson)
     }
 }
