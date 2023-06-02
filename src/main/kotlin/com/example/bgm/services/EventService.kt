@@ -12,6 +12,7 @@ import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -112,9 +113,12 @@ class EventService {
         return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) }, person)
     }
 
-    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?): CreateEventResponseEntity {
+    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?): ResponseEntity<*> {
         if (hostId == null) {
             throw Exception("person id is null")
+        }
+        if (createEventRequest.minAge!! > createEventRequest.maxAge!!) {
+            return ResponseEntity.status(501).body("minAge can not be less then maxAge")
         }
         val host = personRepo.findById(hostId).get()
         val event = Event(createEventRequest.name,
@@ -128,13 +132,16 @@ class EventService {
                           createEventRequest.maxAge,
                           createEventRequest.description)
         event.members.add(host)
-        return mapToCreateEventResponseEntity(eventRepo.save(event))
+        return ResponseEntity.ok(mapToCreateEventResponseEntity(eventRepo.save(event)))
     }
 
-    fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson) {
+    fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson): ResponseEntity<*> {
         val event = eventRepo.findEventById(updateRequest.id).get()
         if (personRepo.findByNickname(authPerson.username) != event.host) {
             throw Exception("only host can edit event")
+        }
+        if (updateRequest.minAge!! > updateRequest.maxAge!!) {
+            return ResponseEntity.status(501).body("minAge can not be less then maxAge")
         }
         event.name = updateRequest.name
         event.game = updateRequest.game
@@ -145,7 +152,7 @@ class EventService {
         event.maxAge = updateRequest.maxAge
         event.minAge = updateRequest.minAge
         event.description = updateRequest.description
-        eventRepo.save(event)
+        return ResponseEntity.ok(eventRepo.save(event))
     }
 
     fun deleteEvent(id: Long, authPerson: JwtPerson) {

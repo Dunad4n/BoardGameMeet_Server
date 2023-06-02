@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -47,7 +48,7 @@ class EventController {
     /** Event создание мероприятия **/
     @PostMapping("/createEvent")
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
-                    @AuthenticationPrincipal authPerson: JwtPerson): CreateEventResponseEntity {
+                    @AuthenticationPrincipal authPerson: JwtPerson): Any {
         if(!requestValidationService.validate(createEventRequest))
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
@@ -91,12 +92,12 @@ class EventController {
     /** Event Редактировать мероприятие **/
     @PutMapping("/updateEvent")
     fun updateEvent(@RequestBody request: UpdateEventRequest,
-                    @AuthenticationPrincipal authPerson: JwtPerson) {
+                    @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
             )
-        eventService.updateEvent(request, authPerson)
+        return eventService.updateEvent(request, authPerson)
     }
 
     @DeleteMapping("/deleteItemsIn/{eventId}")

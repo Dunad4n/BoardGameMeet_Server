@@ -7,6 +7,7 @@ import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.RoleRepo
 import com.example.bgm.services.AuthService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -18,10 +19,9 @@ class AuthorizationController {
     @Autowired
     lateinit var authService: AuthService
 
-
     /** Авторизация **/
     @PostMapping("/auth/login")
-    fun login(@RequestBody authenticationRequest: AuthenticationRequestEntity): AuthenticationResponseEntity {
+    fun login(@RequestBody authenticationRequest: AuthenticationRequestEntity): ResponseEntity<*> {
         return authService.login(authenticationRequest)
     }
 
@@ -34,7 +34,7 @@ class AuthorizationController {
     /** Регистрация **/
     @PostMapping("/auth/registration")
     @Throws(Exception::class)
-    fun registration(@RequestBody createPersonRequest: CreatePersonRequestEntity) {
+    fun registration(@RequestBody createPersonRequest: CreatePersonRequestEntity): ResponseEntity<*> {
         return authService.createPerson(createPersonRequest)
     }
 }

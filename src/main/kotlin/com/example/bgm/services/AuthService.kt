@@ -12,6 +12,7 @@ import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import com.example.bgm.repositories.jwt.TokenRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -42,24 +43,24 @@ open class AuthService {
     @Autowired
     private lateinit var roleRepo: RoleRepo
 
-    fun createPerson(createPersonRequest: CreatePersonRequestEntity) {
-        if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
+    fun createPerson(createPersonRequest: CreatePersonRequestEntity): ResponseEntity<*> {
+        return if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
             val person = Person(createPersonRequest.name,
-                                createPersonRequest.nickname,
-                                passwordEncoder.encode(createPersonRequest.password),
-                                createPersonRequest.secretWord,
-                                createPersonRequest.gender,
-                                createPersonRequest.city)
+                createPersonRequest.nickname,
+                passwordEncoder.encode(createPersonRequest.password),
+                createPersonRequest.secretWord,
+                createPersonRequest.gender,
+                createPersonRequest.city)
             person.roles.add(roleRepo.findByName("ROLE_USER"))
             person.age = createPersonRequest.age
-            personRepo.save(person)
+            ResponseEntity.ok(personRepo.save(person))
         } else {
-            throw Exception("this nickname is occupied")
+            ResponseEntity.status(501).body("this nickname is occupied")
         }
     }
 
     @Transactional
-    open fun login(authenticationRequest: AuthenticationRequestEntity): AuthenticationResponseEntity {
+    open fun login(authenticationRequest: AuthenticationRequestEntity): ResponseEntity<*> {
         return try {
             val nickname = authenticationRequest.nickname
             authenticationManager.authenticate(UsernamePasswordAuthenticationToken(nickname, authenticationRequest.password))
@@ -68,10 +69,10 @@ open class AuthService {
             val token = jwtTokenProvider.createToken(nickname, person.roles)
             tokenRepo.deleteAllByPerson(person)
             tokenRepo.save(Token(token, person))
-            AuthenticationResponseEntity(nickname, token, person.getStringRole())
+            ResponseEntity.ok(AuthenticationResponseEntity(nickname, token, person.getStringRole()))
         } catch (e: AuthenticationException) {
             print(e.message)
-            throw BadCredentialsException("Invalid nickname or password")
+            ResponseEntity.status(501).body("invalid nickname or password")
         }
     }
 
