@@ -172,7 +172,7 @@ class PersonService {
         val person = personRepo.findByNickname(nickname)
             ?: throw Exception("can not find person with nickname $nickname")
         val tokens = tokenRepo.findAllByPerson(person)
-        return tokens[token.length - 1].value == token
+        return tokens[tokens.size - 1].value == token
     }
 
 //    fun register(person: Person): Person? {
