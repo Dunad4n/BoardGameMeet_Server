@@ -132,7 +132,8 @@ class EventService {
                           createEventRequest.maxAge,
                           createEventRequest.description)
         event.members.add(host)
-        return ResponseEntity.ok(mapToCreateEventResponseEntity(eventRepo.save(event)))
+        val response = mapToCreateEventResponseEntity(eventRepo.save(event))
+        return ResponseEntity.ok(response)
     }
 
     fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson): ResponseEntity<*> {
@@ -152,7 +153,8 @@ class EventService {
         event.maxAge = updateRequest.maxAge
         event.minAge = updateRequest.minAge
         event.description = updateRequest.description
-        return ResponseEntity.ok(eventRepo.save(event))
+        eventRepo.save(event)
+        return ResponseEntity.ok(event)
     }
 
     fun deleteEvent(id: Long, authPerson: JwtPerson) {

@@ -43,17 +43,19 @@ open class AuthService {
     @Autowired
     private lateinit var roleRepo: RoleRepo
 
+    @Transactional
     fun createPerson(createPersonRequest: CreatePersonRequestEntity): ResponseEntity<*> {
         return if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
             val person = Person(createPersonRequest.name,
-                createPersonRequest.nickname,
-                passwordEncoder.encode(createPersonRequest.password),
-                createPersonRequest.secretWord,
-                createPersonRequest.gender,
-                createPersonRequest.city)
+                    createPersonRequest.nickname,
+                    passwordEncoder.encode(createPersonRequest.password),
+                    createPersonRequest.secretWord,
+                    createPersonRequest.gender,
+                    createPersonRequest.city)
             person.roles.add(roleRepo.findByName("ROLE_USER"))
             person.age = createPersonRequest.age
-            ResponseEntity.ok(personRepo.save(person))
+            personRepo.save(person)
+            ResponseEntity.ok("done")
         } else {
             ResponseEntity.status(501).body("this nickname is occupied")
         }
