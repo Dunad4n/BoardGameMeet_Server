@@ -82,7 +82,7 @@ class PersonController {
     ): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+                HttpStatus.CONFLICT, requestValidationService.getMessage()
             )
         return personService.updatePerson(request, authPerson, jwtTokenProvider)
     }

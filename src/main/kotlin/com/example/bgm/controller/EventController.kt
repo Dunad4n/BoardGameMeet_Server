@@ -68,7 +68,7 @@ class EventController {
                   @AuthenticationPrincipal authPerson: JwtPerson) {
         if(!requestValidationService.validate(editItemsRequest))
             throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+                HttpStatus.CONFLICT, requestValidationService.getMessage()
             )
         return eventService.editItems(eventId, editItemsRequest, authPerson.id)
     }
@@ -92,7 +92,7 @@ class EventController {
                     @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+                HttpStatus.CONFLICT, requestValidationService.getMessage()
             )
         return eventService.updateEvent(request, authPerson)
     }

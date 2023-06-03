@@ -132,11 +132,11 @@ class RequestValidationService {
     }
 
     fun validate(request: UpdatePersonRequestEntity):Boolean{
-        if(request.name.length > 255) {
+        if(request.name.length > 30) {
             message = "the name must be shorter than 255 characters"
             return false
         }
-        if(request.nickname.length > 255) {
+        if(request.nickname.length > 30) {
             message = "the nickname must be shorter than 255 characters"
             return false
         }
@@ -147,7 +147,7 @@ class RequestValidationService {
         // можно добавить проверки на max значение
         if(request.age != null) {
             if (request.age < 0 || request.age > 100) {
-                message = "the age can not be less than 0 and greatest than 100"
+                message = "Возраст может быть от 0 до 100"
                 return false
             }
         }
@@ -155,11 +155,11 @@ class RequestValidationService {
     }
 
     fun validate(request: CreatePersonRequestEntity):Boolean{
-        if(request.name.length > 255) {
+        if(request.name.length > 30) {
             message = "the name must be shorter than 255 characters"
             return false
         }
-        if(request.nickname.length > 255) {
+        if(request.nickname.length > 30) {
             message = "the nickname must be shorter than 255 characters"
             return false
         }
@@ -167,17 +167,17 @@ class RequestValidationService {
             message = "the city must be shorter than 255 characters"
             return false
         }
-        if(request.secretWord.length > 255) {
+        if(request.secretWord.length > 30) {
             message = "the secretWord must be shorter than 255 characters"
             return false
         }
-        if(request.password.length > 255) {
+        if(request.password.length > 30) {
             message = "the password must be shorter than 255 characters"
             return false
         }
         if(request.age != null) {
             if (request.age < 0 || request.age > 100) {
-                message = "the age can not be less than 0 and greatest than 100"
+                message = "Возраст может быть от 0 до 100"
                 return false
             }
         }
