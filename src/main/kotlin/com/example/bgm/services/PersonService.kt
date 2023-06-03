@@ -75,7 +75,7 @@ class PersonService {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         val isPersonWithRequestedNicknameExist = personRepo.existsByNickname(updateRequest.nickname)
-        if (isPersonWithRequestedNicknameExist) {
+        if (isPersonWithRequestedNicknameExist && authPerson.username != updateRequest.nickname) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Такой никнейм уже занят")
         }
         person.name = updateRequest.name

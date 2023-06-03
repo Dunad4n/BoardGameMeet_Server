@@ -24,22 +24,23 @@ class MessageService {
     @Autowired
     lateinit var personRepo: PersonRepo
 
-    private fun mapToMessageResponseEntity(message: Message): MessageResponseEntity {
+    private fun mapToMessageResponseEntity(message: Message, person: Person?): MessageResponseEntity {
         return MessageResponseEntity(message.text,
                                      eventId = message.event.id,
-                                     nickname = message.person.nickname,
+                                     isMyNickname = message.person.nickname == message.person.nickname,
                                      name = message.person.name,
                                      avatarId = message.person.avatarId)
     }
 
     fun getMessages(eventId: Long, authPerson: JwtPerson): ArrayList<MessageResponseEntity> {
         val event = eventRepo.findById(eventId).get()
-        if (!event.members.contains(personRepo.findByNickname(authPerson.username))) {
+        val person = personRepo.findByNickname(authPerson.username)
+        if (!event.members.contains(person)) {
             throw Exception("person can read messages only from event where he is member")
         }
         val messages = arrayListOf<MessageResponseEntity>()
         for (message in event.messages) {
-            messages.add(mapToMessageResponseEntity(message))
+            messages.add(mapToMessageResponseEntity(message, person))
         }
         return messages
     }
@@ -49,6 +50,6 @@ class MessageService {
             ?: throw Exception("person with nickname ${createMessageRequest.personNickname} does not exist")
         val event = eventRepo.findById(createMessageRequest.eventId).get()
         val message = messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), person, event))
-        return mapToMessageResponseEntity(message)
+        return mapToMessageResponseEntity(message, person)
     }
 }
