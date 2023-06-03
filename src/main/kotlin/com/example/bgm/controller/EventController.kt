@@ -59,9 +59,8 @@ class EventController {
     /** Event Получить все предметы мероприятия **/
     @GetMapping("/getItemsIn/{eventId}")
     fun getItems(@PathVariable eventId: Long,
-                 @PageableDefault() pageable: Pageable,
                  @AuthenticationPrincipal authPerson: JwtPerson): List<ItemResponseEntity> {
-        return eventService.getItems(eventId, pageable, authPerson)
+        return eventService.getItems(eventId, authPerson)
     }
 
     /** Event Редактировать предметы мероприятия **/

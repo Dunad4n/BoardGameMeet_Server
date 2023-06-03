@@ -233,14 +233,14 @@ class EventService {
         eventRepo.save(event);
     }
 
-    fun getItems(id: Long, pageable: Pageable, authPerson: JwtPerson): List<ItemResponseEntity> {
+    fun getItems(id: Long, authPerson: JwtPerson): List<ItemResponseEntity> {
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
         if (!event.members.contains(person)) {
             throw Exception("only members can get items")
         }
 //        val items = eventRepo.findById(id).get().items
-        val items = itemRepo.findAllByEvent(eventRepo.findById(id).get(), pageable)
+        val items = itemRepo.findAllByEvent(eventRepo.findById(id).get())
         return items.toList().map { mapToItemResponseEntity(it) }
     }
 
