@@ -1,6 +1,5 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.dto.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Item
 import com.example.bgm.entities.Person
@@ -17,6 +16,16 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import com.example.bgm.controller.dto.MainPageEventResponseEntity
+import com.example.bgm.controller.dto.MyEventsResponseEntity
+import com.example.bgm.controller.dto.EventResponseEntity
+import com.example.bgm.controller.dto.CreateEventResponseEntity
+import com.example.bgm.controller.dto.ItemResponseEntity
+import com.example.bgm.controller.dto.EditItemsRequestEntity
+import com.example.bgm.controller.dto.MarkItemRequestEntity
+import com.example.bgm.controller.dto.UpdateEventRequest
+import com.example.bgm.controller.dto.CreateEventRequestEntity
+
 
 @Service
 class EventService {
@@ -117,9 +126,6 @@ class EventService {
         if (hostId == null) {
             throw Exception("person id is null")
         }
-        if (createEventRequest.minAge!! > createEventRequest.maxAge!!) {
-            return ResponseEntity.status(501).body("minAge can not be less then maxAge")
-        }
         val host = personRepo.findById(hostId).get()
         val event = Event(createEventRequest.name,
                           createEventRequest.game,
@@ -183,9 +189,9 @@ class EventService {
             if (person != null) {
                 events = if(person.age != null) {
                     if (search != null) {
-                        eventRepo.findAllByCityAndNameContainingAndMinAgeLessThanEqualAndMaxAgeGreaterThanEqualAndMembersNotContainingAndDateAfter(city, search, person.age!!, person.age!!, pageable, person)
+                        eventRepo.findAllByCityAndNameContainingAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, search, person.age!!, person.age!!, pageable, person)
                     } else {
-                        eventRepo.findAllByCityAndMinAgeLessThanEqualAndMaxAgeGreaterThanEqualAndMembersNotContainingAndDateAfter(city, person.age!!, person.age!!, pageable, person)
+                        eventRepo.findAllByCityAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, person.age!!, person.age!!, pageable, person)
                     }
                 } else{
                     if (search != null) {

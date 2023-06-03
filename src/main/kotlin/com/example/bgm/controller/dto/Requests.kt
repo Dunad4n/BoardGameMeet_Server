@@ -18,8 +18,8 @@ data class CreateEventRequestEntity(val name: String,
                                     val address: String,
                                     val date: LocalDateTime,
                                     val maxPersonCount: Int,
-                                    val minAge: Int?,
-                                    val maxAge: Int?,
+                                    var minAge: Int?,
+                                    var maxAge: Int?,
                                     val description: String)
 
 data class UpdateEventRequest(val id: Long?,

@@ -103,7 +103,7 @@ class PersonService {
 
     fun getAllMembers(eventId: Long, pageable: Pageable): ArrayList<MemberResponseEntity> {
         val event = eventRepo.findById(eventId).get()
-        val members = personRepo.findAllByEventsContaining(event, pageable)
+        val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
         val res = arrayListOf<MemberResponseEntity>()
         for (person in members) {
             res. add(mapToMemberResponseEntity(person, event))
