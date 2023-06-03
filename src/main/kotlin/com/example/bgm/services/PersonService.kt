@@ -15,6 +15,7 @@ import com.example.bgm.repositories.RoleRepo
 import com.example.bgm.repositories.jwt.TokenRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -68,11 +69,15 @@ class PersonService {
      * обсудить реквесты save update
      */
     @Transactional
-    open fun updatePerson(updateRequest: UpdatePersonRequestEntity,
-                          authPerson: JwtPerson,
-                          jwtTokenProvider: JwtTokenProvider): Map<String, String> {
+    fun updatePerson(updateRequest: UpdatePersonRequestEntity,
+                     authPerson: JwtPerson,
+                     jwtTokenProvider: JwtTokenProvider): ResponseEntity<*> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+        val isPersonWithRequestedNicknameExist = personRepo.existsByNickname(updateRequest.nickname)
+        if (isPersonWithRequestedNicknameExist) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Такой никнейм уже занят")
+        }
         person.name = updateRequest.name
         person.nickname = updateRequest.nickname
         person.city = updateRequest.city
@@ -88,7 +93,8 @@ class PersonService {
 
         val response = mutableMapOf<String, String>()
         response["token"] = token
-        return response
+        response["nickname"] = person.nickname
+        return ResponseEntity.ok(response)
     }
 
     @Transactional
@@ -148,7 +154,7 @@ class PersonService {
 
     fun validateSecretWord(secretWord: String, nickname: String): ResponseEntity<String> {
         if (!personRepo.findByNickname(nickname)?.secretWord.equals(secretWord)) {
-            return ResponseEntity.badRequest().body("wrong secret word")
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Неверное секретное слово или никнейм")
         }
         return ResponseEntity.ok("correct secret word")
     }
