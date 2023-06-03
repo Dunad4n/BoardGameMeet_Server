@@ -5,6 +5,9 @@ import com.example.bgm.controller.dto.MessageResponseEntity
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.MessageService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
@@ -17,8 +20,9 @@ class MessageController {
 
     @GetMapping("messagesIn/{eventId}")
     fun getAllMessages(@PathVariable eventId: Long,
-                       @AuthenticationPrincipal authPerson: JwtPerson): ArrayList<MessageResponseEntity> {
-        return messageService.getMessages(eventId, authPerson)
+                       @AuthenticationPrincipal authPerson: JwtPerson,
+                       @PageableDefault() pageable: Pageable): ArrayList<MessageResponseEntity> {
+        return messageService.getMessages(eventId, authPerson, pageable)
     }
 
 

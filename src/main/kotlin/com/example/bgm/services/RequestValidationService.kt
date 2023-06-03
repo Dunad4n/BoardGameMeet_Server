@@ -39,16 +39,25 @@ class RequestValidationService {
         }
         if (request.minAge!= null) {
             // можно добавить проверки на max значение
-            if (request.minAge < 0 || request.minAge > 100) {
+            if (request.minAge!! < 0 || request.minAge!! > 100) {
                 message = "minAge must be grater than 0 or less the 100"
                 return false
             }
+        }else{
+            request.minAge = 0;
         }
         if (request.maxAge != null) {
-            if (request.maxAge < 0 || request.maxAge > 100) {
+            if (request.maxAge!! < 0 || request.maxAge!! > 100) {
                 message = "maxAge must be grater than 0 or less the 100"
                 return false
             }
+        }
+        else{
+            request.maxAge = 100;
+        }
+        if (request.minAge!! > request.maxAge!!) {
+            message = "minAge can not be less then maxAge"
+            return false
         }
         if(request.maxPersonCount < 2) {
             message = "maxPersonCount must bo more than 1"
