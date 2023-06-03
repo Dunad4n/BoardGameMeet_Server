@@ -26,14 +26,18 @@ class MessageService {
     @Autowired
     lateinit var personRepo: PersonRepo
 
-    private fun mapToMessageResponseEntity(message: Message, person: Person): MessageResponseEntity {
+    private fun mapToMessageResponseEntity(message: Message, person: Person?): MessageResponseEntity {
         return MessageResponseEntity(message.text,
-                                     person.avatarId)
+                                     eventId = message.event.id,
+                                     isMyNickname = message.person.nickname == message.person.nickname,
+                                     name = message.person.name,
+                                     avatarId = message.person.avatarId)
     }
 
     fun getMessages(eventId: Long, authPerson: JwtPerson, pageable: Pageable): ArrayList<MessageResponseEntity> {
         val event = eventRepo.findById(eventId).get()
-        if (!event.members.contains(personRepo.findByNickname(authPerson.username))) {
+        val person = personRepo.findByNickname(authPerson.username)
+        if (!event.members.contains(person)) {
             throw Exception("person can read messages only from event where he is member")
         }
         val messages = arrayListOf<MessageResponseEntity>()

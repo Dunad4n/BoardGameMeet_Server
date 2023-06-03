@@ -11,6 +11,8 @@ import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -126,6 +128,9 @@ class EventService {
         if (hostId == null) {
             throw Exception("person id is null")
         }
+//        if (createEventRequest.minAge!! > createEventRequest.maxAge!!) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body("Минимальный возраст не может быть больше максимального")
+//        }
         val host = personRepo.findById(hostId).get()
         val event = Event(createEventRequest.name,
                           createEventRequest.game,
@@ -138,8 +143,8 @@ class EventService {
                           createEventRequest.maxAge,
                           createEventRequest.description)
         event.members.add(host)
-        val response = mapToCreateEventResponseEntity(eventRepo.save(event))
-        return ResponseEntity.ok(response)
+        eventRepo.save(event)
+        return ResponseEntity.ok("done")
     }
 
     fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson): ResponseEntity<*> {
@@ -148,7 +153,7 @@ class EventService {
             throw Exception("only host can edit event")
         }
         if (updateRequest.minAge!! > updateRequest.maxAge!!) {
-            return ResponseEntity.status(501).body("minAge can not be less then maxAge")
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Минимальный возраст не может быть больше максимального")
         }
         event.name = updateRequest.name
         event.game = updateRequest.game
@@ -160,7 +165,7 @@ class EventService {
         event.minAge = updateRequest.minAge
         event.description = updateRequest.description
         eventRepo.save(event)
-        return ResponseEntity.ok(event)
+        return ResponseEntity.ok("done")
     }
 
     fun deleteEvent(id: Long, authPerson: JwtPerson) {

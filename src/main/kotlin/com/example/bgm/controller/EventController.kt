@@ -48,11 +48,9 @@ class EventController {
     /** Event создание мероприятия **/
     @PostMapping("/createEvent")
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
-                    @AuthenticationPrincipal authPerson: JwtPerson): Any {
+                    @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(createEventRequest))
-            throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
-            )
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Минимальный возраст не может быть больше максимального")
         return eventService.createEvent(createEventRequest, authPerson.id)
     }
 

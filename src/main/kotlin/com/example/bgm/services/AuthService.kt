@@ -12,6 +12,9 @@ import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import com.example.bgm.repositories.jwt.TokenRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties.Http
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
@@ -57,7 +60,7 @@ open class AuthService {
             personRepo.save(person)
             ResponseEntity.ok("done")
         } else {
-            ResponseEntity.status(501).body("this nickname is occupied")
+            ResponseEntity.status(HttpStatus.CONFLICT).body("Такой никнейм уже занят")
         }
     }
 
@@ -74,7 +77,7 @@ open class AuthService {
             ResponseEntity.ok(AuthenticationResponseEntity(nickname, token, person.getStringRole()))
         } catch (e: AuthenticationException) {
             print(e.message)
-            ResponseEntity.status(501).body("invalid nickname or password")
+            ResponseEntity.status(HttpStatus.CONFLICT).body("Неверный никнейм или пароль")
         }
     }
 

@@ -79,7 +79,7 @@ class PersonController {
     @PutMapping("/updatePerson")
     fun updatePerson(@RequestBody request: UpdatePersonRequestEntity,
                      @AuthenticationPrincipal authPerson: JwtPerson
-    ): Map<String, String> {
+    ): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST, requestValidationService.getMessage()

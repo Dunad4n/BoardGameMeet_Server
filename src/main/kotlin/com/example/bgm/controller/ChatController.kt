@@ -26,21 +26,14 @@ class ChatController {
     @MessageMapping("/chat")
 //    @SendTo("/topic/chat")
     fun chatting(
-        @Payload messageRequestEntity: CreateMessageRequestEntity,
-    ): MutableMap<String, String> {
+        @Payload messageRequestEntity: CreateMessageRequestEntity): MessageResponseEntity {
         println(messageRequestEntity.text)
         println(messageRequestEntity.eventId)
         println(messageRequestEntity.personNickname)
         val message = messageService.createMessage(messageRequestEntity)
         val person = personRepo.findByNickname(messageRequestEntity.personNickname)
             ?: throw Exception("person with nickname ${messageRequestEntity.personNickname} not exist")
-        val map = mutableMapOf<String, String>()
-        map["text"] = message.text
-        map["eventId"] = messageRequestEntity.eventId.toString()
-        map["nickname"] = messageRequestEntity.personNickname
-        map["name"] = person.name
-        map["avatarId"] = person.avatarId.toString()
-        return map
+        return message
     }
 
 }
