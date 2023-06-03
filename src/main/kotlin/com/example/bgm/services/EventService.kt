@@ -192,15 +192,9 @@ class EventService {
             if (person != null) {
                 events = if(person.age != null) {
                     if (search != null) {
-                        if(person.events.size == 0)
-                            eventRepo.findAllByAgeAndNameWithoutContaining(city, search, person.age!!, pageable)
-                        else
-                            eventRepo.findAllByAgeAndName(city, search, person.age!!, pageable, person.events)
+                        eventRepo.findAllByAgeAndName(city, search, person.age!!, pageable, person.events)
                     } else {
-                        if(person.events.size == 0)
-                            eventRepo.findAllByAgeWithoutContaining(city, person.age!!, pageable)
-                        else
-                            eventRepo.findAllByAge(city, person.age!!, pageable, person.events)
+                        eventRepo.findAllByAge(city, person.age!!, pageable, person.events)
                     }
                 } else{
                     if (search != null) {
@@ -223,7 +217,7 @@ class EventService {
     fun getMyEventsPageEvent(authPerson: JwtPerson, pageable: Pageable): ArrayList<MyEventsResponseEntity> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
-        val myEvents = eventRepo.findAllByMembersContains(person, pageable)
+        val myEvents = eventRepo.findMyEvents(person.events, pageable)
         val res = arrayListOf<MyEventsResponseEntity>()
         if (myEvents != null)
             for (event in sortEventsForMyEventPage(myEvents)) {
@@ -254,7 +248,6 @@ class EventService {
         if (!event.members.contains(person)) {
             throw Exception("only members can get items")
         }
-//        val items = eventRepo.findById(id).get().items
         val items = itemRepo.findAllByEvent(eventRepo.findById(id).get(), pageable)
         return items.toList().map { mapToItemResponseEntity(it) }
     }
