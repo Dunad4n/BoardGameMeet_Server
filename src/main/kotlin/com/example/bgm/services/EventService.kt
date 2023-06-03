@@ -25,6 +25,9 @@ import com.example.bgm.controller.dto.EditItemsRequestEntity
 import com.example.bgm.controller.dto.MarkItemRequestEntity
 import com.example.bgm.controller.dto.UpdateEventRequest
 import com.example.bgm.controller.dto.CreateEventRequestEntity
+import com.example.bgm.entities.enums.Gender
+import java.sql.Date
+import java.time.LocalDate
 
 
 @Service
@@ -189,9 +192,15 @@ class EventService {
             if (person != null) {
                 events = if(person.age != null) {
                     if (search != null) {
-                        eventRepo.findAllByCityAndNameContainingAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, search, person.age!!, person.age!!, pageable, person)
+                        if(person.events.size == 0)
+                            eventRepo.findAllByAgeAndNameWithoutContaining(city, search, person.age!!, pageable)
+                        else
+                            eventRepo.findAllByAgeAndName(city, search, person.age!!, pageable, person.events)
                     } else {
-                        eventRepo.findAllByCityAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, person.age!!, person.age!!, pageable, person)
+                        if(person.events.size == 0)
+                            eventRepo.findAllByAgeWithoutContaining(city, person.age!!, pageable)
+                        else
+                            eventRepo.findAllByAge(city, person.age!!, pageable, person.events)
                     }
                 } else{
                     if (search != null) {
