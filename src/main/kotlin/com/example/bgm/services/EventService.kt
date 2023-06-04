@@ -27,6 +27,9 @@ import com.example.bgm.controller.dto.EditItemsRequestEntity
 import com.example.bgm.controller.dto.MarkItemRequestEntity
 import com.example.bgm.controller.dto.UpdateEventRequest
 import com.example.bgm.controller.dto.CreateEventRequestEntity
+import com.example.bgm.entities.enums.Gender
+import java.sql.Date
+import java.time.LocalDate
 
 
 @Service
@@ -194,9 +197,9 @@ class EventService {
             if (person != null) {
                 events = if(person.age != null) {
                     if (search != null) {
-                        eventRepo.findAllByCityAndNameContainingAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, search, person.age!!, person.age!!, pageable, person)
+                        eventRepo.findAllByAgeAndName(city, search, person.age!!, pageable, person.events)
                     } else {
-                        eventRepo.findAllByCityAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, person.age!!, person.age!!, pageable, person)
+                        eventRepo.findAllByAge(city, person.age!!, pageable, person.events)
                     }
                 } else{
                     if (search != null) {
@@ -219,7 +222,7 @@ class EventService {
     fun getMyEventsPageEvent(authPerson: JwtPerson, pageable: Pageable): ArrayList<MyEventsResponseEntity> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
-        val myEvents = eventRepo.findAllByMembersContains(person, pageable)
+        val myEvents = eventRepo.findMyEvents(person.events, pageable)
         val res = arrayListOf<MyEventsResponseEntity>()
         if (myEvents != null)
             for (event in sortEventsForMyEventPage(myEvents)) {
