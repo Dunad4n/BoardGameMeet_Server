@@ -159,7 +159,7 @@ class EventService {
         event.game = updateRequest.game
         event.city = updateRequest.city
         event.address = updateRequest.address
-        event.date = LocalDateTime.now()
+        event.date = updateRequest.date
         event.maxPersonCount = updateRequest.maxPersonCount
         event.maxAge = updateRequest.maxAge
         event.minAge = updateRequest.minAge
