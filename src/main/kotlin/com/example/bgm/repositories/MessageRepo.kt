@@ -13,6 +13,6 @@ interface MessageRepo: JpaRepository<Message, Long> {
 
     fun findByPerson(person: Person) : Message
 
-    fun findAllByEvent(event: Event,pageable: Pageable) : Page<Message>
+    fun findAllByEventOrdOrderByDateTimeDesc(event: Event, pageable: Pageable) : Page<Message>
 
 }

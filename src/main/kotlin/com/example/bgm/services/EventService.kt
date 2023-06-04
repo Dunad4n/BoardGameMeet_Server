@@ -26,6 +26,8 @@ import com.example.bgm.controller.dto.MarkItemRequestEntity
 import com.example.bgm.controller.dto.UpdateEventRequest
 import com.example.bgm.controller.dto.CreateEventRequestEntity
 import com.example.bgm.entities.enums.Gender
+import org.springframework.data.domain.PageImpl
+import java.lang.Math.min
 import java.sql.Date
 import java.time.LocalDate
 
@@ -217,13 +219,24 @@ class EventService {
     fun getMyEventsPageEvent(authPerson: JwtPerson, pageable: Pageable): ArrayList<MyEventsResponseEntity> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
-        val myEvents = eventRepo.findMyEvents(person.events, pageable)
+        val myEvents = findMyEvents(person.events, pageable)
         val res = arrayListOf<MyEventsResponseEntity>()
-        if (myEvents != null)
-            for (event in sortEventsForMyEventPage(myEvents)) {
-                res.add(mapToMyEventsResponseEntity(event, person))
-            }
+        for (event in sortEventsForMyEventPage(myEvents)) {
+            res.add(mapToMyEventsResponseEntity(event, person))
+        }
         return res
+    }
+
+    fun findMyEvents(events: List<Event>, pageable: Pageable): Page<Event> {
+        val pastEvents = eventRepo.findPastEvents(events)
+        val futureEvents = eventRepo.findFutureEvents(events)
+        val allEvents = mutableListOf<Event>()
+        allEvents.addAll(pastEvents)
+        allEvents.addAll(futureEvents)
+        val sortedEvents = allEvents.sortedBy { it.date }
+        val start = pageable.offset.toInt()
+        val end = min((start + pageable.pageSize), sortedEvents.size)
+        return PageImpl(sortedEvents.subList(start, end), pageable, sortedEvents.size.toLong())
     }
 
     fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson) {
@@ -273,10 +286,6 @@ class EventService {
         for(item in mapToItems(editItemsRequest, event)) {
             itemRepo.save(item)
         }
-//        for (item in event.items) {
-//            itemRepo.save(item)
-//        }
-//        eventRepo.save(event)
     }
 
     fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {
@@ -304,23 +313,5 @@ class EventService {
         resultEvents.addAll(activeEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) }))
         resultEvents.addAll(inactiveEvents.sortedWith(compareBy { -it.date.toEpochSecond(ZoneOffset.UTC) }))
         return resultEvents
-    }
-
-    private fun filterEventsForActiveStatus(events: List<Event>): List<Event> {
-        return events.filter { it.isActive() }
-    }
-
-    /** Если у пользователя указан возраст **/
-    private fun filterEventsForAge(events: List<Event>, person: Person): List<Event> {
-        if (person.age == null) {
-            throw Exception("age of this person is null")
-        }
-        return events.filter { it.minAge != null && it.maxAge != null }
-                     .filter { it.minAge!! <= person.age!! && it.maxAge!! >= person.age!! }
-    }
-
-    /** Если пользователь неавторизован или возраст не указан **/
-    private fun filterEventsForNullAge(events: List<Event>): List<Event> {
-        return events.filter { it.minAge == null && it.maxAge == null }
     }
 }

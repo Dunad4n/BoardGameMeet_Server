@@ -23,7 +23,7 @@ interface EventRepo: JpaRepository<Event, Long> {
             "WHERE e.city = :city " +
             "AND (e.maxAge >= :age OR e.maxAge IS NULL) " +
             "AND (e.minAge <= :age OR e.minAge IS NULL) " +
-            "AND e.date > :date " +
+            "AND e.date > current_date " +
             "AND (:size = 0 OR e NOT IN :events) " +
             "AND SIZE(e.members) < e.maxPersonCount " +
             "ORDER BY e.date, e.maxPersonCount - SIZE(e.members)")
@@ -33,17 +33,16 @@ interface EventRepo: JpaRepository<Event, Long> {
         pageable: Pageable,
         events: List<Event>,
         size: Int = events.size,
-        date: LocalDateTime = LocalDateTime.now()
     ): Page<Event>?
 
     @Query("SELECT e FROM Event e " +
             "WHERE e.city = :city " +
             "AND (e.maxAge >= :age OR e.maxAge IS NULL) " +
             "AND (e.minAge <= :age OR e.minAge IS NULL) " +
-            "AND e.date < :date " +
+            "AND e.date < current_date " +
             "AND (:size = 0 OR e NOT IN :events) " +
             "AND SIZE(e.members) < e.maxPersonCount " +
-            "AND e.name LIKE :name " +
+            "AND e.name ILIKE :name " +
             "ORDER BY DATE(e.date), e.maxPersonCount - SIZE(e.members)")
     fun findAllByAgeAndName(
         city: String,
@@ -52,11 +51,13 @@ interface EventRepo: JpaRepository<Event, Long> {
         pageable: Pageable,
         events: List<Event>,
         size: Int = events.size,
-        date: LocalDateTime = LocalDateTime.now()
     ): Page<Event>?
 
-    @Query("SELECT e FROM Event e WHERE e in :events AND e.date >= current_date ORDER BY e.date ASC" +
-           " UNION " +
-           "SELECT e FROM Event e WHERE e in :events AND e.date < current_date ORDER BY e.date DESC")
-    fun findMyEvents(events: List<Event>, pageable: Pageable): Page<Event>?
+    @Query("SELECT e FROM Event e WHERE e in :events AND e.date < current_date ORDER BY e.date DESC")
+    fun findPastEvents(events: List<Event>): List<Event>
+
+    @Query("SELECT e FROM Event e WHERE e in :events AND e.date >= current_date ORDER BY e.date ASC")
+    fun findFutureEvents(events: List<Event>): List<Event>
+
+
 }
