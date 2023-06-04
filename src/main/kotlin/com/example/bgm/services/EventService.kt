@@ -53,7 +53,8 @@ class EventService {
                                            event.members.size,
                                            event.maxPersonCount,
                                            event.minAge,
-                                           event.maxAge)
+                                           event.maxAge,
+                                           event.description)
     }
 
     private fun mapToMyEventsResponseEntity(event: Event, user: Person): MyEventsResponseEntity {
@@ -66,6 +67,7 @@ class EventService {
                                       event.maxPersonCount,
                                       event.minAge,
                                       event.maxAge,
+                                      event.description,
                                  event.host == user)
     }
 
