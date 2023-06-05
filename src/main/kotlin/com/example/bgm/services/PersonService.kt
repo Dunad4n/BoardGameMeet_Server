@@ -130,7 +130,13 @@ class PersonService {
             ?: throw UsernameNotFoundException("person with nickname $nickname not found")
     }
 
-    fun joinToEvent(userId: Long, eventId: Long) {
+    fun joinToEvent(userId: Long?, eventId: Long?) {
+        if (userId == null) {
+            throw Exception("user id is null")
+        }
+        if (eventId == null) {
+            throw Exception("event id is null")
+        }
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findById(userId).get()
 //        if (!event.bannedMembers.contains(person) && !event.members.contains(person)) {
@@ -141,7 +147,13 @@ class PersonService {
 //        }
     }
 
-    fun leaveFromEvent(userId: Long, eventId: Long) {
+    fun leaveFromEvent(userId: Long?, eventId: Long?) {
+        if (userId == null) {
+            throw Exception("user id is null")
+        }
+        if (eventId == null) {
+            throw Exception("event id is null")
+        }
         val person = personRepo.findById(userId).get()
         val event = eventRepo.findById(eventId).get()
         if (event.members.contains(person) && event.host.id != person.id) {

@@ -15,6 +15,7 @@ import java.util.*
 interface EventRepo: JpaRepository<Event, Long> {
 
     fun findEventById(id: Long?): Optional<Event>
+    fun existsById(id: Long?) : Boolean
 
     //default
     fun findAllByCityAndDateAfter(city: String, pageable: Pageable, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?

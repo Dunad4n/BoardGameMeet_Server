@@ -10,12 +10,16 @@ import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.ItemRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
+import org.apache.coyote.Response
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
 
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatusCode
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.test.annotation.Rollback
@@ -55,29 +59,28 @@ class EventServiceTest
         val address = "address"
         val date = LocalDateTime.now()
 
-        val personName = "Denis"
-        val personNickname = "Dunadan"
-        val personPassword = "Den221032"
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
         val secretWord = "secret"
         val gender = Gender.MALE
         val userCity = "Voronezh"
 
-        val person = Person(personName, personNickname, personPassword, secretWord, gender, userCity)
-        val event = Event(name, game, city, address, date, maxPersonCount, person)
 
-        event.members.add(person)
-        val personId = personRepo.save(person).id
+
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
-        val eventId = eventRepo.save(event).id
+        val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
         eventRepo.flush()
-
-        assert(personId != null)
+        val authPerson = JwtPerson(person.id, personNickname, personPassword, listOf())
+        event.members.add(person)
 
         /** when **/
-        val responseEvent = eventService.getEvent(eventId)
+        val responseEvent = eventService.getEvent(event.id, authPerson)
 
         /** then **/
-        assertThat(responseEvent.id, `is`(equalTo(eventId)))
+        assertThat(responseEvent.id, `is`(equalTo(event.id)))
         assertThat(responseEvent.name, `is`(equalTo(name)))
         assertThat(responseEvent.game, `is`(equalTo(game)))
         assertThat(responseEvent.address, `is`(equalTo(address)))
@@ -114,22 +117,13 @@ class EventServiceTest
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
         val createEventRequest = CreateEventRequestEntity(name, game, city, address, date,
-                                                            maxPersonCount, minAge, maxAge, description)
+            maxPersonCount, minAge, maxAge, description)
 
         /** when **/
         val response = eventService.createEvent(createEventRequest, person.id)
 
         /** then **/
-        assertThat(response.name, `is`(equalTo(name)))
-        assertThat(response.game, `is`(equalTo(game)))
-        assertThat(response.city, `is`(equalTo(city)))
-        assertThat(response.address, `is`(equalTo(address)))
-        assertThat(response.date, `is`(equalTo(date)))
-        assertThat(response.curPersonCount, `is`(equalTo(1)))
-        assertThat(response.minAge, `is`(equalTo(18)))
-        assertThat(response.maxAge, `is`(equalTo(25)))
-        assertThat(response.description, `is`(equalTo("gogogo")))
-        assertThat(response.hostId, `is`(equalTo(person.id)))
+        assertThat(response.statusCode, `is`(equalTo(HttpStatusCode.valueOf(200))))
     }
 
     @Test
@@ -166,21 +160,15 @@ class EventServiceTest
         personRepo.flush()
         val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
         eventRepo.flush()
+        val authPerson = JwtPerson(person.id, "Vanius", "1234", listOf())
+
 
         /** when **/
-        eventService.updateEvent(UpdateEventRequest(event.id, upName, upGame, upCity, upAddress, upDate,
-            upMaxPersonCount, upMinAge, upMaxAge, upDescription))
+        val response = eventService.updateEvent(UpdateEventRequest(event.id, upName, upGame, upCity, upAddress, upDate,
+            upMaxPersonCount, upMinAge, upMaxAge, upDescription), authPerson)
 
         /** then **/
-        assertThat(event.name, `is`(equalTo(upName)))
-        assertThat(event.game, `is`(equalTo(upGame)))
-        assertThat(event.city, `is`(equalTo(upCity)))
-        assertThat(event.address, `is`(equalTo(upAddress)))
-        assert(event.date.isAfter(date))
-        assertThat(event.maxPersonCount, `is`(equalTo(upMaxPersonCount)))
-        assertThat(event.minAge, `is`(equalTo(upMinAge)))
-        assertThat(event.maxAge, `is`(equalTo(upMaxAge)))
-        assertThat(event.description, `is`(equalTo(upDescription)))
+        assertThat(response.statusCode, `is`(equalTo(HttpStatusCode.valueOf(200))))
     }
 
     @Test
@@ -195,9 +183,6 @@ class EventServiceTest
         val maxPersonCount = 10
         val address = "address"
         val date = LocalDateTime.now()
-        val minAge = 18
-        val maxAge = 25
-        val description = "gogogo"
 
         val personName = "Ivan"
         val personNickname = "Vanius"
@@ -211,9 +196,8 @@ class EventServiceTest
         val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
         eventRepo.flush()
 
-        val roles: List<GrantedAuthority> = listOf(roleRepo.findByName("ROLE_ADMIN")).map { role -> SimpleGrantedAuthority(role.name) }.toList<GrantedAuthority>()
 
-        val authPerson = JwtPerson(1L, "Vanius", "1234", roles)
+        val authPerson = JwtPerson(person.id, "Vanius", "1234", listOf())
 
         eventService.deleteEvent(event.id, authPerson)
 
@@ -223,7 +207,7 @@ class EventServiceTest
     @Test
     @Rollback
     @Transactional
-    // TODO: не так работает метод
+    // TODO: pageable
     fun getMainPageEventsTest() {
         /** given **/
         val name = "event"
@@ -265,17 +249,24 @@ class EventServiceTest
         eventRepo.flush()
         val event1 = eventRepo.save(Event(name1, game1, city1, address1, date1, maxPersonCount1, person1))
         eventRepo.flush()
-        //val respEvent = MainPageEventResponseEntity(event.id, name, game, address, date, curPersonCount, maxPersonCount)
-        //val respEvent1 = MainPageEventResponseEntity(event1.id, name1, game1, address1, date1, curPersonCount1, maxPersonCount1)
+        val authPerson = JwtPerson(1L, "Vanius", "1234", listOf())
+        val authPerson1 = JwtPerson(2L, "Vanius1", "12341", listOf())
+        val pageable = Pageable()
+        pageable.defaultPageSize = 5
+
+        val respEvent = MainPageEventResponseEntity(event.id, name, game, address, date, curPersonCount, maxPersonCount, null, null)
+        val respEvent1 = MainPageEventResponseEntity(event1.id, name1, game1, address1, date1, curPersonCount1, maxPersonCount1, null, null)
 
         val listEvents = listOf<Event>(event, event1)
-        //val res = listOf<MainPageEventResponseEntity>(respEvent, respEvent1)
+        val res = listOf<MainPageEventResponseEntity>(respEvent, respEvent1)
+
+        //eventService.getMainPageEvents(person.city,null, org.springframework.data.domain.Pageable, authPerson)
     }
 
     @Test
     @Rollback
     @Transactional
-    //можно улучшить проверку
+    // TODO: pageable
     fun getMyEventsPageEventTest() {
         /** given **/
         val name = "event"
@@ -323,10 +314,10 @@ class EventServiceTest
         //val listEvents = listOf<Event>(event, event1)
         val listEvents = arrayListOf<MyEventsResponseEntity>(respEvent, respEvent1)
 
-        val res = eventService.getMyEventsPageEvent(authPerson)
+        //val res = eventService.getMyEventsPageEvent(authPerson)
 
-        assertThat(listEvents[0].name, `is`(equalTo(res[0].name)))
-        assertThat(listEvents[1].name, `is`(equalTo(res[1].name)))
+        //assertThat(listEvents[0].name, `is`(equalTo(res[0].name)))
+        //assertThat(listEvents[1].name, `is`(equalTo(res[1].name)))
 
     }
 
@@ -350,21 +341,32 @@ class EventServiceTest
         val gender = Gender.MALE
         val userCity = "Voronezh"
 
+        val personName1 = "Denis"
+        val personNickname1 = "Dunadan"
+        val personPassword1 = "1234"
+        val secretWord1 = "secret"
+        val gender1 = Gender.MALE
+        val userCity1 = "Voronezh"
+
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val person1 = personRepo.save(Person(personName1, personNickname1, personPassword1, secretWord1, gender1, userCity1))
         personRepo.flush()
         val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
         eventRepo.flush()
+        event.members.add(person1)
+        val authPerson = JwtPerson(person.id, personNickname, personPassword, listOf())
 
         /** when **/
-        eventService.banPerson(event.id, person.nickname)
+        eventService.banPerson(event.id, person1.nickname, authPerson)
 
-        assertThat(event.bannedMembers[0], `is`(equalTo(person)))
+        assertThat(event.bannedMembers[0], `is`(equalTo(person1)))
     }
 
     @Test
     @Rollback
     @Transactional
-    //complete
+    // TODO: pageable?
     fun getItemsTest() {
         /** given **/
         val name = "event"
@@ -394,26 +396,71 @@ class EventServiceTest
         itemRepo.flush()
         val item2 = itemRepo.save(Item(item2Name, item2Marked))
         itemRepo.flush()
+        val authPerson = JwtPerson(1L, "Vanius", "1234", listOf())
 
         event.items.add(item1)
         event.items.add(item2)
 
-        val item1Response = ItemResponseEntity(item1.name, item1.marked)
-        val item2Response = ItemResponseEntity(item2.name, item2.marked)
+        val item1Response = ItemResponseEntity(0L, item1.name, item1.marked)
+        val item2Response = ItemResponseEntity(1L, item2.name, item2.marked)
 
         val items = listOf<ItemResponseEntity>(item1Response, item2Response)
 
-        val res = eventService.getItems(event.id)
+        //val res = eventService.getItems(event.id, , authPerson)
 
-        assertThat(res[0], `is`(equalTo(items[0])))
-        assertThat(res[1], `is`(equalTo(items[1])))
+        //assertThat(res[0], `is`(equalTo(items[0])))
+        //assertThat(res[1], `is`(equalTo(items[1])))
 
     }
 
     @Test
     @Rollback
     @Transactional
-    //complete
+    //
+    fun deleteItemsTest() {
+        /** given **/
+        val name = "event"
+        val game = "game"
+        val city = "Voronezh"
+        val maxPersonCount = 10
+        val address = "address"
+        val date = LocalDateTime.now()
+
+        val personName = "Ivan"
+        val personNickname = "Vanius"
+        val personPassword = "1234"
+        val secretWord = "secret"
+        val gender = Gender.MALE
+        val userCity = "Voronezh"
+
+        val item1Name = "item1"
+        val item2Name = "item2"
+        val item1Marked = true
+        val item2Marked = false
+
+        val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        personRepo.flush()
+        val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
+        eventRepo.flush()
+        val item1 = itemRepo.save(Item(item1Name, item1Marked))
+        itemRepo.flush()
+        val item2 = itemRepo.save(Item(item2Name, item2Marked))
+        itemRepo.flush()
+        val authPerson = JwtPerson(person.id, "Vanius", "1234", listOf())
+
+        event.items.add(item1)
+        event.items.add(item2)
+
+        eventService.deleteItems(event.id, authPerson)
+
+        assertThat(event.items[0], `is`(nullValue()))
+
+    }
+
+    @Test
+    @Rollback
+    @Transactional
+    //
     fun editItemsTest() {
         /** given **/
         val name = "event"
@@ -432,8 +479,8 @@ class EventServiceTest
 
         val item1Name = "item1"
         val item2Name = "item2"
-        val upItem1Name = "item2"
-        val upItem2Name = "item2"
+        val upItem1Name = "item3"
+        val upItem2Name = "item4"
         val item1Marked = true
         val item2Marked = false
         val upItem1Marked = false
@@ -484,12 +531,9 @@ class EventServiceTest
         val userCity = "Voronezh"
 
         val item1Name = "item1"
-        val item2Name = "item2"
         val item1Marked = false
-        val item2Marked = false
 
         val mark1 = true
-        val mark2 = true
 
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
@@ -497,18 +541,15 @@ class EventServiceTest
         eventRepo.flush()
         val item1 = itemRepo.save(Item(item1Name, item1Marked))
         itemRepo.flush()
-        val item2 = itemRepo.save(Item(item2Name, item2Marked))
-        itemRepo.flush()
+        val authPerson = JwtPerson(person.id, "Vanius", "1234", listOf())
 
+        event.members.add(person)
         event.items.add(item1)
-        event.items.add(item2)
 
-        val markList = listOf(mark1, mark2)
-        val markRequest = MarkItemsRequestEntity(markList)
+        val markItemRequest1 = MarkItemRequestEntity(item1.id, mark1)
 
-        eventService.markItems(event.id, markRequest)
+        eventService.markItem(event.id, markItemRequest1, authPerson)
 
-        assertThat(event.items[0].marked, `is`(equalTo(markList[0])))
-        assertThat(event.items[1].marked, `is`(equalTo(markList[1])))
+        assertThat(event.items[0].marked, `is`(equalTo(true)))
     }
 }

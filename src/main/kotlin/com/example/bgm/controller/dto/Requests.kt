@@ -36,7 +36,7 @@ data class UpdateEventRequest(val id: Long?,
 data class EditItemsRequestEntity(val name: String,
                                   val marked: Boolean)
 
-data class MarkItemRequestEntity(val itemId: Long,
+data class MarkItemRequestEntity(val itemId: Long?,
                                  val markedStatus: Boolean)
 
 data class KickPersonRequestEntity(val eventId: Long,
@@ -84,5 +84,5 @@ data class VerifyTokenRequestEntity(val token: String,
  */
 
 data class CreateMessageRequestEntity(val text: String,
-                                      val eventId: Long,
+                                      val eventId: Long?,
                                       val personNickname: String)

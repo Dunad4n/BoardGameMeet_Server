@@ -116,7 +116,10 @@ class EventService {
     }
 
 
-    fun getEvent(id: Long, authPerson: JwtPerson): EventResponseEntity {
+    fun getEvent(id: Long?, authPerson: JwtPerson): EventResponseEntity {
+        if (id == null) {
+            throw Exception("event id is null")
+        }
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
@@ -168,7 +171,10 @@ class EventService {
         return ResponseEntity.ok("done")
     }
 
-    fun deleteEvent(id: Long, authPerson: JwtPerson) {
+    fun deleteEvent(id: Long?, authPerson: JwtPerson) {
+        if (id == null) {
+            throw Exception("event id is null")
+        }
         if (authPerson.id != eventRepo.findById(id).get().host.id &&
             personRepo.findByNickname(authPerson.username)?.roles?.
             contains(roleRepo.findByName("ROLE_ADMIN")) == false) {
@@ -228,7 +234,10 @@ class EventService {
         return res
     }
 
-    fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson) {
+    fun banPerson(eventId: Long?, userNickname: String, authPerson: JwtPerson) {
+        if (eventId == null) {
+            throw Exception("event id is null")
+        }
         val host = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
         if (host != event.host) {
@@ -256,15 +265,22 @@ class EventService {
     }
 
     @Transactional
-    fun deleteItems(eventId: Long, authPerson: JwtPerson) {
+    fun deleteItems(eventId: Long?, authPerson: JwtPerson) {
+        if (eventId == null) {
+            throw Exception("event id is null")
+        }
         val event = eventRepo.findEventById(eventId).get()
         if (event.host.id != authPerson.id) {
             throw Exception("only host can delete items")
         }
         itemRepo.deleteAllByEvent(event)
+        itemRepo.flush()
     }
 
-    fun editItems(eventId: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
+    fun editItems(eventId: Long?, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
+        if (eventId == null) {
+            throw Exception("event id is null")
+        }
         val event = eventRepo.findById(eventId).get()
         if(hostId != event.host.id) {
             throw Exception("only host can edit items")
@@ -282,11 +298,17 @@ class EventService {
 //        eventRepo.save(event)
     }
 
-    fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {
+    fun markItem(eventId: Long?, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {
+        if (eventId == null) {
+            throw Exception("event id is null")
+        }
         val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
         if (!event.members.contains(person)) {
             throw Exception("only member can mark items")
+        }
+        if (markItemRequest.itemId == null) {
+            throw Exception("item id is null")
         }
         val item = itemRepo.findById(markItemRequest.itemId).get()
         item.marked = markItemRequest.markedStatus;

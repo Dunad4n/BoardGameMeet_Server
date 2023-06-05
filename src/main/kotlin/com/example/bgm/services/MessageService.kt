@@ -34,7 +34,10 @@ class MessageService {
                                      avatarId = message.person.avatarId)
     }
 
-    fun getMessages(eventId: Long, authPerson: JwtPerson, pageable: Pageable): ArrayList<MessageResponseEntity> {
+    fun getMessages(eventId: Long?, authPerson: JwtPerson, pageable: Pageable): ArrayList<MessageResponseEntity> {
+        if (eventId == null) {
+            throw Exception("event id is null")
+        }
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findByNickname(authPerson.username)
         if (!event.members.contains(person)) {
@@ -49,6 +52,9 @@ class MessageService {
     }
 
     fun createMessage(createMessageRequest: CreateMessageRequestEntity): MessageResponseEntity {
+        if (createMessageRequest.eventId == null) {
+            throw Exception("event id is null")
+        }
         val person = personRepo.findByNickname(createMessageRequest.personNickname)
             ?: throw Exception("person with nickname ${createMessageRequest.personNickname} does not exist")
         val event = eventRepo.findById(createMessageRequest.eventId).get()
