@@ -98,8 +98,8 @@ class PersonController {
     /** Person Сменить пароль **/
     @PutMapping("/changePassword")
     fun changePassword(@RequestBody changePasswordRequest: ChangePasswordRequestEntity) {
-        return personService.changePassword(changePasswordRequest.newPassword,
-            changePasswordRequest.repeatNewPassword, changePasswordRequest.nickname)
+        return personService.changePassword(changePasswordRequest.nickname, changePasswordRequest.newPassword,
+            changePasswordRequest.repeatNewPassword)
     }
 
     @GetMapping("/isProfileOf/{nickname}")
