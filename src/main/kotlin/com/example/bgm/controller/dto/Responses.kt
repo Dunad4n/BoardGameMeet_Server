@@ -27,7 +27,8 @@ data class MainPageEventResponseEntity(val id: Long?,
                                        val curPersonCount: Int,
                                        val maxPersonCount: Int,
                                        val minAge: Int?,
-                                       val maxAge: Int?)
+                                       val maxAge: Int?,
+                                       val description: String?)
 data class MyEventsResponseEntity(val id: Long?,
                                   val name: String,
                                   val game: String,
@@ -37,6 +38,7 @@ data class MyEventsResponseEntity(val id: Long?,
                                   val maxPersonCount: Int,
                                   val minAge: Int?,
                                   val maxAge: Int?,
+                                  val description: String?,
                                   val host: Boolean)
 
 data class EventResponseEntity(val id: Long?,

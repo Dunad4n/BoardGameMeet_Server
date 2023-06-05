@@ -50,7 +50,7 @@ class EventController {
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
                     @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(createEventRequest))
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Минимальный возраст не может быть больше максимального")
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(requestValidationService.getMessage())
         return eventService.createEvent(createEventRequest, authPerson.id)
     }
 
