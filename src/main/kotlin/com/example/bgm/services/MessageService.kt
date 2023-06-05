@@ -41,7 +41,7 @@ class MessageService {
             throw Exception("person can read messages only from event where he is member")
         }
         val messages = arrayListOf<MessageResponseEntity>()
-        val mess = messageRepo.findAllByEventOrderByDateTime(event, pageable)
+        val mess = messageRepo.findAllByEventOrderByDateTimeDesc(event, pageable)
         for (message in mess) {
             messages.add(mapToMessageResponseEntity(message, message.person))
         }
