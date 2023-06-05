@@ -11,6 +11,7 @@ import com.example.bgm.repositories.PersonRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -26,10 +27,10 @@ class MessageService {
     @Autowired
     lateinit var personRepo: PersonRepo
 
-    private fun mapToMessageResponseEntity(message: Message, person: Person?): MessageResponseEntity {
+    private fun mapToMessageResponseEntity(message: Message, person: JwtPerson): MessageResponseEntity {
         return MessageResponseEntity(text = message.text,
                                      eventId = message.event.id,
-                                     isMyNickname = message.person.nickname == person?.nickname,
+                                     isMyNickname = message.person.nickname == person.username,
                                      name = message.person.name,
                                      avatarId = message.person.avatarId)
     }
@@ -43,7 +44,7 @@ class MessageService {
         val messages = arrayListOf<MessageResponseEntity>()
         val mess = messageRepo.findAllByEventOrderByDateTimeDesc(event, pageable)
         for (message in mess) {
-            messages.add(mapToMessageResponseEntity(message, message.person))
+            messages.add(mapToMessageResponseEntity(message, authPerson))
         }
         return messages
     }
@@ -51,8 +52,9 @@ class MessageService {
     fun createMessage(createMessageRequest: CreateMessageRequestEntity): MessageResponseEntity {
         val person = personRepo.findByNickname(createMessageRequest.personNickname)
             ?: throw Exception("person with nickname ${createMessageRequest.personNickname} does not exist")
+        val authPerson = SecurityContextHolder.getContext().authentication.principal as JwtPerson
         val event = eventRepo.findById(createMessageRequest.eventId).get()
         val message = messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), person, event))
-        return mapToMessageResponseEntity(message, person)
+        return mapToMessageResponseEntity(message, authPerson)
     }
 }
