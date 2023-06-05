@@ -30,7 +30,7 @@ interface EventRepo: JpaRepository<Event, Long> {
             "ORDER BY e.date, e.maxPersonCount - SIZE(e.members)")
     fun findAllByAge(
         city: String,
-        age: Int,
+        age: Int?,
         pageable: Pageable,
         events: List<Event>,
         size: Int = events.size,

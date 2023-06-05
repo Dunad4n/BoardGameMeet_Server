@@ -209,7 +209,7 @@ class EventService {
                     if (search != null) {
                         eventRepo.findAllByAgeAndName(city, search, person.age!!, pageable, person.events)
                     } else {
-                        eventRepo.findAllByAge(city, person.age!!, pageable, person.events)
+                        eventRepo.findAllByAge(city, person.age, pageable, person.events)
                     }
                 } else{
                     if (search != null) {
@@ -271,7 +271,10 @@ class EventService {
         eventRepo.save(event);
     }
 
-    fun getItems(id: Long, authPerson: JwtPerson): List<ItemResponseEntity> {
+    fun getItems(id: Long?, authPerson: JwtPerson): List<ItemResponseEntity> {
+        if (id == null) {
+            throw Exception("event id is null")
+        }
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
         if (!event.members.contains(person)) {
