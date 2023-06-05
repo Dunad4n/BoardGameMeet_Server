@@ -1,9 +1,11 @@
 package com.example.bgm.entities
 
 import jakarta.persistence.*
+import lombok.NoArgsConstructor
 
 @Entity
 @Table(name = "role")
+@NoArgsConstructor
 data class Role(
 
     @Column(name = "name")

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: board-game-meet-deployment
+  labels:
+    service: board-game-meet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: board-game-meet
+  template:
+    metadata:
+      labels:
+        service: board-game-meet
+    spec:
+      containers:
+        - name: board-game-meet
+          image: dunad4n/test-image:latest
+          ports:
+            - containerPort: 8080

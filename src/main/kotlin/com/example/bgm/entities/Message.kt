@@ -3,10 +3,12 @@ package com.example.bgm.entities
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 @Table(name = "message")
 @Entity
+@NoArgsConstructor
 data class Message(
 
     @NotBlank
@@ -33,7 +35,8 @@ data class Message(
     @JoinColumn(name = "person_id")
     lateinit var person: Person
 
-    constructor(text: String, dateTime: LocalDateTime, person: Person) : this(text, dateTime) {
+    constructor(text: String, dateTime: LocalDateTime, person: Person, event: Event) : this(text, dateTime) {
         this.person = person
+        this.event = event
     }
 }

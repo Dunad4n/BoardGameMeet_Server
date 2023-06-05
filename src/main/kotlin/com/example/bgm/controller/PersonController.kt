@@ -2,9 +2,12 @@ package com.example.bgm.controller
 
 import com.example.bgm.controller.dto.*
 import com.example.bgm.jwt.JwtPerson
+import com.example.bgm.jwt.JwtTokenProvider
 import com.example.bgm.services.PersonService
 import com.example.bgm.services.RequestValidationService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -20,10 +23,18 @@ class PersonController {
     @Autowired
     lateinit var requestValidationService: RequestValidationService
 
+    @Autowired
+    lateinit var jwtTokenProvider: JwtTokenProvider
+
     /** Person Профиль пользователя **/
     @GetMapping("/profile/{nickname}")
     fun profile(@PathVariable nickname: String): ProfileResponseEntity {
         return personService.getProfile(nickname)
+    }
+
+    @GetMapping("/ownProfile")
+    fun ownProfile(@AuthenticationPrincipal authPerson: JwtPerson): ProfileResponseEntity {
+        return personService.getProfile(authPerson.username)
     }
 
     /** Person Покинуть мероприятие **/
@@ -54,8 +65,8 @@ class PersonController {
 
     /** Person Все участники **/
     @GetMapping("/getAllMembersIn/{eventId}")
-    fun getAllMembers(@PathVariable eventId: Long): ArrayList<MemberResponseEntity> {
-        return personService.getAllMembers(eventId)
+    fun getAllMembers(@PathVariable eventId: Long, @PageableDefault() pageable: Pageable): ArrayList<MemberResponseEntity> {
+        return personService.getAllMembers(eventId, pageable)
     }
 
     /** Person Удалить пользователя **/
@@ -65,33 +76,42 @@ class PersonController {
     }
 
     /** Person Редактировать профиль **/
-    @PostMapping("/updatePerson")
+    @PutMapping("/updatePerson")
     fun updatePerson(@RequestBody request: UpdatePersonRequestEntity,
                      @AuthenticationPrincipal authPerson: JwtPerson
-    ) {
+    ): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+                HttpStatus.CONFLICT, requestValidationService.getMessage()
             )
-        personService.updatePerson(request, authPerson)
+        return personService.updatePerson(request, authPerson, jwtTokenProvider)
     }
 
     /** Person Проверить валидность секретного слова **/
     @PostMapping("/validateSecretWord")
-    fun validateSecretWord(@RequestBody validateSecretWordRequest: ValidateSecretWordRequestEntity,
-                           @AuthenticationPrincipal authPerson: JwtPerson
+    fun validateSecretWord(@RequestBody validateSecretWordRequest: ValidateSecretWordRequestEntity
     ): ResponseEntity<String> {
-        return personService.validateSecretWord(validateSecretWordRequest.secretWord, authPerson)
+        return personService.validateSecretWord(validateSecretWordRequest.secretWord,
+                                                validateSecretWordRequest.nickname)
     }
 
     /** Person Сменить пароль **/
     @PutMapping("/changePassword")
     fun changePassword(@RequestBody changePasswordRequest: ChangePasswordRequestEntity,
-                       @AuthenticationPrincipal authPerson: JwtPerson
     ) {
         return personService.changePassword(changePasswordRequest.newPassword,
-            changePasswordRequest.repeatNewPassword,
-            authPerson)
+            changePasswordRequest.repeatNewPassword, changePasswordRequest.nickname)
+    }
+
+    @GetMapping("/isProfileOf/{nickname}")
+    fun isMyProfile(@PathVariable(name = "nickname") nickname: String,
+                    @AuthenticationPrincipal authPerson: JwtPerson): IsMyProfileResponseEntity {
+        return personService.isMyProfile(nickname, authPerson)
+    }
+
+    @PostMapping("/verifyToken")
+    fun verifyToken(@RequestBody verifyTokenRequest: VerifyTokenRequestEntity): Boolean {
+        return personService.verifyToken(verifyTokenRequest.token, verifyTokenRequest.nickname)
     }
 
 }

@@ -5,12 +5,14 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import lombok.Data
+import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 @Table(name = "event")
 @Data
 @Entity
+@NoArgsConstructor
 data class Event(
 
     @NotBlank
@@ -71,9 +73,9 @@ data class Event(
     var bannedMembers = mutableListOf<Person>()
 
     @Column(name = "description")
-    lateinit var description: String
+    var description: String = ""
 
-    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL], orphanRemoval = true)
     var items = mutableListOf<Item>()
 
     @OneToMany(mappedBy = "event", cascade = [CascadeType.ALL])
@@ -123,13 +125,9 @@ data class Event(
     }
 
     fun editItems(items: List<EditItemsRequestEntity>) {
-        for (i in items.indices) {
-            if (i >= this.items.size) {
-                this.items.add(Item(items[i].name, items[i].marked))
-            }
-            this.items[i].name = items[i].name
-            this.items[i].marked = items[i].marked
-            this.items[i].event = this
+        this.items.clear()
+        for (item in items) {
+            this.items.add(Item(item.name, item.marked))
         }
     }
 

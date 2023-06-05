@@ -9,8 +9,13 @@ import com.example.bgm.entities.jwt.Token
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.jwt.JwtTokenProvider
 import com.example.bgm.repositories.PersonRepo
+import com.example.bgm.repositories.RoleRepo
 import com.example.bgm.repositories.jwt.TokenRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties.Http
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
+import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -18,53 +23,64 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-class AuthService {
+open class AuthService {
 
     @Autowired
-    lateinit var passwordEncoder: BCryptPasswordEncoder
+    private lateinit var passwordEncoder: BCryptPasswordEncoder
 
     @Autowired
-    lateinit var authenticationManager: AuthenticationManager
+    private lateinit var authenticationManager: AuthenticationManager
 
     @Autowired
-    lateinit var jwtTokenProvider: JwtTokenProvider
+    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Autowired
-    lateinit var personRepo: PersonRepo
+    private lateinit var personRepo: PersonRepo
 
     @Autowired
-    lateinit var tokenRepo: TokenRepo
+    private lateinit var tokenRepo: TokenRepo
 
-    fun createPerson(createPersonRequest: CreatePersonRequestEntity, role: Role) {
-        if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
-            personRepo.save(
-                Person(
-                    createPersonRequest.name,
+    @Autowired
+    private lateinit var roleRepo: RoleRepo
+
+    @Transactional
+    fun createPerson(createPersonRequest: CreatePersonRequestEntity): ResponseEntity<*> {
+        if (createPersonRequest.age!! < 0 || createPersonRequest.age > 100) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Возраст может быть от 0 до 100")
+        }
+        return if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
+            val person = Person(createPersonRequest.name,
                     createPersonRequest.nickname,
                     passwordEncoder.encode(createPersonRequest.password),
                     createPersonRequest.secretWord,
                     createPersonRequest.gender,
-                    createPersonRequest.city
-                )
-            )
+                    createPersonRequest.city)
+            person.roles.add(roleRepo.findByName("ROLE_USER"))
+            person.age = createPersonRequest.age
+            personRepo.save(person)
+            ResponseEntity.ok("done")
         } else {
-            throw Exception("this nickname is occupied")
+            ResponseEntity.status(HttpStatus.CONFLICT).body("Такой никнейм уже занят")
         }
     }
 
-    fun login(authenticationRequest: AuthenticationRequestEntity): AuthenticationResponseEntity {
+    @Transactional
+    open fun login(authenticationRequest: AuthenticationRequestEntity): ResponseEntity<*> {
         return try {
             val nickname = authenticationRequest.nickname
             authenticationManager.authenticate(UsernamePasswordAuthenticationToken(nickname, authenticationRequest.password))
             val person: Person = personRepo.findByNickname(nickname)
                 ?: throw UsernameNotFoundException("Person with nickname: $nickname not found")
             val token = jwtTokenProvider.createToken(nickname, person.roles)
+            tokenRepo.deleteAllByPerson(person)
             tokenRepo.save(Token(token, person))
-            AuthenticationResponseEntity(nickname, token, person.getStringRole())
+            ResponseEntity.ok(AuthenticationResponseEntity(nickname, token, person.getStringRole()))
         } catch (e: AuthenticationException) {
-            throw BadCredentialsException("Invalid nickname or password")
+            print(e.message)
+            ResponseEntity.status(HttpStatus.CONFLICT).body("Неверный никнейм или пароль")
         }
     }
 

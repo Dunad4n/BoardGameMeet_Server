@@ -1,5 +1,6 @@
 package com.example.bgm.jwt
 
+import com.example.bgm.entities.Role
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -9,7 +10,7 @@ class JwtPerson(
     @get:JsonIgnore val id: Long?,
     private val nickname: String,
     private val password: String,
-    private val authorities: Collection<GrantedAuthority?>
+    private var authorities: Collection<GrantedAuthority?>
 ): UserDetails {
 
     override fun getAuthorities(): Collection<GrantedAuthority?> {

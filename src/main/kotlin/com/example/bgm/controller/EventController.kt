@@ -5,7 +5,10 @@ import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.EventService
 import com.example.bgm.services.RequestValidationService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -14,48 +17,48 @@ import org.springframework.web.server.ResponseStatusException
 class EventController {
 
     @Autowired
-    lateinit var eventService: EventService
-
-
+    private lateinit var eventService: EventService
 
     @Autowired
-    lateinit var requestValidationService: RequestValidationService
+    private lateinit var requestValidationService: RequestValidationService
+
 
     /** Event Мероприятия на главной странице **/
     @GetMapping("/events")
-    fun allEvents(@RequestBody mainPageEventsRequest: MainPageEventsRequestEntity,
-                  @AuthenticationPrincipal authPerson: JwtPerson?
+    fun allEvents(@RequestParam city: String,
+                  @RequestParam(required = false) search: String?,
+                  @AuthenticationPrincipal authPerson: JwtPerson?,
+                  @PageableDefault() pageable: Pageable
     ): List<MainPageEventResponseEntity>? {
-        return eventService.getMainPageEvents(mainPageEventsRequest.city, mainPageEventsRequest.search, authPerson)
+        return eventService.getMainPageEvents(city, search, pageable, authPerson)
     }
 
     /** Event Мои мероприятия **/
     @GetMapping("/myEvents")
-    fun myEvents(@AuthenticationPrincipal authPerson: JwtPerson): List<MyEventsResponseEntity> {
-        return eventService.getMyEventsPageEvent(authPerson)
+    fun myEvents(@AuthenticationPrincipal authPerson: JwtPerson, @PageableDefault() pageable: Pageable): List<MyEventsResponseEntity> {
+        return eventService.getMyEventsPageEvent(authPerson, pageable)
     }
 
     /** Event Конкретное мероприятие **/
     @GetMapping("/event/{eventId}")
-    fun event(@PathVariable eventId: Long): EventResponseEntity {
-        return eventService.getEvent(eventId)
+    fun event(@PathVariable eventId: Long, @AuthenticationPrincipal authPerson: JwtPerson): EventResponseEntity {
+        return eventService.getEvent(eventId, authPerson)
     }
 
     /** Event создание мероприятия **/
     @PostMapping("/createEvent")
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
-                    @AuthenticationPrincipal authPerson: JwtPerson) {
+                    @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(createEventRequest))
-            throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
-            )
-        eventService.createEvent(createEventRequest, authPerson.id)
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(requestValidationService.getMessage())
+        return eventService.createEvent(createEventRequest, authPerson.id)
     }
 
     /** Event Получить все предметы мероприятия **/
     @GetMapping("/getItemsIn/{eventId}")
-    fun getItems(@PathVariable eventId: Long): List<ItemResponseEntity> {
-        return eventService.getItems(eventId)
+    fun getItems(@PathVariable eventId: Long,
+                 @AuthenticationPrincipal authPerson: JwtPerson): List<ItemResponseEntity> {
+        return eventService.getItems(eventId, authPerson)
     }
 
     /** Event Редактировать предметы мероприятия **/
@@ -65,15 +68,16 @@ class EventController {
                   @AuthenticationPrincipal authPerson: JwtPerson) {
         if(!requestValidationService.validate(editItemsRequest))
             throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+                HttpStatus.CONFLICT, requestValidationService.getMessage()
             )
         return eventService.editItems(eventId, editItemsRequest, authPerson.id)
     }
 
     /** Event забанить пользователя в мероприятии **/
-    @PostMapping("/banPerson")
-    fun banPerson(@RequestBody eventId: Long, @RequestBody userNickname: String) {
-        eventService.banPerson(eventId, userNickname)
+    @PostMapping("/kickPerson")
+    fun banPerson(@RequestBody kickPersonRequest: KickPersonRequestEntity,
+                  @AuthenticationPrincipal authPerson: JwtPerson) {
+        eventService.banPerson(kickPersonRequest.eventId, kickPersonRequest.userNickname, authPerson)
     }
 
     /** Event Удалить мероприятие **/
@@ -84,19 +88,26 @@ class EventController {
 
     /** Event Редактировать мероприятие **/
     @PutMapping("/updateEvent")
-    fun updateEvent(@RequestBody request: UpdateEventRequest) {
+    fun updateEvent(@RequestBody request: UpdateEventRequest,
+                    @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
             throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, requestValidationService.getMessage()
+                HttpStatus.CONFLICT, requestValidationService.getMessage()
             )
-        eventService.updateEvent(request)
+        return eventService.updateEvent(request, authPerson)
+    }
+
+    @DeleteMapping("/deleteItemsIn/{eventId}")
+    fun deleteItems(@PathVariable eventId: Long,
+                    @AuthenticationPrincipal authPerson: JwtPerson) {
+        eventService.deleteItems(eventId, authPerson)
     }
 
     /** Event Отметить предмет **/
-    @PutMapping("/markItemsIn/{eventId}")
+    @PutMapping("/markItemIn/{eventId}")
     fun markItems(@PathVariable eventId: Long,
-                  @RequestBody markItemsRequest: MarkItemsRequestEntity) {
-        eventService.markItems(eventId, markItemsRequest)
+                  @RequestBody markItemsRequest: MarkItemRequestEntity,
+                  @AuthenticationPrincipal authPerson: JwtPerson) {
+        eventService.markItem(eventId, markItemsRequest, authPerson)
     }
-
 }

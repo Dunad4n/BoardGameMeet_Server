@@ -1,6 +1,5 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.dto.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Item
 import com.example.bgm.entities.Person
@@ -10,9 +9,28 @@ import com.example.bgm.repositories.ItemRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import com.example.bgm.controller.dto.MainPageEventResponseEntity
+import com.example.bgm.controller.dto.MyEventsResponseEntity
+import com.example.bgm.controller.dto.EventResponseEntity
+import com.example.bgm.controller.dto.CreateEventResponseEntity
+import com.example.bgm.controller.dto.ItemResponseEntity
+import com.example.bgm.controller.dto.EditItemsRequestEntity
+import com.example.bgm.controller.dto.MarkItemRequestEntity
+import com.example.bgm.controller.dto.UpdateEventRequest
+import com.example.bgm.controller.dto.CreateEventRequestEntity
+import com.example.bgm.entities.enums.Gender
+import java.sql.Date
+import java.time.LocalDate
+
 
 @Service
 class EventService {
@@ -38,7 +56,8 @@ class EventService {
                                            event.members.size,
                                            event.maxPersonCount,
                                            event.minAge,
-                                           event.maxAge)
+                                           event.maxAge,
+                                           event.description)
     }
 
     private fun mapToMyEventsResponseEntity(event: Event, user: Person): MyEventsResponseEntity {
@@ -51,10 +70,11 @@ class EventService {
                                       event.maxPersonCount,
                                       event.minAge,
                                       event.maxAge,
+                                      event.description,
                                  event.host == user)
     }
 
-    private fun mapToEventResponseEntity(event: Event, items: List<ItemResponseEntity>): EventResponseEntity {
+    private fun mapToEventResponseEntity(event: Event, items: List<ItemResponseEntity>, person: Person): EventResponseEntity {
         return EventResponseEntity(event.id,
                                    event.name,
                                    event.game,
@@ -65,24 +85,57 @@ class EventService {
                                    event.minAge,
                                    event.maxAge,
                                    event.description,
-                                   items)
+                                   items,
+                                   event.host == person)
+    }
+
+    private fun mapToCreateEventResponseEntity(event: Event): CreateEventResponseEntity {
+        return CreateEventResponseEntity(event.id,
+                                         event.name,
+                                         event.game,
+                                         event.city,
+                                         event.address,
+                                         event.date,
+                                         event.members.size,
+                                         event.maxPersonCount,
+                                         event.minAge,
+                                         event.maxAge,
+                                         event.description,
+                                         event.host.id)
     }
 
     private fun mapToItemResponseEntity(item: Item): ItemResponseEntity {
-        return ItemResponseEntity(item.name,
+        return ItemResponseEntity(item.id,
+                                  item.name,
                                   item.marked)
     }
 
-    fun getEvent(id: Long): EventResponseEntity {
-        val event = eventRepo.findById(id).get()
-        val items = event.items
-        return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) })
+    private fun mapToItems(editItemsRequest: List<EditItemsRequestEntity>, event: Event): MutableList<Item> {
+        var items = mutableListOf<Item>()
+        for (item in editItemsRequest) {
+            val newItem = Item(item.name, item.marked)
+            newItem.event = event
+            items.add(newItem)
+        }
+        return items
     }
 
-    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?) {
+
+    fun getEvent(id: Long, authPerson: JwtPerson): EventResponseEntity {
+        val event = eventRepo.findById(id).get()
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+        val items = event.items
+        return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) }, person)
+    }
+
+    fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?): ResponseEntity<*> {
         if (hostId == null) {
             throw Exception("person id is null")
         }
+//        if (createEventRequest.minAge!! > createEventRequest.maxAge!!) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body("Минимальный возраст не может быть больше максимального")
+//        }
         val host = personRepo.findById(hostId).get()
         val event = Event(createEventRequest.name,
                           createEventRequest.game,
@@ -96,20 +149,28 @@ class EventService {
                           createEventRequest.description)
         event.members.add(host)
         eventRepo.save(event)
+        return ResponseEntity.ok("done")
     }
 
-    fun updateEvent(updateRequest: UpdateEventRequest) {
-        val event = eventRepo.findById(updateRequest.id).get()
+    fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson): ResponseEntity<*> {
+        val event = eventRepo.findEventById(updateRequest.id).get()
+        if (personRepo.findByNickname(authPerson.username) != event.host) {
+            throw Exception("only host can edit event")
+        }
+        if (updateRequest.minAge!! > updateRequest.maxAge!!) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Минимальный возраст не может быть больше максимального")
+        }
         event.name = updateRequest.name
         event.game = updateRequest.game
         event.city = updateRequest.city
         event.address = updateRequest.address
-        event.date = LocalDateTime.now()
+        event.date = updateRequest.date
         event.maxPersonCount = updateRequest.maxPersonCount
         event.maxAge = updateRequest.maxAge
         event.minAge = updateRequest.minAge
-        event.description = updateRequest.name
+        event.description = updateRequest.description
         eventRepo.save(event)
+        return ResponseEntity.ok("done")
     }
 
     fun deleteEvent(id: Long, authPerson: JwtPerson) {
@@ -123,97 +184,121 @@ class EventService {
 
     fun getMainPageEvents(city: String,
                           search: String?,
+                          pageable: Pageable,
                           authPerson: JwtPerson?): List<MainPageEventResponseEntity> {
-        var events = if (search != null) {
-            eventRepo.findAllByCityAndName(city, search)
-        } else {
-            eventRepo.findAllByCity(city)
-        }
-        if (events == null) {
-            return arrayListOf()
-        }
-        events = sortEventsForMainPage(filterEventsForActiveStatus(events))
-        events = if (authPerson != null) {
-            val person = personRepo.findByNickname(authPerson.username)
-            if (person?.age != null) {
-                filterEventsForAge(events, person)
+        var events: Page<Event>? = null
+        if (authPerson == null){
+            events = if (search != null) {
+                eventRepo.findAllByCityAndNameContainingAndDateAfter(city, search, pageable)
             } else {
-                filterEventsForNullAge(events)
+                eventRepo.findAllByCityAndDateAfter(city, pageable)
             }
-        } else {
-            filterEventsForNullAge(events)
         }
-        return events.map { mapToMainPageEventsResponseEntity(it) }
+        else{
+            val person = personRepo.findByNickname(authPerson.username)
+            if (person != null) {
+                events = if(person.age != null) {
+                    if (search != null) {
+                        eventRepo.findAllByAgeAndName(city, search, person.age!!, pageable, person.events)
+                    } else {
+                        eventRepo.findAllByAge(city, person.age!!, pageable, person.events)
+                    }
+                } else{
+                    if (search != null) {
+                        eventRepo.findAllByCityAndNameContainingAndDateAfter(city, search, pageable)
+                    } else {
+                        eventRepo.findAllByCityAndDateAfter(city, pageable)
+                    }
+                }
+            }
+        }
+        if (events != null)
+            return sortEventsForMainPage(events).map { mapToMainPageEventsResponseEntity(it) }
+        return arrayListOf()
     }
 
-//    // поменять events на запрос к бд
-//    fun getEventsWithSearch(user: Int, start: Int, search: String): ArrayList<EventsResponseEntity> {
-//        val res: ArrayList<EventsResponseEntity> = arrayListOf()
-//        for(event in events)
-//            res.add(mapToEventsResponseEntity(event))
-//        return res
-//    }
+    private fun sortEventsForMainPage(events: Page<Event>): List<Event> {
+        return events.sortedWith(compareBy({ it.date.dayOfYear }, { it.date.year }, { it.membersForFull() }))
+    }
 
-    fun getMyEventsPageEvent(authPerson: JwtPerson): ArrayList<MyEventsResponseEntity> {
+    fun getMyEventsPageEvent(authPerson: JwtPerson, pageable: Pageable): ArrayList<MyEventsResponseEntity> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
-        val myEvents = person.events
+        val myEvents = eventRepo.findMyEvents(person.events, pageable)
         val res = arrayListOf<MyEventsResponseEntity>()
-        for (event in sortEventsForMyEventPage(myEvents)) {
-            res.add(mapToMyEventsResponseEntity(event, person))
-        }
+        if (myEvents != null)
+            for (event in sortEventsForMyEventPage(myEvents)) {
+                res.add(mapToMyEventsResponseEntity(event, person))
+            }
         return res
     }
 
-    fun banPerson(eventId: Long, userNickname: String) {
+    fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson) {
+        val host = personRepo.findByNickname(authPerson.username)
+        val event = eventRepo.findById(eventId).get()
+        if (host != event.host) {
+            throw Exception("only host can ban person")
+        }
         val user = personRepo.findByNickname(userNickname)
         if (user != null) {
-            eventRepo.findById(eventId).get().ban(user)
-        }
-    }
-
-    fun getItems(id: Long): List<ItemResponseEntity> {
-        val items = eventRepo.findById(id).get().items
-        return items.map { mapToItemResponseEntity(it) }
-    }
-
-    fun editItems(id: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
-        val event = eventRepo.findById(id).get()
-        if(hostId != event.host.id) {
-            throw Exception("this person can not edit chosen event")
-        }
-        if(editItemsRequest.size < event.items.size) {
-            for (i in editItemsRequest.size until event.items.size) {
-                itemRepo.delete(event.items[i])
+            if (user == host) {
+                throw Exception("host can not be banned")
             }
+            event.ban(user)
         }
-//        else if (editItemsRequest.size > event.items.size) {
-//            for (i in event.items.size until editItemsRequest.size) {
-//                event.items.add(Item(null, null))
-//            }
-//        }
-        event.editItems(editItemsRequest)
+        eventRepo.save(event);
+    }
+
+    fun getItems(id: Long, authPerson: JwtPerson): List<ItemResponseEntity> {
+        val event = eventRepo.findById(id).get()
+        val person = personRepo.findByNickname(authPerson.username)
+        if (!event.members.contains(person)) {
+            throw Exception("only members can get items")
+        }
+//        val items = eventRepo.findById(id).get().items
+        val items = itemRepo.findAllByEvent(eventRepo.findById(id).get())
+        return items.toList().map { mapToItemResponseEntity(it) }
+    }
+
+    @Transactional
+    fun deleteItems(eventId: Long, authPerson: JwtPerson) {
+        val event = eventRepo.findEventById(eventId).get()
+        if (event.host.id != authPerson.id) {
+            throw Exception("only host can delete items")
+        }
+        itemRepo.deleteAllByEvent(event)
+    }
+
+    fun editItems(eventId: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
+        val event = eventRepo.findById(eventId).get()
+        if(hostId != event.host.id) {
+            throw Exception("only host can edit items")
+        }
         for (item in event.items) {
+            itemRepo.delete(item)
+        }
+        itemRepo.flush()
+        for(item in mapToItems(editItemsRequest, event)) {
             itemRepo.save(item)
         }
-        eventRepo.save(event)
+//        for (item in event.items) {
+//            itemRepo.save(item)
+//        }
+//        eventRepo.save(event)
     }
 
-    fun markItems(eventId: Long, markItemsRequest: MarkItemsRequestEntity) {
+    fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {
+        val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
-        if(markItemsRequest.markedStatuses.size < event.items.size) {
-            throw Exception("incorrect size of marked statuses")
+        if (!event.members.contains(person)) {
+            throw Exception("only member can mark items")
         }
-        for (i in event.items.indices){
-            event.items[i].marked = markItemsRequest.markedStatuses[i]
-        }
+        val item = itemRepo.findById(markItemRequest.itemId).get()
+        item.marked = markItemRequest.markedStatus;
+        itemRepo.save(item)
     }
 
-    private fun sortEventsForMainPage(events: List<Event>): List<Event> {
-        return events.sortedWith(compareBy({ it.date.year }, { it.date.dayOfYear }, { it.membersForFull() }))
-    }
-
-    private fun sortEventsForMyEventPage(events: List<Event>): List<Event> {
+    private fun sortEventsForMyEventPage(events: Page<Event>): List<Event> {
         val activeEvents = mutableListOf<Event>()
         val inactiveEvents = mutableListOf<Event>()
         val resultEvents = mutableListOf<Event>()
