@@ -107,7 +107,7 @@ class MessageServiceTest
         event.messages.add(msg)
         eventRepo.save(event)
 
-        val msg1 = MessageResponseEntity(text, event.id, true, person.name, null)
+        val msg1 = MessageResponseEntity(text, event.id, person.nickname, person.name, null)
         val messageList = arrayListOf<MessageResponseEntity>()
         messageList.add(msg1)
 
