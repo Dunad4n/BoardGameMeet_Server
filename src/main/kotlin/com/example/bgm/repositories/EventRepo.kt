@@ -55,8 +55,6 @@ interface EventRepo: JpaRepository<Event, Long> {
         date: LocalDateTime = LocalDateTime.now()
     ): Page<Event>?
 
-    @Query("SELECT e FROM Event e WHERE e in :events AND e.date >= current_date ORDER BY e.date ASC" +
-           " UNION " +
-           "SELECT e FROM Event e WHERE e in :events AND e.date < current_date ORDER BY e.date DESC")
+    @Query("SELECT e FROM Event e WHERE e in :events ORDER BY e.date ASC")
     fun findMyEvents(events: List<Event>, pageable: Pageable): Page<Event>?
 }
