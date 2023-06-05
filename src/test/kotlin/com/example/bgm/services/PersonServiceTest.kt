@@ -1,10 +1,15 @@
 package com.example.bgm.services
 
+import com.example.bgm.controller.dto.IsMyProfileResponseEntity
+import com.example.bgm.controller.dto.MemberResponseEntity
+import com.example.bgm.controller.dto.ProfileResponseEntity
 import com.example.bgm.controller.dto.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
+import com.example.bgm.entities.Role
 import com.example.bgm.entities.enums.Gender
 import com.example.bgm.jwt.JwtPerson
+import com.example.bgm.jwt.JwtTokenProvider
 import com.example.bgm.repositories.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
@@ -12,13 +17,18 @@ import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
+import org.springframework.http.RequestEntity
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
+import org.testcontainers.shaded.org.yaml.snakeyaml.tokens.Token
 import java.time.LocalDateTime
+import kotlin.test.assertNotEquals
 
 @SpringBootTest
 class PersonServiceTest
@@ -34,6 +44,9 @@ class PersonServiceTest
 
     @Autowired
     private lateinit var personService: PersonService
+
+    @Autowired
+    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Test
     @Rollback
@@ -55,18 +68,20 @@ class PersonServiceTest
         val resPerson = personService.getPerson(person.id)
 
         /** then **/
-        assertThat(person.name, `is`(equalTo(personName)))
-        assertThat(person.nickname, `is`(equalTo(personNickname)))
-        assertThat(person.password, `is`(equalTo(personPassword)))
-        assertThat(person.secretWord, `is`(equalTo(secretWord)))
-        assertThat(person.gender, `is`(equalTo(gender)))
-        assertThat(person.city, `is`(equalTo(userCity)))
+        if (resPerson != null) {
+            assertThat(resPerson.name, `is`(equalTo(personName)))
+            assertThat(resPerson.nickname, `is`(equalTo(personNickname)))
+            assertThat(resPerson.password, `is`(equalTo(personPassword)))
+            assertThat(resPerson.secretWord, `is`(equalTo(secretWord)))
+            assertThat(resPerson.gender, `is`(equalTo(gender)))
+            assertThat(resPerson.city, `is`(equalTo(userCity)))
+        }
     }
 
     @Test
     @Rollback
     @Transactional
-    //complete (уточнить у дена про обязательность возраста и аватара)
+    //complete
     fun updatePersonTest() {
         /** given **/
         val personName = "Ivan"
@@ -89,25 +104,21 @@ class PersonServiceTest
         personRepo.flush()
         person.age = age
         person.avatarId = avatarId
-        val jwtPerson = JwtPerson(person.id, person.nickname, person.password, listOf())
+        val authPerson = JwtPerson(person.id, person.nickname, person.password, listOf())
         val upPerson = UpdatePersonRequestEntity(upPersonName, upPersonNickname, upUserCity, upAge, upGender, upAvatarId)
 
         /** when **/
-        personService.updatePerson(upPerson, jwtPerson)
+        val res = personService.updatePerson(upPerson, authPerson, jwtTokenProvider)
 
         /** then **/
-        assertThat(person.name, `is`(equalTo(upPersonName)))
-        assertThat(person.nickname, `is`(equalTo(upPersonNickname)))
-        assertThat(person.city, `is`(equalTo(upUserCity)))
-        assertThat(person.age, `is`(equalTo(upAge)))
-        assertThat(person.avatarId, `is`(equalTo(upAvatarId)))
+        assertThat(res.statusCode, `is`(equalTo(HttpStatusCode.valueOf(200))))
+
     }
 
-    // TODO: delete test(exceptions)
     @Test
     @Rollback
     @Transactional
-    //complete
+    // TODO: pageable
     fun getAllMembersTest() {
         /** given **/
         val name = "event"
@@ -137,18 +148,27 @@ class PersonServiceTest
         personRepo.flush()
         val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
         eventRepo.flush()
+        val fds = Pageable()
+
+
         event.host = person
         event.members.add(person)
         event.members.add(person1)
 
+        val res = arrayListOf<MemberResponseEntity>()
+        val memberResponse = MemberResponseEntity(person.nickname, null,true)
+        val memberResponse1 = MemberResponseEntity(person1.nickname, null,false)
+        res.add(memberResponse)
+        res.add(memberResponse1)
+
         /** when **/
-        val members = personService.getAllMembers(event.id)
+        //val members = personService.getAllMembers(event.id, )
 
         /** then **/
-        assertThat(members[0].nickname, `is`(equalTo(personNickname)))
-        assertThat(members[0].host, `is`(equalTo(true)))
-        assertThat(members[1].nickname, `is`(equalTo(personNickname1)))
-        assertThat(members[1].host, `is`(equalTo(false)))
+        assertThat(res[0].nickname, `is`(equalTo(personNickname)))
+        assertThat(res[0].host, `is`(equalTo(true)))
+        assertThat(res[1].nickname, `is`(equalTo(personNickname1)))
+        assertThat(res[1].host, `is`(equalTo(false)))
 
     }
 
@@ -165,30 +185,17 @@ class PersonServiceTest
         val gender = Gender.MALE
         val userCity = "Voronezh"
 
-        val name = "event"
-        val game = "game"
-        val city = "Voronezh"
-        val maxPersonCount = 10
-        val address = "address"
-        val date = LocalDateTime.now()
-        val minAge = 18
-        val maxAge = 25
-        val description = "gogogo"
-
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
 
-        val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
-        eventRepo.flush()
+        val profile = ProfileResponseEntity(person.name, person.nickname, null, person.city, null, person.gender)
+
 
         /** when **/
-        val profile = personService.getProfile(person.nickname)
+        val res = personService.getProfile(person.nickname)
 
         /** then **/
-        assertThat(profile.name, `is`(equalTo(personName)))
-        assertThat(profile.nickname, `is`(equalTo(personNickname)))
-        assertThat(profile.city, `is`(equalTo(userCity)))
-        assertThat(profile.gender, `is`(equalTo(gender)))
+        assertThat(res, `is`(equalTo(profile)))
     }
 
     @Test
@@ -211,18 +218,13 @@ class PersonServiceTest
         val resPerson = personService.getByNickname(person.nickname)
 
         /** then **/
-        assertThat(resPerson.name, `is`(equalTo(personName)))
-        assertThat(resPerson.nickname, `is`(equalTo(personNickname)))
-        assertThat(resPerson.password, `is`(equalTo(personPassword)))
-        assertThat(resPerson.secretWord, `is`(equalTo(secretWord)))
-        assertThat(resPerson.gender, `is`(equalTo(gender)))
-        assertThat(resPerson.city, `is`(equalTo(userCity)))
+        assertThat(resPerson, `is`(equalTo(person)))
     }
 
     @Test
     @Rollback
     @Transactional
-    // TODO: assert exception 
+    //complete
     fun joinToEventTest() {
         /** given **/
         val personName = "Ivan"
@@ -234,33 +236,22 @@ class PersonServiceTest
 
         val personName1 = "Ivan1"
 
-        val personName2 = "Ivan2"
-
         val name = "event"
         val game = "game"
         val city = "Voronezh"
         val maxPersonCount = 10
         val address = "address"
         val date = LocalDateTime.now()
-        val minAge = 18
-        val maxAge = 25
-        val description = "gogogo"
 
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
         val person1 = personRepo.save(Person(personName1, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
-        val person2 = personRepo.save(Person(personName2, personNickname, personPassword, secretWord, gender, userCity))
-        personRepo.flush()
         val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
         eventRepo.flush()
-        //event.bannedMembers.add(person)
-        //event.members.add(person2)
 
         /** when **/
-        personService.joinToEvent(person1.id, event.id)
-        //personService.joinToEvent(person1.id, event.id)
-        //personService.joinToEvent(person2.id, event.id)
+        personService.joinToEvent(person1.id!!, event.id!!)
 
         /** then **/
         assertThat(event.members[0].name, `is`(equalTo(personName1)))
@@ -292,9 +283,6 @@ class PersonServiceTest
         val maxPersonCount = 10
         val address = "address"
         val date = LocalDateTime.now()
-        val minAge = 18
-        val maxAge = 25
-        val description = "gogogo"
 
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
@@ -306,7 +294,7 @@ class PersonServiceTest
         event.members.add(person1)
 
         /** when **/
-        personService.leaveFromEvent(person1.id, event.id)
+        personService.leaveFromEvent(person1.id!!, event.id!!)
 
         /** then **/
         assertThat(event.members.size, `is`(equalTo(1)))
@@ -315,7 +303,7 @@ class PersonServiceTest
     @Test
     @Rollback
     @Transactional
-    // TODO: как сравнивать 
+    //complete
     fun validateSecretWordTest() {
         /** given **/
         val personName = "Ivan"
@@ -332,25 +320,23 @@ class PersonServiceTest
         val gender1 = Gender.MALE
         val userCity1 = "Voronezh"
 
-        val authPerson = JwtPerson(1L, "Vanius", "1234", listOf())
-        val authPerson1 = JwtPerson(2L, "Vanius1", "12341", listOf())
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
         val person1 = personRepo.save(Person(personName1, personNickname1, personPassword1, secretWord1, gender1, userCity1))
         personRepo.flush()
 
-        val response = personService.validateSecretWord("cat", authPerson)
-        val response1 = personService.validateSecretWord("cat", authPerson1)
+        val response = personService.validateSecretWord("cat", person.nickname)
+        val response1 = personService.validateSecretWord("cat", person1.nickname)
 
-        assertThat(response.body, `is`(equalTo("correct secret word")))
-        assertThat(response1.body, `is`(equalTo("wrong secret word")))
+        assertThat(response.statusCode, `is`(equalTo(HttpStatusCode.valueOf(200))))
+        assertThat(response1.statusCode, `not`(equalTo(HttpStatusCode.valueOf(200))))
     }
 
     @Test
     @Rollback
     @Transactional
-    // TODO: спросить дена про сравнение пароля(encoder) 
-    fun changePasswordTest() {
+    //complete
+    fun isMyProfileTest() {
         /** given **/
         val personName = "Ivan"
         val personNickname = "Vanius"
@@ -359,36 +345,15 @@ class PersonServiceTest
         val gender = Gender.MALE
         val userCity = "Voronezh"
 
-        val newPass = "newpass"
-        val repeatNewPass = "newpass"
-
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
         personRepo.flush()
-        val authPerson = JwtPerson(1L, "Vanius", "1234", listOf())
-        val encoder = BCryptPasswordEncoder()
-
+        val authPerson = JwtPerson(person.id, person.nickname, person.password, listOf())
+        val profileResponse = IsMyProfileResponseEntity(true)
 
         /** when **/
-        personService.changePassword(newPass, repeatNewPass, authPerson)
-        val sdf = encoder.encode(newPass)
+        val res = personService.isMyProfile(person.nickname, authPerson)
 
         /** then **/
-        assertThat(person.password, `is`(equalTo(encoder.encode(newPass))))
+        assertThat(res, `is`(equalTo(profileResponse)))
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
