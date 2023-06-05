@@ -26,8 +26,7 @@ class ChatController {
     @MessageMapping("/chat")
 //    @SendTo("/topic/chat")
     fun chatting(
-        @Payload messageRequestEntity: CreateMessageRequestEntity,
-        @AuthenticationPrincipal authPerson: JwtPerson): MessageResponseEntity {
+        @Payload messageRequestEntity: CreateMessageRequestEntity): MessageResponseEntity {
         println(messageRequestEntity.text)
         println(messageRequestEntity.eventId)
         println(messageRequestEntity.personNickname)

@@ -86,6 +86,6 @@ data class IsMyProfileResponseEntity(@JsonProperty("isMyProfile")val isMyProfile
 
 data class MessageResponseEntity(val text: String,
                                  val eventId: Long?,
-                                 val isMyNickname: Boolean,
+                                 val myNickname: String,
                                  val name: String,
                                  val avatarId: Long?)
