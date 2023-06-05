@@ -27,9 +27,9 @@ class MessageService {
     lateinit var personRepo: PersonRepo
 
     private fun mapToMessageResponseEntity(message: Message, person: Person?): MessageResponseEntity {
-        return MessageResponseEntity(message.text,
+        return MessageResponseEntity(text = message.text,
                                      eventId = message.event.id,
-                                     isMyNickname = message.person.nickname == message.person.nickname,
+                                     isMyNickname = message.person.nickname == person?.nickname,
                                      name = message.person.name,
                                      avatarId = message.person.avatarId)
     }
