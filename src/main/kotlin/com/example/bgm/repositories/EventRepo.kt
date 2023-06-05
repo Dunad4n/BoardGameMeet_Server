@@ -1,7 +1,6 @@
 package com.example.bgm.repositories
 
 import com.example.bgm.entities.Event
-import com.example.bgm.entities.Person
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -17,23 +16,49 @@ interface EventRepo: JpaRepository<Event, Long> {
     fun findEventById(id: Long?): Optional<Event>
     fun existsById(id: Long?) : Boolean
 
-    //default
     fun findAllByCityAndDateAfter(city: String, pageable: Pageable, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
-    // поиск
+
     fun findAllByCityAndNameContainingAndDateAfter(city: String, name: String, pageable: Pageable, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
-    // возраст
-    fun findAllByCityAndNameContainingAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city: String, name: String, minAge: Int, maxAge: Int, pageable: Pageable, person: Person, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
-    // возраст и поиск
-    fun findAllByCityAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city: String, minAge: Int, maxAge: Int, pageable: Pageable, person: Person, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
 
-//    @Query(nativeQuery = true, value = "select e from Event e where e.city = :city and (e.maxAge >= :age or  e.maxAge = null) and (e.minAge <= :age or  e.minAge = null) and  e.date < :date and not (:person in e.members)")
-//    fun findAllByAge(city: String, age: Int, pageable: Pageable, person: Person, @Param("date") date: LocalDateTime = LocalDateTime.now()): Page<Event>?
+    @Query("SELECT e FROM Event e " +
+            "WHERE e.city = :city " +
+            "AND (e.maxAge >= :age OR e.maxAge IS NULL) " +
+            "AND (e.minAge <= :age OR e.minAge IS NULL) " +
+            "AND e.date > current_date " +
+            "AND (:size = 0 OR e NOT IN :events) " +
+            "AND SIZE(e.members) < e.maxPersonCount " +
+            "ORDER BY e.date, e.maxPersonCount - SIZE(e.members)")
+    fun findAllByAge(
+        city: String,
+        age: Int,
+        pageable: Pageable,
+        events: List<Event>,
+        size: Int = events.size,
+    ): Page<Event>?
 
-//    @Query("select e from Event e where e.city = :city and (e.maxAge >= :age or e.maxAge = null) and (e.minAge <= :age or e.minAge = null) and not :person in e.members")
-//    fun findAll(city: String, age: Int, pageable: Pageable, person: Person): Page<Event>?
+    @Query("SELECT e FROM Event e " +
+            "WHERE e.city = :city " +
+            "AND (e.maxAge >= :age OR e.maxAge IS NULL) " +
+            "AND (e.minAge <= :age OR e.minAge IS NULL) " +
+            "AND e.date < current_date " +
+            "AND (:size = 0 OR e NOT IN :events) " +
+            "AND SIZE(e.members) < e.maxPersonCount " +
+            "AND e.name ILIKE :name " +
+            "ORDER BY DATE(e.date), e.maxPersonCount - SIZE(e.members)")
+    fun findAllByAgeAndName(
+        city: String,
+        name: String,
+        age: Int,
+        pageable: Pageable,
+        events: List<Event>,
+        size: Int = events.size,
+    ): Page<Event>?
 
-//    @Query(nativeQuery = true, value = "select e from Event e where not :person in e.members")
-//    fun findAll(pageable: Pageable, person: Person): Page<Event>?
+    @Query("SELECT e FROM Event e WHERE e in :events AND e.date < current_date ORDER BY e.date DESC")
+    fun findPastEvents(events: List<Event>): List<Event>
 
-    fun findAllByMembersContains(person: Person, pageable: Pageable): Page<Event>?
+    @Query("SELECT e FROM Event e WHERE e in :events AND e.date >= current_date ORDER BY e.date ASC")
+    fun findFutureEvents(events: List<Event>): List<Event>
+
+
 }

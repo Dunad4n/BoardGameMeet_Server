@@ -11,10 +11,10 @@ import org.springframework.context.annotation.Configuration
 
 @RequiredArgsConstructor
 @Configuration
-open class SwaggerConfig {
+class SwaggerConfig {
 
     @Bean
-    open fun api(): OpenAPI {
+    fun api(): OpenAPI {
         return OpenAPI()
             .components(
                 Components()

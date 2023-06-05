@@ -42,6 +42,8 @@ class RequestValidationService {
                 message = "Минимальный возраст не может быть меньше 0, и больше 100"
                 return false
             }
+        }
+        if (request.maxAge != null) {
             if (request.maxAge!! < 0 || request.maxAge!! > 100) {
                 message = "Минимальный возраст не может быть меньше 0, и больше 100"
                 return false

@@ -27,6 +27,11 @@ import com.example.bgm.controller.dto.EditItemsRequestEntity
 import com.example.bgm.controller.dto.MarkItemRequestEntity
 import com.example.bgm.controller.dto.UpdateEventRequest
 import com.example.bgm.controller.dto.CreateEventRequestEntity
+import com.example.bgm.entities.enums.Gender
+import org.springframework.data.domain.PageImpl
+import java.lang.Math.min
+import java.sql.Date
+import java.time.LocalDate
 
 
 @Service
@@ -202,9 +207,9 @@ class EventService {
             if (person != null) {
                 events = if(person.age != null) {
                     if (search != null) {
-                        eventRepo.findAllByCityAndNameContainingAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, search, person.age!!, person.age!!, pageable, person)
+                        eventRepo.findAllByAgeAndName(city, search, person.age!!, pageable, person.events)
                     } else {
-                        eventRepo.findAllByCityAndMinAgeLessThanEqualOrMinAgeNullAndMaxAgeGreaterThanEqualOrMaxAgeNullAndMembersNotContainingAndDateAfter(city, person.age!!, person.age!!, pageable, person)
+                        eventRepo.findAllByAge(city, person.age!!, pageable, person.events)
                     }
                 } else{
                     if (search != null) {
@@ -227,13 +232,24 @@ class EventService {
     fun getMyEventsPageEvent(authPerson: JwtPerson, pageable: Pageable): ArrayList<MyEventsResponseEntity> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
-        val myEvents = eventRepo.findAllByMembersContains(person, pageable)
+        val myEvents = findMyEvents(person.events, pageable)
         val res = arrayListOf<MyEventsResponseEntity>()
-        if (myEvents != null)
-            for (event in sortEventsForMyEventPage(myEvents)) {
-                res.add(mapToMyEventsResponseEntity(event, person))
-            }
+        for (event in sortEventsForMyEventPage(myEvents)) {
+            res.add(mapToMyEventsResponseEntity(event, person))
+        }
         return res
+    }
+
+    fun findMyEvents(events: List<Event>, pageable: Pageable): Page<Event> {
+        val pastEvents = eventRepo.findPastEvents(events)
+        val futureEvents = eventRepo.findFutureEvents(events)
+        val allEvents = mutableListOf<Event>()
+        allEvents.addAll(pastEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) }))
+        allEvents.addAll(futureEvents.sortedWith(compareBy { -it.date.toEpochSecond(ZoneOffset.UTC) }))
+//        val sortedEvents = allEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) })
+        val start = pageable.offset.toInt()
+        val end = min((start + pageable.pageSize), allEvents.size)
+        return PageImpl(allEvents.subList(start, end), pageable, allEvents.size.toLong())
     }
 
     fun banPerson(eventId: Long?, userNickname: String, authPerson: JwtPerson) {
@@ -294,10 +310,6 @@ class EventService {
         for(item in mapToItems(editItemsRequest, event)) {
             itemRepo.save(item)
         }
-//        for (item in event.items) {
-//            itemRepo.save(item)
-//        }
-//        eventRepo.save(event)
     }
 
     fun markItem(eventId: Long?, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {

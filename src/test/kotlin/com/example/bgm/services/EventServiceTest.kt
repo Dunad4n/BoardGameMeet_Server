@@ -254,8 +254,8 @@ class EventServiceTest
         val pageable = Pageable()
         pageable.defaultPageSize = 5
 
-        val respEvent = MainPageEventResponseEntity(event.id, name, game, address, date, curPersonCount, maxPersonCount, null, null)
-        val respEvent1 = MainPageEventResponseEntity(event1.id, name1, game1, address1, date1, curPersonCount1, maxPersonCount1, null, null)
+        val respEvent = MainPageEventResponseEntity(event.id, name, game, address, date, curPersonCount, maxPersonCount, null, null, null)
+        val respEvent1 = MainPageEventResponseEntity(event1.id, name1, game1, address1, date1, curPersonCount1, maxPersonCount1, null, null, null)
 
         val listEvents = listOf<Event>(event, event1)
         val res = listOf<MainPageEventResponseEntity>(respEvent, respEvent1)
@@ -307,9 +307,9 @@ class EventServiceTest
         person.events.add(event)
         person.events.add(event1)
         val respEvent = MyEventsResponseEntity(event.id, name, game, address, date, curPersonCount, maxPersonCount,
-            minAge, maxAge, true)
+            minAge, maxAge, null, true)
         val respEvent1 = MyEventsResponseEntity(event1.id, name1, game1, address1, date1, curPersonCount1, maxPersonCount1,
-            minAge1, maxAge1, true)
+            minAge1, maxAge1, null, true)
 
         //val listEvents = listOf<Event>(event, event1)
         val listEvents = arrayListOf<MyEventsResponseEntity>(respEvent, respEvent1)

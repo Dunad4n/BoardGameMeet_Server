@@ -9,7 +9,6 @@ import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.MessageRepo
 import com.example.bgm.repositories.PersonRepo
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -44,7 +43,7 @@ class MessageService {
             throw Exception("person can read messages only from event where he is member")
         }
         val messages = arrayListOf<MessageResponseEntity>()
-        val mess = messageRepo.findAllByEvent(event, pageable)
+        val mess = messageRepo.findAllByEventOrderByDateTimeDesc(event, pageable)
         for (message in mess) {
             messages.add(mapToMessageResponseEntity(message, message.person))
         }
