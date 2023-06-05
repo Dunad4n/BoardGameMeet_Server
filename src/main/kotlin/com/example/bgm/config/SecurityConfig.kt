@@ -45,7 +45,7 @@ open class SecurityConfig {
             .and()
             .authorizeHttpRequests()
             .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/actuator/**").permitAll()
-            .requestMatchers("/auth/**", "/validateSecretWord", "/changePassword", "/chat", "/verifyToken").permitAll()
+            .requestMatchers("/auth/**", "/validateSecretWord", "/changePassword", "/verifyToken").permitAll()
             .requestMatchers("/events").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
@@ -55,7 +55,7 @@ open class SecurityConfig {
     }
 
     @Bean
-    open fun corsConfigurationSource(): CorsConfigurationSource {
+    fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf("http://localhost:8080")
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE")
