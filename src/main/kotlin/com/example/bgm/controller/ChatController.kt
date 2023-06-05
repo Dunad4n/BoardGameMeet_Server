@@ -50,13 +50,4 @@ class ChatController {
         map["avatarId"] = person.avatarId.toString()
         return map
     }
-
-    @GetMapping("messagesIn/{eventId}")
-    @Operation(summary = "Получения всех сообщений в чате", description = "В пагинации указывается только page и size")
-    fun getAllMessages(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
-                       @AuthenticationPrincipal authPerson: JwtPerson,
-                       @PageableDefault()@Parameter(description = "Пагинация") pageable: Pageable
-    ): ArrayList<MessageResponseEntity> {
-        return messageService.getMessages(eventId, authPerson, pageable)
-    }
 }

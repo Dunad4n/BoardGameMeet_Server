@@ -44,7 +44,15 @@ open class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeHttpRequests()
-            .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
+            .requestMatchers("/v2/api-docs",
+                             "/configuration/ui",
+                             "/swagger-ui/**",
+                             "/swagger-resources/**",
+                             "/configuration/security",
+                             "/webjars/**",
+                             "/v2/**",
+                             "/api-docs/**",
+                             "/swagger-ui.html").permitAll()
             .requestMatchers("/auth/**", "/validateSecretWord", "/changePassword", "chat").permitAll()
             .requestMatchers("/events").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")

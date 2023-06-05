@@ -231,12 +231,12 @@ class EventService {
         val pastEvents = eventRepo.findPastEvents(events)
         val futureEvents = eventRepo.findFutureEvents(events)
         val allEvents = mutableListOf<Event>()
-        allEvents.addAll(pastEvents)
-        allEvents.addAll(futureEvents)
-        val sortedEvents = allEvents.sortedBy { it.date }
+        allEvents.addAll(pastEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) }))
+        allEvents.addAll(futureEvents.sortedWith(compareBy { -it.date.toEpochSecond(ZoneOffset.UTC) }))
+//        val sortedEvents = allEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) })
         val start = pageable.offset.toInt()
-        val end = min((start + pageable.pageSize), sortedEvents.size)
-        return PageImpl(sortedEvents.subList(start, end), pageable, sortedEvents.size.toLong())
+        val end = min((start + pageable.pageSize), allEvents.size)
+        return PageImpl(allEvents.subList(start, end), pageable, allEvents.size.toLong())
     }
 
     fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson) {
