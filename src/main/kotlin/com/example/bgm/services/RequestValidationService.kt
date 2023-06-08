@@ -42,16 +42,14 @@ class RequestValidationService {
                 message = "Минимальный возраст не может быть меньше 0, и больше 100"
                 return false
             }
-        }
-        if (request.maxAge != null) {
             if (request.maxAge!! < 0 || request.maxAge!! > 100) {
                 message = "Минимальный возраст не может быть меньше 0, и больше 100"
                 return false
             }
-        }
-        if (request.minAge!! > request.maxAge!!) {
-            message = "Минимальный возраст не может быть больше максимального"
-            return false
+            if (request.minAge!! > request.maxAge!!) {
+                message = "Минимальный возраст не может быть больше максимального"
+                return false
+            }
         }
         if(request.maxPersonCount < 2) {
             message = "Максимально количество участников не может быть меньше 2"
@@ -95,6 +93,10 @@ class RequestValidationService {
             }
             if (request.maxAge < 0 || request.maxAge > 100) {
                 message = "Минимальный возраст не может быть меньше 0, и больше 100"
+                return false
+            }
+            if (request.minAge > request.maxAge) {
+                message = "Минимальный возраст не может быть больше максимального"
                 return false
             }
         }
