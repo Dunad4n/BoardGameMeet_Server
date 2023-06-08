@@ -160,7 +160,8 @@ class EventService {
             return ResponseEntity.status(510).body("event with id ${updateRequest.id} not exist")
         }
         val event = eventRepo.findEventById(updateRequest.id).get()
-        if (personRepo.findByNickname(authPerson.username) != event.host) {
+        val person = personRepo.findByNickname(authPerson.username)
+        if (person != event.host) {
             throw Exception("only host can edit event")
         }
         if (updateRequest.minAge != null && updateRequest.maxAge != null) {
@@ -179,7 +180,7 @@ class EventService {
         event.minAge = updateRequest.minAge
         event.description = updateRequest.description
         eventRepo.save(event)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(mapToEventResponseEntity(event, event.items.map { mapToItemResponseEntity(it) }, person))
     }
 
     fun deleteEvent(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
