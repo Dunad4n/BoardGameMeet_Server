@@ -78,7 +78,7 @@ class EventServiceTest
         event.members.add(person)
 
         /** when **/
-        val responseEvent = eventService.getEvent(event.id!!, authPerson)
+        val responseEvent = eventService.getEvent(event.id!!, authPerson).body as EventResponseEntity
 
         /** then **/
         assertThat(responseEvent.id, `is`(equalTo(event.id)))
@@ -354,7 +354,7 @@ class EventServiceTest
 
         val items = listOf<ItemResponseEntity>(item1Response, item2Response)
 
-        val res = eventService.getItems(event.id!!, authPerson)
+        val res = eventService.getItems(event.id!!, authPerson).body as List<*>
 
         assertThat(res[0], `is`(equalTo(items[0])))
         assertThat(res[1], `is`(equalTo(items[1])))

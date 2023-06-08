@@ -111,7 +111,7 @@ class EventService {
     }
 
     private fun mapToItems(editItemsRequest: List<EditItemsRequestEntity>, event: Event): MutableList<Item> {
-        var items = mutableListOf<Item>()
+        val items = mutableListOf<Item>()
         for (item in editItemsRequest) {
             val newItem = Item(item.name, item.marked)
             newItem.event = event
