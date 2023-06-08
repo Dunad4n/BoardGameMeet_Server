@@ -273,10 +273,10 @@ class EventService {
         }
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
-        if (!event.members.contains(person)) {
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+        if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             throw Exception("only members can get items")
         }
-//        val items = eventRepo.findById(id).get().items
         val items = itemRepo.findAllByEvent(eventRepo.findById(id).get())
         return ResponseEntity.ok(items.toList().map { mapToItemResponseEntity(it) })
     }
