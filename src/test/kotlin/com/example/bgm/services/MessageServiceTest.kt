@@ -112,7 +112,7 @@ class MessageServiceTest
         messageList.add(msg1)
 
         /** when **/
-        val messages = messageService.getMessages(event.id!!, authPerson, p)
+        val messages = messageService.getMessages(event.id!!, authPerson, p) as List<*>
 
         /** then **/
         assertThat(messages[0], `is`(equalTo(messageList[0])))
