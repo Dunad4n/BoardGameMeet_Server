@@ -9,6 +9,7 @@ import com.example.bgm.repositories.MessageRepo
 import com.example.bgm.repositories.PersonRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -33,7 +34,10 @@ class MessageService {
                                      avatarId = message.person.avatarId)
     }
 
-    fun getMessages(eventId: Long, authPerson: JwtPerson, pageable: Pageable): ArrayList<MessageResponseEntity> {
+    fun getMessages(eventId: Long, authPerson: JwtPerson, pageable: Pageable): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findByNickname(authPerson.username)
         if (!event.members.contains(person)) {
@@ -44,7 +48,7 @@ class MessageService {
         for (message in mess) {
             messages.add(mapToMessageResponseEntity(message))
         }
-        return messages
+        return ResponseEntity.ok(messages)
     }
 
     fun createMessage(createMessageRequest: CreateMessageRequestEntity): MessageResponseEntity {

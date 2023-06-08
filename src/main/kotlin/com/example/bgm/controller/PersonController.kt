@@ -41,31 +41,31 @@ class PersonController {
     @PostMapping("/leaveEvent/{eventId}")
     fun leaveEvent(@PathVariable eventId: Long,
                    @AuthenticationPrincipal authPerson: JwtPerson
-    ) {
+    ): ResponseEntity<*> {
         if (authPerson.id == null) {
             throw ResponseStatusException(
                 HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"
             )
         }
-        personService.leaveFromEvent(authPerson.id, eventId)
+        return personService.leaveFromEvent(authPerson.id, eventId)
     }
 
     /** Person Присоединиться к мероприятию **/
     @PostMapping("/joinEvent/{eventId}")
     fun joinEvent(@PathVariable eventId: Long,
                   @AuthenticationPrincipal authPerson: JwtPerson
-    ) {
+    ): ResponseEntity<*> {
         if (authPerson.id == null) {
             throw ResponseStatusException(
                 HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"
             )
         }
-        personService.joinToEvent(authPerson.id, eventId)
+        return personService.joinToEvent(authPerson.id, eventId)
     }
 
     /** Person Все участники **/
     @GetMapping("/getAllMembersIn/{eventId}")
-    fun getAllMembers(@PathVariable eventId: Long, @PageableDefault() pageable: Pageable): ArrayList<MemberResponseEntity> {
+    fun getAllMembers(@PathVariable eventId: Long, @PageableDefault() pageable: Pageable): ResponseEntity<*> {
         return personService.getAllMembers(eventId, pageable)
     }
 
@@ -111,6 +111,12 @@ class PersonController {
     @PostMapping("/verifyToken")
     fun verifyToken(@RequestBody verifyTokenRequest: VerifyTokenRequestEntity): Boolean {
         return personService.verifyToken(verifyTokenRequest.token, verifyTokenRequest.nickname)
+    }
+
+    @GetMapping("/isMemberOfEvent")
+    fun isMemberOfEvent(@RequestBody eventId: Long,
+                        @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return personService.isMemberOfEvent(eventId, authPerson)
     }
 
 }

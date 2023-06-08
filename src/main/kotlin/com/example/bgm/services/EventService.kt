@@ -121,12 +121,15 @@ class EventService {
     }
 
 
-    fun getEvent(id: Long, authPerson: JwtPerson): EventResponseEntity {
+    fun getEvent(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!eventRepo.existsById(id)) {
+            return ResponseEntity.status(510).body("event with id $id not exist")
+        }
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         val items = event.items
-        return mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) }, person)
+        return ResponseEntity.ok(mapToEventResponseEntity(event, items.map { mapToItemResponseEntity(it) }, person))
     }
 
     fun createEvent(createEventRequest: CreateEventRequestEntity, hostId: Long?): ResponseEntity<*> {
@@ -153,12 +156,18 @@ class EventService {
     }
 
     fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!eventRepo.existsById(updateRequest.id!!)) {
+            return ResponseEntity.status(510).body("event with id ${updateRequest.id} not exist")
+        }
         val event = eventRepo.findEventById(updateRequest.id).get()
         if (personRepo.findByNickname(authPerson.username) != event.host) {
             throw Exception("only host can edit event")
         }
-        if (updateRequest.minAge!! > updateRequest.maxAge!!) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Минимальный возраст не может быть больше максимального")
+        if (updateRequest.minAge != null && updateRequest.maxAge != null) {
+            if (updateRequest.minAge > updateRequest.maxAge) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Минимальный возраст не может быть больше максимального")
+            }
         }
         event.name = updateRequest.name
         event.game = updateRequest.game
@@ -173,13 +182,17 @@ class EventService {
         return ResponseEntity.ok("done")
     }
 
-    fun deleteEvent(id: Long, authPerson: JwtPerson) {
+    fun deleteEvent(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!eventRepo.existsById(id)) {
+            return ResponseEntity.status(510).body("event with id $id not exist")
+        }
         if (authPerson.id != eventRepo.findById(id).get().host.id &&
             personRepo.findByNickname(authPerson.username)?.roles?.
             contains(roleRepo.findByName("ROLE_ADMIN")) == false) {
             throw Exception("this person can not delete event with id $id")
         }
         eventRepo.deleteById(id)
+        return ResponseEntity.ok("done")
     }
 
     fun getMainPageEvents(city: String,
@@ -233,7 +246,10 @@ class EventService {
         return res
     }
 
-    fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson) {
+    fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val host = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
         if (host != event.host) {
@@ -246,10 +262,14 @@ class EventService {
             }
             event.ban(user)
         }
-        eventRepo.save(event);
+        eventRepo.save(event)
+        return ResponseEntity.ok("done")
     }
 
-    fun getItems(id: Long, authPerson: JwtPerson): List<ItemResponseEntity> {
+    fun getItems(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!eventRepo.existsById(id)) {
+            return ResponseEntity.status(510).body("event with id $id not exist")
+        }
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
         if (!event.members.contains(person)) {
@@ -257,19 +277,26 @@ class EventService {
         }
 //        val items = eventRepo.findById(id).get().items
         val items = itemRepo.findAllByEvent(eventRepo.findById(id).get())
-        return items.toList().map { mapToItemResponseEntity(it) }
+        return ResponseEntity.ok(items.toList().map { mapToItemResponseEntity(it) })
     }
 
     @Transactional
-    fun deleteItems(eventId: Long, authPerson: JwtPerson) {
+    fun deleteItems(eventId: Long, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val event = eventRepo.findEventById(eventId).get()
         if (event.host.id != authPerson.id) {
             throw Exception("only host can delete items")
         }
         itemRepo.deleteAllByEvent(event)
+        return ResponseEntity.ok("done")
     }
 
-    fun editItems(eventId: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?) {
+    fun editItems(eventId: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val event = eventRepo.findById(eventId).get()
         if(hostId != event.host.id) {
             throw Exception("only host can edit items")
@@ -285,9 +312,13 @@ class EventService {
 //            itemRepo.save(item)
 //        }
 //        eventRepo.save(event)
+        return ResponseEntity.ok("done")
     }
 
-    fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson) {
+    fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
         if (!event.members.contains(person)) {
@@ -296,6 +327,7 @@ class EventService {
         val item = itemRepo.findById(markItemRequest.itemId).get()
         item.marked = markItemRequest.markedStatus;
         itemRepo.save(item)
+        return ResponseEntity.ok("done")
     }
 
     private fun sortEventsForMyEventPage(events: Page<Event>): List<Event> {

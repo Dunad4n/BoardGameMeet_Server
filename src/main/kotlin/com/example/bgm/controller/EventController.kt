@@ -41,7 +41,7 @@ class EventController {
 
     /** Event Конкретное мероприятие **/
     @GetMapping("/event/{eventId}")
-    fun event(@PathVariable eventId: Long, @AuthenticationPrincipal authPerson: JwtPerson): EventResponseEntity {
+    fun event(@PathVariable eventId: Long, @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         return eventService.getEvent(eventId, authPerson)
     }
 
@@ -57,7 +57,7 @@ class EventController {
     /** Event Получить все предметы мероприятия **/
     @GetMapping("/getItemsIn/{eventId}")
     fun getItems(@PathVariable eventId: Long,
-                 @AuthenticationPrincipal authPerson: JwtPerson): List<ItemResponseEntity> {
+                 @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         return eventService.getItems(eventId, authPerson)
     }
 
@@ -65,7 +65,7 @@ class EventController {
     @PutMapping("/editItemsIn/{eventId}")
     fun editItems(@PathVariable eventId: Long,
                   @RequestBody editItemsRequest: List<EditItemsRequestEntity>,
-                  @AuthenticationPrincipal authPerson: JwtPerson) {
+                  @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(editItemsRequest))
             throw ResponseStatusException(
                 HttpStatus.CONFLICT, requestValidationService.getMessage()
@@ -76,14 +76,14 @@ class EventController {
     /** Event забанить пользователя в мероприятии **/
     @PostMapping("/kickPerson")
     fun banPerson(@RequestBody kickPersonRequest: KickPersonRequestEntity,
-                  @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.banPerson(kickPersonRequest.eventId, kickPersonRequest.userNickname, authPerson)
+                  @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return eventService.banPerson(kickPersonRequest.eventId, kickPersonRequest.userNickname, authPerson)
     }
 
     /** Event Удалить мероприятие **/
     @DeleteMapping("/deleteEvent/{eventId}")
-    fun deleteEvent(@PathVariable eventId: Long, @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.deleteEvent(eventId, authPerson)
+    fun deleteEvent(@PathVariable eventId: Long, @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return eventService.deleteEvent(eventId, authPerson)
     }
 
     /** Event Редактировать мероприятие **/
@@ -99,15 +99,15 @@ class EventController {
 
     @DeleteMapping("/deleteItemsIn/{eventId}")
     fun deleteItems(@PathVariable eventId: Long,
-                    @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.deleteItems(eventId, authPerson)
+                    @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return eventService.deleteItems(eventId, authPerson)
     }
 
     /** Event Отметить предмет **/
     @PutMapping("/markItemIn/{eventId}")
     fun markItems(@PathVariable eventId: Long,
                   @RequestBody markItemsRequest: MarkItemRequestEntity,
-                  @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.markItem(eventId, markItemsRequest, authPerson)
+                  @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return eventService.markItem(eventId, markItemsRequest, authPerson)
     }
 }

@@ -1,9 +1,6 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.dto.IsMyProfileResponseEntity
-import com.example.bgm.controller.dto.MemberResponseEntity
-import com.example.bgm.controller.dto.ProfileResponseEntity
-import com.example.bgm.controller.dto.UpdatePersonRequestEntity
+import com.example.bgm.controller.dto.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.jwt.Token
@@ -107,14 +104,17 @@ class PersonService {
         personRepo.deleteByNickname(nickname)
     }
 
-    fun getAllMembers(eventId: Long, pageable: Pageable): ArrayList<MemberResponseEntity> {
+    fun getAllMembers(eventId: Long, pageable: Pageable): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val event = eventRepo.findById(eventId).get()
         val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
         val res = arrayListOf<MemberResponseEntity>()
         for (person in members) {
             res. add(mapToMemberResponseEntity(person, event))
         }
-        return res
+        return ResponseEntity.ok(res)
     }
 
     fun getProfile(nickname: String): ProfileResponseEntity {
@@ -130,7 +130,10 @@ class PersonService {
             ?: throw UsernameNotFoundException("person with nickname $nickname not found")
     }
 
-    fun joinToEvent(userId: Long, eventId: Long) {
+    fun joinToEvent(userId: Long, eventId: Long): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findById(userId).get()
 //        if (!event.bannedMembers.contains(person) && !event.members.contains(person)) {
@@ -139,9 +142,13 @@ class PersonService {
 //        } else {
 //            throw Exception("this person can not join to chosen event")
 //        }
+        return ResponseEntity.ok("done")
     }
 
-    fun leaveFromEvent(userId: Long, eventId: Long) {
+    fun leaveFromEvent(userId: Long, eventId: Long): ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
         val person = personRepo.findById(userId).get()
         val event = eventRepo.findById(eventId).get()
         if (event.members.contains(person) && event.host.id != person.id) {
@@ -150,6 +157,7 @@ class PersonService {
         } else {
             throw Exception("this person can not leave from chosen event")
         }
+        return ResponseEntity.ok("done")
     }
 
     fun validateSecretWord(secretWord: String, nickname: String): ResponseEntity<String> {
@@ -181,12 +189,16 @@ class PersonService {
         return tokens[tokens.size - 1].value == token
     }
 
-//    fun register(person: Person): Person? {
-//        val rolePerson: Role = roleRepo.findByName("ROLE_USER")
-//        val personRoles = mutableListOf<Role>()
-//        personRoles.add(rolePerson)
-//        person.password = passwordEncoder.encode(person.password)
-//        person.roles = personRoles
-//        return personRepo.save(person)
-//    }
+    fun isMemberOfEvent(eventId: Long, authPerson: JwtPerson):ResponseEntity<*> {
+        if (!eventRepo.existsById(eventId)) {
+            return ResponseEntity.status(510).body("event with id $eventId not exist")
+        }
+        val person = personRepo.findByNickname(authPerson.username)
+        val event = eventRepo.findEventById(eventId).get()
+        return if (event.members.contains(person)) {
+            ResponseEntity.ok(true)
+        } else {
+            ResponseEntity.ok(false)
+        }
+    }
 }
