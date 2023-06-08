@@ -7,6 +7,7 @@ import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.MessageRepo
 import com.example.bgm.repositories.PersonRepo
+import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -26,6 +27,9 @@ class MessageService {
     @Autowired
     lateinit var personRepo: PersonRepo
 
+    @Autowired
+    lateinit var roleRepo: RoleRepo
+
     private fun mapToMessageResponseEntity(message: Message): MessageResponseEntity {
         return MessageResponseEntity(text = message.text,
                                      eventId = message.event.id,
@@ -40,7 +44,8 @@ class MessageService {
         }
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findByNickname(authPerson.username)
-        if (!event.members.contains(person)) {
+            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+        if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             throw Exception("person can read messages only from event where he is member")
         }
         val messages = arrayListOf<MessageResponseEntity>()
