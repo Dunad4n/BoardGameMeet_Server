@@ -28,12 +28,12 @@ class PersonController {
 
     /** Person Профиль пользователя **/
     @GetMapping("/profile/{nickname}")
-    fun profile(@PathVariable nickname: String): ProfileResponseEntity {
+    fun profile(@PathVariable nickname: String): ResponseEntity<*> {
         return personService.getProfile(nickname)
     }
 
     @GetMapping("/ownProfile")
-    fun ownProfile(@AuthenticationPrincipal authPerson: JwtPerson): ProfileResponseEntity {
+    fun ownProfile(@AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         return personService.getProfile(authPerson.username)
     }
 
@@ -71,8 +71,8 @@ class PersonController {
 
     /** Person Удалить пользователя **/
     @DeleteMapping("/admin/deletePerson/{nickname}")
-    fun deletePerson(@PathVariable nickname: String, @AuthenticationPrincipal authPerson: JwtPerson) {
-        personService.deletePerson(nickname, authPerson)
+    fun deletePerson(@PathVariable nickname: String, @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return personService.deletePerson(nickname, authPerson)
     }
 
     /** Person Редактировать профиль **/

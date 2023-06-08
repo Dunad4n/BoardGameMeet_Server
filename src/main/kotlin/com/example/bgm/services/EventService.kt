@@ -248,6 +248,9 @@ class EventService {
     }
 
     fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson): ResponseEntity<*> {
+        if (!personRepo.existsByNickname(userNickname)) {
+            return ResponseEntity.status(511).body("person with nickname $userNickname not exist")
+        }
         if (!eventRepo.existsById(eventId)) {
             return ResponseEntity.status(510).body("event with id $eventId not exist")
         }

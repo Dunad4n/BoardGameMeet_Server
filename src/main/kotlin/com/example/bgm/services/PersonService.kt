@@ -95,13 +95,17 @@ class PersonService {
     }
 
     @Transactional
-    fun deletePerson(nickname: String, authPerson: JwtPerson) {
+    fun deletePerson(nickname: String, authPerson: JwtPerson): ResponseEntity<*> {
         val person = personRepo.findByNickname(authPerson.username)
-            ?: throw Exception("person with nickname ${authPerson.username} does not exist")
+            ?: throw Exception("person with nickname ${authPerson.username} not exist")
+        if (!personRepo.existsByNickname(nickname)) {
+            return ResponseEntity.status(511).body("person with nickname $nickname not exist")
+        }
         if (!person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             throw Exception("only admin can delete users")
         }
         personRepo.deleteByNickname(nickname)
+        return ResponseEntity.ok("done")
     }
 
     fun getAllMembers(eventId: Long, pageable: Pageable): ResponseEntity<*> {
@@ -117,12 +121,10 @@ class PersonService {
         return ResponseEntity.ok(res)
     }
 
-    fun getProfile(nickname: String): ProfileResponseEntity {
+    fun getProfile(nickname: String): ResponseEntity<*> {
         val person = personRepo.findByNickname(nickname)
-        if(person != null) {
-            return mapToProfileResponseEntity(person)
-        }
-        throw Exception("There is no user with this nickname")
+            ?: return ResponseEntity.status(511).body("person with nickname $nickname not exist")
+        return ResponseEntity.ok(mapToProfileResponseEntity(person))
     }
 
     fun getByNickname(nickname: String): Person {
