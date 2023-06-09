@@ -113,8 +113,8 @@ class PersonController {
         return personService.verifyToken(verifyTokenRequest.token, verifyTokenRequest.nickname)
     }
 
-    @GetMapping("/isMemberOfEvent")
-    fun isMemberOfEvent(@RequestBody eventId: Long,
+    @GetMapping("/isMemberOfEvent/{eventId}")
+    fun isMemberOfEvent(@PathVariable eventId: Long,
                         @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         return personService.isMemberOfEvent(eventId, authPerson)
     }
