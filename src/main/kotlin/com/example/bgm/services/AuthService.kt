@@ -49,8 +49,8 @@ open class AuthService {
     @Transactional
     fun createPerson(createPersonRequest: CreatePersonRequestEntity): ResponseEntity<*> {
         if (createPersonRequest.age != null) {
-            if (createPersonRequest.age < 0 || createPersonRequest.age > 100) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Возраст может быть от 0 до 100")
+            if (createPersonRequest.age < 0 || createPersonRequest.age > 200) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Возраст может быть от 0 до 200")
             }
         }
         return if(!personRepo.existsByNickname(createPersonRequest.nickname)) {
@@ -70,7 +70,7 @@ open class AuthService {
     }
 
     @Transactional
-    open fun login(authenticationRequest: AuthenticationRequestEntity): ResponseEntity<*> {
+    fun login(authenticationRequest: AuthenticationRequestEntity): ResponseEntity<*> {
         return try {
             val nickname = authenticationRequest.nickname
             authenticationManager.authenticate(UsernamePasswordAuthenticationToken(nickname, authenticationRequest.password))

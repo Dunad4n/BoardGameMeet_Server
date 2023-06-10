@@ -38,12 +38,12 @@ class RequestValidationService {
             return false
         }
         if (request.minAge != null && request.maxAge != null) {
-            if (request.minAge!! < 0 || request.minAge!! > 100) {
-                message = "Минимальный возраст не может быть меньше 0, и больше 100"
+            if (request.minAge!! < 0 || request.minAge!! > 200) {
+                message = "Минимальный возраст не может быть меньше 0 и больше 200"
                 return false
             }
-            if (request.maxAge!! < 0 || request.maxAge!! > 100) {
-                message = "Минимальный возраст не может быть меньше 0, и больше 100"
+            if (request.maxAge!! < 0 || request.maxAge!! > 200) {
+                message = "Максимальный возраст не может быть меньше 0 и больше 200"
                 return false
             }
             if (request.minAge!! > request.maxAge!!) {
@@ -87,12 +87,12 @@ class RequestValidationService {
         }
         // можно добавить проверки на max значение
         if (request.minAge != null && request.maxAge != null) {
-            if (request.minAge < 0 || request.minAge > 100) {
-                message = "Минимальный возраст не может быть меньше 0, и больше 100"
+            if (request.minAge < 0 || request.minAge > 200) {
+                message = "Минимальный возраст не может быть меньше 0, и больше 200"
                 return false
             }
-            if (request.maxAge < 0 || request.maxAge > 100) {
-                message = "Минимальный возраст не может быть меньше 0, и больше 100"
+            if (request.maxAge < 0 || request.maxAge > 200) {
+                message = "Максимальный возраст не может быть меньше 0, и больше 200"
                 return false
             }
             if (request.minAge > request.maxAge) {
@@ -109,8 +109,8 @@ class RequestValidationService {
 
     fun validate(request: List<EditItemsRequestEntity>): Boolean{
         for(item in request){
-            if(item.name.length > 255) {
-                message = "the item must be shorter than 255 characters"
+            if(item.name.length > 30) {
+                message = "Имя предмета должно быть не более 30 символов"
                 return false
             }
         }
@@ -140,8 +140,8 @@ class RequestValidationService {
         }
         // можно добавить проверки на max значение
         if(request.age != null) {
-            if (request.age < 0 || request.age > 100) {
-                message = "Возраст не может быть меньше 0 или больше 100"
+            if (request.age < 0 || request.age > 200) {
+                message = "Возраст не может быть меньше 0 или больше 200"
                 return false
             }
         }

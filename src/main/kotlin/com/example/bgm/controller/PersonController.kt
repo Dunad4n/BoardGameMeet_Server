@@ -83,9 +83,7 @@ class PersonController {
                      @AuthenticationPrincipal authPerson: JwtPerson
     ): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
-            throw ResponseStatusException(
-                HttpStatus.CONFLICT, requestValidationService.getMessage()
-            )
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(requestValidationService.getMessage())
         return personService.updatePerson(request, authPerson, jwtTokenProvider)
     }
 

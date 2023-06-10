@@ -91,9 +91,7 @@ class EventController {
     fun updateEvent(@RequestBody request: UpdateEventRequest,
                     @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(request))
-            throw ResponseStatusException(
-                HttpStatus.CONFLICT, requestValidationService.getMessage()
-            )
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(requestValidationService.getMessage())
         return eventService.updateEvent(request, authPerson)
     }
 
