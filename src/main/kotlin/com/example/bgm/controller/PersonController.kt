@@ -65,8 +65,10 @@ class PersonController {
 
     /** Person Все участники **/
     @GetMapping("/getAllMembersIn/{eventId}")
-    fun getAllMembers(@PathVariable eventId: Long, @PageableDefault() pageable: Pageable): ResponseEntity<*> {
-        return personService.getAllMembers(eventId, pageable)
+    fun getAllMembers(@PathVariable eventId: Long,
+                      @PageableDefault() pageable: Pageable,
+                      @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return personService.getAllMembers(eventId, pageable, authPerson)
     }
 
     /** Person Удалить пользователя **/

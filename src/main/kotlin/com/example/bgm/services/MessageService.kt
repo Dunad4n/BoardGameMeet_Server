@@ -46,7 +46,7 @@ class MessageService {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
-            throw Exception("person can read messages only from event where he is member")
+            return ResponseEntity.status(512).body("person can read messages only from event where he is member")
         }
         val messages = arrayListOf<MessageResponseEntity>()
         val mess = messageRepo.findAllByEventOrderByDateTimeDesc(event, pageable)

@@ -108,15 +108,20 @@ class PersonService {
         return ResponseEntity.ok("done")
     }
 
-    fun getAllMembers(eventId: Long, pageable: Pageable): ResponseEntity<*> {
+    fun getAllMembers(eventId: Long, pageable: Pageable, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
             return ResponseEntity.status(510).body("event with id $eventId not exist")
         }
+        val person = personRepo.findByNickname(authPerson.username)
+            ?: throw Exception("person with nickname ${authPerson.username} not exist")
         val event = eventRepo.findById(eventId).get()
+        if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
+            return ResponseEntity.status(512).body("only mmber or admin can get all members")
+        }
         val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
         val res = arrayListOf<MemberResponseEntity>()
-        for (person in members) {
-            res. add(mapToMemberResponseEntity(person, event))
+        for (member in members) {
+            res. add(mapToMemberResponseEntity(member, event))
         }
         return ResponseEntity.ok(res)
     }
@@ -157,7 +162,9 @@ class PersonService {
             event.kick(person)
             eventRepo.save(event)
         } else {
-            throw Exception("this person can not leave from chosen event")
+            if (!person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
+                return ResponseEntity.status(512).body("this person can not leave from chosen event")
+            }
         }
         return ResponseEntity.ok("done")
     }

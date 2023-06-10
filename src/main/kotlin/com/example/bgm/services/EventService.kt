@@ -278,7 +278,7 @@ class EventService {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
-            throw Exception("only members or admins can get items")
+            return ResponseEntity.status(512).body("only members or admins can get items")
         }
         val items = itemRepo.findAllByEvent(eventRepo.findById(id).get())
         return ResponseEntity.ok(items.toList().map { mapToItemResponseEntity(it) })
@@ -325,8 +325,8 @@ class EventService {
         }
         val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
-        if (!event.members.contains(person)) {
-            throw Exception("only member can mark items")
+        if (!event.members.contains(person) && !person!!.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
+            return ResponseEntity.status(512).body("only member can mark items")
         }
         val item = itemRepo.findById(markItemRequest.itemId).get()
         item.marked = markItemRequest.markedStatus;
