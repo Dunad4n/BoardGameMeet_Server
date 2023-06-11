@@ -13,8 +13,8 @@ class ServerWebSocketConfig: WebSocketMessageBrokerConfigurer {
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
         registry.setApplicationDestinationPrefixes("/app")
-            .setUserDestinationPrefix("/user")
-            .enableSimpleBroker("/topic")
+            .setUserDestinationPrefix("/event")
+            .enableSimpleBroker("/user")
     }
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
