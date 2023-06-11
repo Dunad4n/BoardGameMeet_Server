@@ -2,6 +2,7 @@ package com.example.bgm.controller.dto
 
 import com.example.bgm.entities.enums.Gender
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
 
@@ -40,7 +41,7 @@ data class MarkItemRequestEntity(val itemId: Long,
                                  val markedStatus: Boolean)
 
 data class KickPersonRequestEntity(val eventId: Long,
-                                   val userNickname: String)
+                                   @field:Schema(example = "Vanius")val userNickname: String)
 
 /**
  * Person
@@ -63,13 +64,13 @@ data class UpdatePersonRequestEntity(val name: String,
 
 data class JoinOrLeaveEventRequestEntity(@JsonProperty("eventId")val eventId: Long)
 
-data class AuthenticationRequestEntity(val nickname: String,
-                                       val password: String) {
+data class AuthenticationRequestEntity(@field:Schema(example = "Vadim")val nickname: String,
+                                       @field:Schema(example = "admin")val password: String) {
 
     constructor(): this("", "")
 }
 
-data class ValidateSecretWordRequestEntity(val secretWord: String,
+data class ValidateSecretWordRequestEntity(@field:Schema(example = "admin")val secretWord: String,
                                            val nickname: String)
 
 data class ChangePasswordRequestEntity(val newPassword: String,

@@ -7,6 +7,8 @@ import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.RoleRepo
 import com.example.bgm.services.AuthService
 import com.example.bgm.services.RequestValidationService
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -27,12 +29,19 @@ class AuthorizationController {
 
     /** Авторизация **/
     @PostMapping("/auth/login")
+    @ApiResponses( value = [
+        ApiResponse(responseCode = "200", description = "done"),
+        ApiResponse(responseCode = "409", description = "Неверный никнейм или пароль")
+    ])
     fun login(@RequestBody authenticationRequest: AuthenticationRequestEntity): ResponseEntity<*> {
         return authService.login(authenticationRequest)
     }
 
     /** Выход из аккаунта **/
     @PostMapping("exit")
+    @ApiResponses( value = [
+        ApiResponse(responseCode = "200", description = "done"),
+    ])
     fun logout(@AuthenticationPrincipal authPerson: JwtPerson) {
         return authService.logout(authPerson)
     }
@@ -40,6 +49,11 @@ class AuthorizationController {
     /** Регистрация **/
     @PostMapping("/auth/registration")
     @Throws(Exception::class)
+    @ApiResponses( value = [
+        ApiResponse(responseCode = "200", description = "done"),
+        ApiResponse(responseCode = "409", description = "The request failed validation"),
+        ApiResponse(responseCode = "409", description = "Такой никнейм уже занят"),
+    ])
     fun registration(@RequestBody createPersonRequest: CreatePersonRequestEntity): ResponseEntity<*> {
         if (!validationService.validate(createPersonRequest)) {
             throw ResponseStatusException (
