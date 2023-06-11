@@ -164,12 +164,6 @@ class EventService {
         if (person != event.host) {
             throw Exception("only host can edit event")
         }
-        if (updateRequest.minAge != null && updateRequest.maxAge != null) {
-            if (updateRequest.minAge > updateRequest.maxAge) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Минимальный возраст не может быть больше максимального")
-            }
-        }
         event.name = updateRequest.name
         event.game = updateRequest.game
         event.city = updateRequest.city
