@@ -26,7 +26,7 @@ interface EventRepo: JpaRepository<Event, Long> {
             "AND e.date > :date " +
             "AND (:size = 0 OR e NOT IN :events) " +
             "AND SIZE(e.members) < e.maxPersonCount " +
-            "ORDER BY e.date, e.maxPersonCount - SIZE(e.members)")
+            "ORDER BY DATE(e.date), e.maxPersonCount - SIZE(e.members)")
     fun findAllByAge(
         city: String,
         age: Int,
@@ -40,10 +40,10 @@ interface EventRepo: JpaRepository<Event, Long> {
             "WHERE e.city = :city " +
             "AND (e.maxAge >= :age OR e.maxAge IS NULL) " +
             "AND (e.minAge <= :age OR e.minAge IS NULL) " +
-            "AND e.date < :date " +
+            "AND e.date > :date " +
             "AND (:size = 0 OR e NOT IN :events) " +
             "AND SIZE(e.members) < e.maxPersonCount " +
-            "AND e.name LIKE :name " +
+            "AND e.name LIKE %:name% " +
             "ORDER BY DATE(e.date), e.maxPersonCount - SIZE(e.members)")
     fun findAllByAgeAndName(
         city: String,
