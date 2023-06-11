@@ -23,20 +23,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
-open class SecurityConfig {
+class SecurityConfig {
 
     @Autowired
     lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Bean
     @Throws(Exception::class)
-    open fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
+    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
         return authenticationConfiguration.authenticationManager
     }
 
     @Bean
     @Throws(Exception::class)
-    open fun configure(http: HttpSecurity): SecurityFilterChain {
+    fun configure(http: HttpSecurity): SecurityFilterChain {
         return http
             .cors(Customizer.withDefaults<CorsConfigurer<HttpSecurity>>())
             .httpBasic().disable()
@@ -45,8 +45,11 @@ open class SecurityConfig {
             .and()
             .authorizeHttpRequests()
             .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/actuator/**").permitAll()
-            .requestMatchers("/auth/**", "/validateSecretWord", "/chat", "/changePassword", "/verifyToken").permitAll()
-            .requestMatchers("/events").permitAll()
+            .requestMatchers("/auth/**",
+                             "/validateSecretWord",
+                             "/changePassword",
+                             "/verifyToken",
+                             "/events").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
             .and()
