@@ -119,13 +119,10 @@ class PersonService {
             return ResponseEntity.status(512).body("only mmber or admin can get all members")
         }
         val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
-        val res = arrayListOf<MemberResponseEntity>()
+        val response = arrayListOf<MemberResponseEntity>()
         for (member in members) {
-            res.add(mapToMemberResponseEntity(member, event))
+            response.add(mapToMemberResponseEntity(member, event))
         }
-        val response = mutableMapOf<Any, Any>()
-        response["members"] = res
-        response["membersCount"] = res.size
         return ResponseEntity.ok(response)
     }
 
