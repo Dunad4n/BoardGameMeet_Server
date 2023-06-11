@@ -30,12 +30,14 @@ class MessageService {
     @Autowired
     lateinit var roleRepo: RoleRepo
 
-    private fun mapToMessageResponseEntity(message: Message): MessageResponseEntity {
-        return MessageResponseEntity(text = message.text,
-                                     eventId = message.event.id,
-                                     myNickname = message.person.nickname,
-                                     name = message.person.name,
-                                     avatarId = message.person.avatarId)
+    private fun mapToMessageResponseEntity(message: Message): Map<String, Any> {
+        val responseMap = mutableMapOf<String, Any>()
+        responseMap["text"] = message.text
+        responseMap["eventId"] = message.event.id.toString()
+        responseMap["myNickname"] = message.person.nickname
+        responseMap["name"] = message.person.name
+        responseMap["avatarId"] = message.person.avatarId.toString()
+        return responseMap
     }
 
     fun getMessages(eventId: Long, authPerson: JwtPerson, pageable: Pageable): ResponseEntity<*> {
@@ -48,7 +50,7 @@ class MessageService {
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             return ResponseEntity.status(512).body("person can read messages only from event where he is member")
         }
-        val messages = arrayListOf<MessageResponseEntity>()
+        val messages = arrayListOf<Map<String, Any>>()
         val mess = messageRepo.findAllByEventOrderByDateTimeDesc(event, pageable)
         for (message in mess) {
             messages.add(mapToMessageResponseEntity(message))
@@ -56,7 +58,7 @@ class MessageService {
         return ResponseEntity.ok(messages)
     }
 
-    fun createMessage(createMessageRequest: CreateMessageRequestEntity): MessageResponseEntity {
+    fun createMessage(createMessageRequest: CreateMessageRequestEntity): Map<String, Any> {
         val person = personRepo.findByNickname(createMessageRequest.personNickname)
             ?: throw Exception("person with nickname ${createMessageRequest.personNickname} does not exist")
 //        val authPerson = SecurityContextHolder.getContext().authentication.principal as JwtPerson

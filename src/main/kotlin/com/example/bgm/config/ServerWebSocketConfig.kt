@@ -13,6 +13,7 @@ class ServerWebSocketConfig: WebSocketMessageBrokerConfigurer {
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
         registry.setApplicationDestinationPrefixes("/app")
+            .setUserDestinationPrefix("/user")
             .enableSimpleBroker("/topic")
     }
 
