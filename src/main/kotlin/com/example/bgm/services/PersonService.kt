@@ -121,9 +121,12 @@ class PersonService {
         val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
         val res = arrayListOf<MemberResponseEntity>()
         for (member in members) {
-            res. add(mapToMemberResponseEntity(member, event))
+            res.add(mapToMemberResponseEntity(member, event))
         }
-        return ResponseEntity.ok(res)
+        val response = mutableMapOf<Any, Any>()
+        response["members"] = res
+        response["membersCount"] = res.size
+        return ResponseEntity.ok(response)
     }
 
     fun getProfile(nickname: String): ResponseEntity<*> {
