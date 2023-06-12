@@ -113,12 +113,17 @@ class PersonService {
             return ResponseEntity.status(510).body("event with id $eventId not exist")
         }
         val event = eventRepo.findById(eventId).get()
-        val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
         val res = arrayListOf<MemberResponseEntity>()
-        for (person in members) {
-            res. add(mapToMemberResponseEntity(person, event))
+        res.add(mapToMemberResponseEntity(event.host, event))
+        for (person in event.members) {
+            if(person != event.host)
+                res.add(mapToMemberResponseEntity(person, event))
         }
-        return ResponseEntity.ok(res)
+
+        val from = if(pageable.pageNumber * pageable.pageSize < res.size) pageable.pageNumber * pageable.pageSize else res.size - 1
+        val to = if((pageable.pageNumber + 1) * pageable.pageSize < res.size) (pageable.pageNumber + 1) * pageable.pageSize else res.size - 1
+
+        return ResponseEntity.ok(res.subList(from, to))
     }
 
     fun getProfile(nickname: String): ResponseEntity<*> {
