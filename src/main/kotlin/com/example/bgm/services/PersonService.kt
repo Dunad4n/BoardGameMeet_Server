@@ -129,7 +129,7 @@ class PersonService {
         val from = if(pageable.pageNumber * pageable.pageSize < res.size) pageable.pageNumber * pageable.pageSize else res.size - 1
         val to = if((pageable.pageNumber + 1) * pageable.pageSize < res.size) (pageable.pageNumber + 1) * pageable.pageSize else res.size - 1
 
-        return ResponseEntity.ok(res.subList(from, to))
+        return ResponseEntity.ok(res.subList(from, to + 1))
     }
 
     fun getProfile(nickname: String): ResponseEntity<*> {
