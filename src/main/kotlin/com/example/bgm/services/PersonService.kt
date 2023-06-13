@@ -118,12 +118,18 @@ class PersonService {
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             return ResponseEntity.status(512).body("only member or admin can get all members")
         }
-        val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
-        val response = arrayListOf<MemberResponseEntity>()
-        for (member in members) {
-            response.add(mapToMemberResponseEntity(member, event))
+        val res = arrayListOf<MemberResponseEntity>()
+        res.add(mapToMemberResponseEntity(event.host, event))
+        for (member in event.members) {
+            if(member != event.host) {
+                res.add(mapToMemberResponseEntity(person, event))
+            }
         }
-        return ResponseEntity.ok(response)
+
+        val from = if(pageable.pageNumber * pageable.pageSize < res.size) pageable.pageNumber * pageable.pageSize else res.size - 1
+        val to = if((pageable.pageNumber + 1) * pageable.pageSize < res.size) (pageable.pageNumber + 1) * pageable.pageSize else res.size - 1
+
+        return ResponseEntity.ok(res.subList(from, to))
     }
 
     fun getProfile(nickname: String): ResponseEntity<*> {
