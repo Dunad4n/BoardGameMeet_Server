@@ -1,7 +1,5 @@
 package com.example.bgm.controller
 
-import com.example.bgm.controller.dto.CreateMessageRequestEntity
-import com.example.bgm.controller.dto.ItemResponseEntity
 import com.example.bgm.controller.dto.MessageResponseEntity
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.MessageService
@@ -12,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -28,7 +27,9 @@ class MessageController {
     private lateinit var messageService: MessageService
 
     @GetMapping("messagesIn/{eventId}")
-    @Operation(summary = "Получения всех сообщений в чате", description = "В пагинации указывается только page и size")
+    @Operation(summary = "Получения всех сообщений в чате",
+               description = "В пагинации указывается только page и size",
+               security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = MessageResponseEntity::class)))))]),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),

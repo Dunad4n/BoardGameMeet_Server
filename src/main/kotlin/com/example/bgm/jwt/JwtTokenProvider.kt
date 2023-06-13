@@ -8,11 +8,9 @@ import io.jsonwebtoken.*
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Bean
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.function.Consumer
@@ -20,7 +18,7 @@ import javax.annotation.PostConstruct
 
 
 @Component
-open class JwtTokenProvider {
+class JwtTokenProvider {
 
     @Value("\${jwt.token.secret}")
     lateinit var secret: String
@@ -66,7 +64,7 @@ open class JwtTokenProvider {
 
     fun resolveToken(req: HttpServletRequest): String? {
         val bearerToken = req.getHeader("Authorization")
-        return if (bearerToken != null && bearerToken.startsWith("Bearer_")) {
+        return if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             bearerToken.substring(7)
         } else null
     }

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
@@ -37,7 +38,7 @@ class PersonController {
 
     /** Person Профиль пользователя **/
     @GetMapping("/profile/{nickname}")
-    @Operation(summary = "Получения профиля пользователя")
+    @Operation(summary = "Получения профиля пользователя", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = ProfileResponseEntity::class), mediaType = "application/json")]),
         ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
@@ -47,7 +48,7 @@ class PersonController {
     }
 
     @GetMapping("/ownProfile")
-    @Operation(summary = "Получения своего профиля")
+    @Operation(summary = "Получения своего профиля", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = ProfileResponseEntity::class), mediaType = "application/json")]),
         ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
@@ -58,7 +59,7 @@ class PersonController {
 
     /** Person Покинуть мероприятие **/
     @PostMapping("/leaveEvent/{eventId}")
-    @Operation(summary = "Получения профиля пользователя")
+    @Operation(summary = "Получения профиля пользователя", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
@@ -76,7 +77,7 @@ class PersonController {
     }
 
     @PostMapping("/joinEvent/{eventId}")
-    @Operation(summary = "Присоединение к мероприятию")
+    @Operation(summary = "Присоединение к мероприятию", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
@@ -94,7 +95,9 @@ class PersonController {
 
     /** Person Все участники **/
     @GetMapping("/getAllMembersIn/{eventId}")
-    @Operation(summary = "Получения списка участников", description = "В пагинации указывается только page и size")
+    @Operation(summary = "Получения списка участников",
+               description = "В пагинации указывается только page и size",
+               security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = MemberResponseEntity::class)))))]),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
@@ -108,7 +111,7 @@ class PersonController {
 
     /** Person Удалить пользователя **/
     @DeleteMapping("/admin/deletePerson/{nickname}")
-    @Operation(summary = "Удаление пользователя из мероприятия")
+    @Operation(summary = "Удаление пользователя из мероприятия", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
@@ -120,7 +123,7 @@ class PersonController {
 
     /** Person Редактировать профиль **/
     @PutMapping("/updatePerson")
-    @Operation(summary = "Редактирование профиля")
+    @Operation(summary = "Редактирование профиля", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", schema = Schema(implementation = UpdateProfileEntity::class)))]),
         ApiResponse(responseCode = "409", description = "Некорректный запрос"),
@@ -135,7 +138,7 @@ class PersonController {
 
     /** Person Проверить валидность секретного слова **/
     @PostMapping("/validateSecretWord")
-    @Operation(summary = "Проверка валидности секретного слова")
+    @Operation(summary = "Проверка валидности секретного слова", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "Верное секретное слово"),
         ApiResponse(responseCode = "409", description = "Неверное секретное слово или никнейм"),
@@ -148,7 +151,7 @@ class PersonController {
 
     /** Person Сменить пароль **/
     @PutMapping("/changePassword")
-    @Operation(summary = "Смена пароля")
+    @Operation(summary = "Смена пароля", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200"),
     ])
@@ -158,7 +161,8 @@ class PersonController {
     }
 
     @GetMapping("/isProfileOf/{nickname}")
-    @Operation(summary = "Проверка соответствия профиля профилю пользователя, делающего запрос")
+    @Operation(summary = "Проверка соответствия профиля профилю пользователя, делающего запрос",
+               security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = IsMyProfileResponseEntity::class), mediaType = "application/json")]),
     ])
@@ -168,7 +172,7 @@ class PersonController {
     }
 
     @PostMapping("/verifyToken")
-    @Operation(summary = "Проверка токена")
+    @Operation(summary = "Проверка токена", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = Boolean::class), mediaType = "application/json")]),
     ])
@@ -177,6 +181,8 @@ class PersonController {
     }
 
     @GetMapping("/isMemberOfEvent/{eventId}")
+    @Operation(summary = "Проверка,что пользователь является участником",
+               security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = ResponseEntity::class), mediaType = "application/json")]),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")

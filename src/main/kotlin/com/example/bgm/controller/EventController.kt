@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
@@ -19,7 +20,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @Tag(name = "Контроллер мероприятий", description="Все операции с мероприятиями")
@@ -36,7 +36,9 @@ class EventController {
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = MainPageEventResponseEntity::class)))))])]
     )
-    @Operation(summary = "Список всех мероприятий", description = "В пагинации указывается только page и size")
+    @Operation(summary = "Список всех мероприятий",
+               description = "В пагинации указывается только page и size",
+               security = [SecurityRequirement(name = "bearer-key")])
     fun allEvents(@RequestParam @Parameter(description = "Город пользователя") city: String,
                   @RequestParam(required = false) @Parameter(description = "Поиск по названию") search: String?,
                   @AuthenticationPrincipal authPerson: JwtPerson?,
@@ -49,7 +51,9 @@ class EventController {
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = MyEventsResponseEntity::class)))))])]
     )
-    @Operation(summary = "Список мероприятий пользователя", description = "В пагинации указывается только page и size")
+    @Operation(summary = "Список мероприятий пользователя",
+               description = "В пагинации указывается только page и size",
+               security = [SecurityRequirement(name = "bearer-key")])
     fun myEvents(@AuthenticationPrincipal authPerson: JwtPerson,
                  @PageableDefault()@Parameter(description = "Пагинация") pageable: Pageable): List<MyEventsResponseEntity> {
         return eventService.getMyEventsPageEvent(authPerson, pageable)
@@ -57,7 +61,7 @@ class EventController {
 
     /** Event Конкретное мероприятие **/
     @GetMapping("/event/{eventId}")
-    @Operation(summary = "Информация о мероприятии")
+    @Operation(summary = "Информация о мероприятии", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = EventResponseEntity::class), mediaType = "application/json")]),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
@@ -73,7 +77,7 @@ class EventController {
         ApiResponse(responseCode = "200", description = "Ok"),
         ApiResponse(responseCode = "409", description = "Некорректный запрос")
     ])
-    @Operation(summary = "Создание мероприятия")
+    @Operation(summary = "Создание мероприятия", security = [SecurityRequirement(name = "bearer-key")])
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
                     @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         if(!requestValidationService.validate(createEventRequest))
@@ -82,7 +86,9 @@ class EventController {
     }
 
     @GetMapping("/getItemsIn/{eventId}")
-    @Operation(summary = "Список всех предметов мероприятия", description = "В пагинации указывается только page и size")
+    @Operation(summary = "Список всех предметов мероприятия",
+               description = "В пагинации указывается только page и size",
+               security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = ItemResponseEntity::class)))))]),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
@@ -94,7 +100,7 @@ class EventController {
     }
 
     @PutMapping("/editItemsIn/{eventId}")
-    @Operation(summary = "Редактирование предметов мероприятия")
+    @Operation(summary = "Редактирование предметов мероприятия", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "409", description = "Некорректный запрос"),
@@ -109,7 +115,7 @@ class EventController {
     }
 
     @PostMapping("/kickPerson")
-    @Operation(summary = "Забанить пользователя в мероприятии")
+    @Operation(summary = "Забанить пользователя в мероприятии", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
@@ -125,14 +131,14 @@ class EventController {
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
-    @Operation(summary = "Удаление мероприятия")
+    @Operation(summary = "Удаление мероприятия", security = [SecurityRequirement(name = "bearer-key")])
     fun deleteEvent(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
                     @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         return eventService.deleteEvent(eventId, authPerson)
     }
 
     @PutMapping("/updateEvent")
-    @Operation(summary = "Редактирование мероприятия")
+    @Operation(summary = "Редактирование мероприятия", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", schema = Schema(implementation = EventResponseEntity::class)))]),
         ApiResponse(responseCode = "409", description = "Некорректный запрос"),
@@ -146,7 +152,7 @@ class EventController {
     }
 
     @DeleteMapping("/deleteItemsIn/{eventId}")
-    @Operation(summary = "Удаление предметов мероприяитя")
+    @Operation(summary = "Удаление предметов мероприяитя", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
@@ -158,7 +164,7 @@ class EventController {
 
 
     @PutMapping("/markItemIn/{eventId}")
-    @Operation(summary = "Отметить предмет")
+    @Operation(summary = "Отметить предмет", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),

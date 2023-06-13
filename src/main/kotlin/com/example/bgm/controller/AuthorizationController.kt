@@ -2,24 +2,20 @@ package com.example.bgm.controller
 
 import com.example.bgm.controller.dto.*
 import com.example.bgm.jwt.JwtPerson
-import com.example.bgm.jwt.JwtTokenProvider
 import com.example.bgm.services.AuthService
-import com.example.bgm.services.PersonService
 import com.example.bgm.services.RequestValidationService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @Tag(name = "Контроллер авторизации", description="Действия с аккаунтами пользователей")
@@ -29,7 +25,7 @@ class AuthorizationController {
     @Autowired private lateinit var validationService: RequestValidationService
 
     @PostMapping("/auth/login")
-    @Operation(summary = "Вход а аккаунт")
+    @Operation(summary = "Вход а аккаунт", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", schema = Schema(implementation = AuthenticationResponseEntity::class)))]),
         ApiResponse(responseCode = "409", description = "Неверный никнейм или пароль")
@@ -39,7 +35,7 @@ class AuthorizationController {
     }
 
     @PostMapping("exit")
-    @Operation(summary = "Выход из аккаунта")
+    @Operation(summary = "Выход из аккаунта", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses( value = [
         ApiResponse(responseCode = "200"),
     ])
@@ -48,7 +44,7 @@ class AuthorizationController {
     }
 
     @PostMapping("/auth/registration")
-    @Operation(summary = "Регистрация")
+    @Operation(summary = "Регистрация", security = [SecurityRequirement(name = "bearer-key")])
     @Throws(Exception::class)
     @ApiResponses( value = [
         ApiResponse(responseCode = "200"),
