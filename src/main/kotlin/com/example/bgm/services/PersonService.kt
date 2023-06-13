@@ -116,7 +116,7 @@ class PersonService {
             ?: throw Exception("person with nickname ${authPerson.username} not exist")
         val event = eventRepo.findById(eventId).get()
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
-            return ResponseEntity.status(512).body("only mmber or admin can get all members")
+            return ResponseEntity.status(512).body("only member or admin can get all members")
         }
         val members = personRepo.findAllByEventsContainingOrderByHostIn(event, pageable)
         val response = arrayListOf<MemberResponseEntity>()

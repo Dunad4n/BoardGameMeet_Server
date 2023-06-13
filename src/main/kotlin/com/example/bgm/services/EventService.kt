@@ -11,8 +11,6 @@ import com.example.bgm.repositories.RoleRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,6 +26,9 @@ import com.example.bgm.controller.dto.MarkItemRequestEntity
 import com.example.bgm.controller.dto.UpdateEventRequest
 import com.example.bgm.controller.dto.CreateEventRequestEntity
 import com.example.bgm.entities.enums.Gender
+import org.springframework.data.domain.PageImpl
+import org.springframework.http.HttpStatus
+import java.lang.Math.min
 import java.sql.Date
 import java.time.LocalDate
 
@@ -152,7 +153,7 @@ class EventService {
                           createEventRequest.description)
         event.members.add(host)
         eventRepo.save(event)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson): ResponseEntity<*> {
@@ -187,7 +188,7 @@ class EventService {
             throw Exception("this person can not delete event with id $id")
         }
         eventRepo.deleteById(id)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     fun getMainPageEvents(city: String,
@@ -232,13 +233,24 @@ class EventService {
     fun getMyEventsPageEvent(authPerson: JwtPerson, pageable: Pageable): ArrayList<MyEventsResponseEntity> {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
-        val myEvents = eventRepo.findMyEvents(person.events, pageable)
+        val myEvents = findMyEvents(person.events, pageable)
         val res = arrayListOf<MyEventsResponseEntity>()
-        if (myEvents != null)
-            for (event in sortEventsForMyEventPage(myEvents)) {
-                res.add(mapToMyEventsResponseEntity(event, person))
-            }
+        for (event in sortEventsForMyEventPage(myEvents)) {
+            res.add(mapToMyEventsResponseEntity(event, person))
+        }
         return res
+    }
+
+    fun findMyEvents(events: List<Event>, pageable: Pageable): Page<Event> {
+        val pastEvents = eventRepo.findPastEvents(events)
+        val futureEvents = eventRepo.findFutureEvents(events)
+        val allEvents = mutableListOf<Event>()
+        allEvents.addAll(pastEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) }))
+        allEvents.addAll(futureEvents.sortedWith(compareBy { -it.date.toEpochSecond(ZoneOffset.UTC) }))
+//        val sortedEvents = allEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) })
+        val start = pageable.offset.toInt()
+        val end = min((start + pageable.pageSize), allEvents.size)
+        return PageImpl(allEvents.subList(start, end), pageable, allEvents.size.toLong())
     }
 
     fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson): ResponseEntity<*> {
@@ -261,7 +273,7 @@ class EventService {
             event.ban(user)
         }
         eventRepo.save(event)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     fun getItems(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
@@ -288,7 +300,7 @@ class EventService {
             throw Exception("only host can delete items")
         }
         itemRepo.deleteAllByEvent(event)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     fun editItems(eventId: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?): ResponseEntity<*> {
@@ -310,7 +322,7 @@ class EventService {
 //            itemRepo.save(item)
 //        }
 //        eventRepo.save(event)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson): ResponseEntity<*> {
@@ -325,7 +337,7 @@ class EventService {
         val item = itemRepo.findById(markItemRequest.itemId).get()
         item.marked = markItemRequest.markedStatus;
         itemRepo.save(item)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     private fun sortEventsForMyEventPage(events: Page<Event>): List<Event> {
@@ -342,23 +354,5 @@ class EventService {
         resultEvents.addAll(activeEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) }))
         resultEvents.addAll(inactiveEvents.sortedWith(compareBy { -it.date.toEpochSecond(ZoneOffset.UTC) }))
         return resultEvents
-    }
-
-    private fun filterEventsForActiveStatus(events: List<Event>): List<Event> {
-        return events.filter { it.isActive() }
-    }
-
-    /** Если у пользователя указан возраст **/
-    private fun filterEventsForAge(events: List<Event>, person: Person): List<Event> {
-        if (person.age == null) {
-            throw Exception("age of this person is null")
-        }
-        return events.filter { it.minAge != null && it.maxAge != null }
-                     .filter { it.minAge!! <= person.age!! && it.maxAge!! >= person.age!! }
-    }
-
-    /** Если пользователь неавторизован или возраст не указан **/
-    private fun filterEventsForNullAge(events: List<Event>): List<Event> {
-        return events.filter { it.minAge == null && it.maxAge == null }
     }
 }

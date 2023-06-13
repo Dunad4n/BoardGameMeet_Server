@@ -8,6 +8,7 @@ import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.MessageRepo
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.repositories.RoleRepo
+import org.apache.coyote.Response
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -30,14 +31,12 @@ class MessageService {
     @Autowired
     lateinit var roleRepo: RoleRepo
 
-    private fun mapToMessageResponseEntity(message: Message): Map<String, Any> {
-        val responseMap = mutableMapOf<String, Any>()
-        responseMap["text"] = message.text
-        responseMap["eventId"] = message.event.id.toString()
-        responseMap["myNickname"] = message.person.nickname
-        responseMap["name"] = message.person.name
-        responseMap["avatarId"] = message.person.avatarId.toString()
-        return responseMap
+    private fun mapToMessageResponseEntity(message: Message): MessageResponseEntity {
+        return MessageResponseEntity(text = message.text,
+                                     eventId = message.event.id,
+                                     myNickname = message.person.nickname,
+                                     name = message.person.name,
+                                     avatarId = message.person.avatarId)
     }
 
     fun getMessages(eventId: Long, authPerson: JwtPerson, pageable: Pageable): ResponseEntity<*> {
@@ -50,7 +49,7 @@ class MessageService {
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             return ResponseEntity.status(512).body("person can read messages only from event where he is member")
         }
-        val messages = arrayListOf<Map<String, Any>>()
+        val messages = arrayListOf<MessageResponseEntity>()
         val mess = messageRepo.findAllByEventOrderByDateTimeDesc(event, pageable)
         for (message in mess) {
             messages.add(mapToMessageResponseEntity(message))
@@ -58,12 +57,17 @@ class MessageService {
         return ResponseEntity.ok(messages)
     }
 
-    fun createMessage(createMessageRequest: CreateMessageRequestEntity): Map<String, Any> {
+    fun createMessage(createMessageRequest: CreateMessageRequestEntity): ResponseEntity<*> {
         val person = personRepo.findByNickname(createMessageRequest.personNickname)
-            ?: throw Exception("person with nickname ${createMessageRequest.personNickname} does not exist")
-//        val authPerson = SecurityContextHolder.getContext().authentication.principal as JwtPerson
+            ?: return ResponseEntity.status(511).body("person with nickname ${createMessageRequest.personNickname} not exist")
+        if (!eventRepo.existsById(createMessageRequest.eventId)) {
+            return ResponseEntity.status(510).body("event with id ${createMessageRequest.eventId} not exist")
+        }
         val event = eventRepo.findById(createMessageRequest.eventId).get()
+        if (!event.members.contains(person)) {
+            return ResponseEntity.status(512).body("only member or admin can get all members")
+        }
         val message = messageRepo.save(Message(createMessageRequest.text, LocalDateTime.now(), person, event))
-        return mapToMessageResponseEntity(message)
+        return ResponseEntity.ok(mapToMessageResponseEntity(message))
     }
 }

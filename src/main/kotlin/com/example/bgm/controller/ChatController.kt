@@ -1,16 +1,18 @@
 package com.example.bgm.controller
 
 import com.example.bgm.controller.dto.CreateMessageRequestEntity
-import com.example.bgm.controller.dto.MessageResponseEntity
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.services.MessageService
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Controller
 
 @Controller
+@Tag(name = "Контроллер чата", description="Сообщения в чатах")
 class ChatController {
 
     @Autowired private lateinit var messagingTemplate: SimpMessagingTemplate
@@ -18,16 +20,10 @@ class ChatController {
     @Autowired private lateinit var personRepo: PersonRepo
 
     @MessageMapping("/chat")
-//    @SendTo("/topic/chat")
-    fun chatting(
-        @Payload messageRequestEntity: CreateMessageRequestEntity) {
+    fun chatting(@Payload messageRequestEntity: CreateMessageRequestEntity): ResponseEntity<*> {
         println(messageRequestEntity.text)
         println(messageRequestEntity.eventId)
         println(messageRequestEntity.personNickname)
-        val message = messageService.createMessage(messageRequestEntity)
-        messagingTemplate.convertAndSend(
-                message["eventId"] as String, "/topic/chat", message
-        )
+        return messageService.createMessage(messageRequestEntity)
     }
-
 }
