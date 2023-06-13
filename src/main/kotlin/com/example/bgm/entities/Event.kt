@@ -56,7 +56,7 @@ data class Event(
     @Column(name = "max_age")
     var maxAge: Int? = null
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "members_events",
         joinColumns = [JoinColumn(name = "event_id", referencedColumnName = "event_id")],

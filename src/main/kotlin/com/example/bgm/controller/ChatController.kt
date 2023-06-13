@@ -15,9 +15,7 @@ import org.springframework.stereotype.Controller
 @Tag(name = "Контроллер чата", description="Сообщения в чатах")
 class ChatController {
 
-    @Autowired private lateinit var messagingTemplate: SimpMessagingTemplate
     @Autowired private lateinit var messageService: MessageService
-    @Autowired private lateinit var personRepo: PersonRepo
 
     @MessageMapping("/chat")
     fun chatting(@Payload messageRequestEntity: CreateMessageRequestEntity): ResponseEntity<*> {

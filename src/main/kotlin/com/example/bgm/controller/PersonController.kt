@@ -40,7 +40,7 @@ class PersonController {
     @Operation(summary = "Получения профиля пользователя")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = ProfileResponseEntity::class), mediaType = "application/json")]),
-        ApiResponse(responseCode = "511", description = "Person with nickname not exist")
+        ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
     ])
     fun profile(@PathVariable nickname: String): ResponseEntity<*> {
         return personService.getProfile(nickname)
@@ -50,7 +50,7 @@ class PersonController {
     @Operation(summary = "Получения своего профиля")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = ProfileResponseEntity::class), mediaType = "application/json")]),
-        ApiResponse(responseCode = "511", description = "Person with nickname not exist")
+        ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
     ])
     fun ownProfile(@AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
         return personService.getProfile(authPerson.username)
@@ -60,8 +60,9 @@ class PersonController {
     @PostMapping("/leaveEvent/{eventId}")
     @Operation(summary = "Получения профиля пользователя")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
+        ApiResponse(responseCode = "473", description = "Выбраный пользователь не может покинуть мероприятие")
     ])
     fun leaveEvent(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
                    @AuthenticationPrincipal authPerson: JwtPerson
@@ -77,8 +78,8 @@ class PersonController {
     @PostMapping("/joinEvent/{eventId}")
     @Operation(summary = "Присоединение к мероприятию")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
     fun joinEvent(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
                   @AuthenticationPrincipal authPerson: JwtPerson
@@ -96,7 +97,8 @@ class PersonController {
     @Operation(summary = "Получения списка участников", description = "В пагинации указывается только page и size")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = MemberResponseEntity::class)))))]),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
+        ApiResponse(responseCode = "473", description = "Только участник или админ может посмотреть всех участников мероприятия")
     ])
     fun getAllMembers(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
                       @PageableDefault() pageable: Pageable,
@@ -108,8 +110,8 @@ class PersonController {
     @DeleteMapping("/admin/deletePerson/{nickname}")
     @Operation(summary = "Удаление пользователя из мероприятия")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "511", description = "Person with nickname not exist")
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
     ])
     fun deletePerson(@PathVariable@Parameter(description = "Ник пользователя") nickname: String,
                      @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
@@ -120,8 +122,8 @@ class PersonController {
     @PutMapping("/updatePerson")
     @Operation(summary = "Редактирование профиля")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "409", description = "The request failed validation"),
+        ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", schema = Schema(implementation = UpdateProfileEntity::class)))]),
+        ApiResponse(responseCode = "409", description = "Некорректный запрос"),
     ])
     fun updatePerson(@RequestBody request: UpdatePersonRequestEntity,
                      @AuthenticationPrincipal authPerson: JwtPerson
@@ -135,7 +137,7 @@ class PersonController {
     @PostMapping("/validateSecretWord")
     @Operation(summary = "Проверка валидности секретного слова")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "correct secret word"),
+        ApiResponse(responseCode = "200", description = "Верное секретное слово"),
         ApiResponse(responseCode = "409", description = "Неверное секретное слово или никнейм"),
     ])
     fun validateSecretWord(@RequestBody validateSecretWordRequest: ValidateSecretWordRequestEntity
@@ -148,7 +150,7 @@ class PersonController {
     @PutMapping("/changePassword")
     @Operation(summary = "Смена пароля")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "done"),
+        ApiResponse(responseCode = "200"),
     ])
     fun changePassword(@RequestBody changePasswordRequest: ChangePasswordRequestEntity) {
         return personService.changePassword(changePasswordRequest.nickname, changePasswordRequest.newPassword,
@@ -177,7 +179,7 @@ class PersonController {
     @GetMapping("/isMemberOfEvent/{eventId}")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = ResponseEntity::class), mediaType = "application/json")]),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
     fun isMemberOfEvent(@PathVariable eventId: Long,
                         @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {

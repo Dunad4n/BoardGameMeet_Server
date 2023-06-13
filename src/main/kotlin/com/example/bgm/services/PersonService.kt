@@ -23,20 +23,11 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class PersonService {
 
-    @Autowired
-    private lateinit var personRepo: PersonRepo
-
-    @Autowired
-    private lateinit var eventRepo: EventRepo
-
-    @Autowired
-    private lateinit var roleRepo: RoleRepo
-
-    @Autowired
-    lateinit var tokenRepo: TokenRepo
-
-    @Autowired
-    lateinit var encoder: BCryptPasswordEncoder
+    @Autowired private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var eventRepo: EventRepo
+    @Autowired private lateinit var roleRepo: RoleRepo
+    @Autowired private lateinit var tokenRepo: TokenRepo
+    @Autowired private lateinit var encoder: BCryptPasswordEncoder
 
 
     private fun mapToMemberResponseEntity(person: Person, event: Event): MemberResponseEntity {
@@ -88,10 +79,7 @@ class PersonService {
         SecurityContextHolder.getContext().authentication = jwtTokenProvider.getAuthentication(token)
         tokenRepo.save(Token(token, person))
 
-        val response = mutableMapOf<String, String>()
-        response["token"] = token
-        response["nickname"] = person.nickname
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(UpdateProfileEntity(token, person.nickname))
     }
 
     @Transactional
@@ -99,42 +87,47 @@ class PersonService {
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} not exist")
         if (!personRepo.existsByNickname(nickname)) {
-            return ResponseEntity.status(511).body("person with nickname $nickname not exist")
+            return ResponseEntity.status(472).body("person with nickname $nickname not exist")
         }
         if (!person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
             throw Exception("only admin can delete users")
         }
         personRepo.deleteByNickname(nickname)
-        return ResponseEntity.ok("done")
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     fun getAllMembers(eventId: Long, pageable: Pageable, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} not exist")
         val event = eventRepo.findById(eventId).get()
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
-            return ResponseEntity.status(512).body("only member or admin can get all members")
+            return ResponseEntity.status(473).body("only member or admin can get all members")
         }
+        println(event.host)
         val res = arrayListOf<MemberResponseEntity>()
         res.add(mapToMemberResponseEntity(event.host, event))
-        for (member in event.members) {
+        for (member in personRepo.findAllByEventsContaining(event)) {
             if(member != event.host) {
-                res.add(mapToMemberResponseEntity(person, event))
+                res.add(mapToMemberResponseEntity(member, event))
             }
         }
 
+        println(res)
+
         val from = if(pageable.pageNumber * pageable.pageSize < res.size) pageable.pageNumber * pageable.pageSize else res.size - 1
         val to = if((pageable.pageNumber + 1) * pageable.pageSize < res.size) (pageable.pageNumber + 1) * pageable.pageSize else res.size - 1
+
+        println(res.subList(from, to + 1))
 
         return ResponseEntity.ok(res.subList(from, to + 1))
     }
 
     fun getProfile(nickname: String): ResponseEntity<*> {
         val person = personRepo.findByNickname(nickname)
-            ?: return ResponseEntity.status(511).body("person with nickname $nickname not exist")
+            ?: return ResponseEntity.status(472).body("person with nickname $nickname not exist")
         return ResponseEntity.ok(mapToProfileResponseEntity(person))
     }
 
@@ -145,22 +138,18 @@ class PersonService {
 
     fun joinToEvent(userId: Long, eventId: Long): ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val event = eventRepo.findById(eventId).get()
         val person = personRepo.findById(userId).get()
-//        if (!event.bannedMembers.contains(person) && !event.members.contains(person)) {
         event.addPerson(person)
         eventRepo.save(event)
-//        } else {
-//            throw Exception("this person can not join to chosen event")
-//        }
         return ResponseEntity.ok("done")
     }
 
     fun leaveFromEvent(userId: Long, eventId: Long): ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val person = personRepo.findById(userId).get()
         val event = eventRepo.findById(eventId).get()
@@ -169,7 +158,7 @@ class PersonService {
             eventRepo.save(event)
         } else {
             if (!person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
-                return ResponseEntity.status(512).body("this person can not leave from chosen event")
+                return ResponseEntity.status(473).body("this person can not leave from chosen event")
             }
         }
         return ResponseEntity.ok("done")
@@ -206,7 +195,7 @@ class PersonService {
 
     fun isMemberOfEvent(eventId: Long, authPerson: JwtPerson):ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findEventById(eventId).get()

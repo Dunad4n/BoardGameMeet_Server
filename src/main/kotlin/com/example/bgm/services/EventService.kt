@@ -124,7 +124,7 @@ class EventService {
 
     fun getEvent(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(id)) {
-            return ResponseEntity.status(510).body("event with id $id not exist")
+            return ResponseEntity.status(471).body("event with id $id not exist")
         }
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
@@ -158,7 +158,7 @@ class EventService {
 
     fun updateEvent(updateRequest: UpdateEventRequest, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(updateRequest.id!!)) {
-            return ResponseEntity.status(510).body("event with id ${updateRequest.id} not exist")
+            return ResponseEntity.status(471).body("event with id ${updateRequest.id} not exist")
         }
         val event = eventRepo.findEventById(updateRequest.id).get()
         val person = personRepo.findByNickname(authPerson.username)
@@ -180,7 +180,7 @@ class EventService {
 
     fun deleteEvent(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(id)) {
-            return ResponseEntity.status(510).body("event with id $id not exist")
+            return ResponseEntity.status(471).body("event with id $id not exist")
         }
         if (authPerson.id != eventRepo.findById(id).get().host.id &&
             personRepo.findByNickname(authPerson.username)?.roles?.
@@ -255,10 +255,10 @@ class EventService {
 
     fun banPerson(eventId: Long, userNickname: String, authPerson: JwtPerson): ResponseEntity<*> {
         if (!personRepo.existsByNickname(userNickname)) {
-            return ResponseEntity.status(511).body("person with nickname $userNickname not exist")
+            return ResponseEntity.status(472).body("person with nickname $userNickname not exist")
         }
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val host = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
@@ -278,13 +278,13 @@ class EventService {
 
     fun getItems(id: Long, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(id)) {
-            return ResponseEntity.status(510).body("event with id $id not exist")
+            return ResponseEntity.status(471).body("event with id $id not exist")
         }
         val event = eventRepo.findById(id).get()
         val person = personRepo.findByNickname(authPerson.username)
             ?: throw Exception("person with nickname ${authPerson.username} does not exist")
         if (!event.members.contains(person) && !person.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
-            return ResponseEntity.status(512).body("only members or admins can get items")
+            return ResponseEntity.status(473).body("only members or admins can get items")
         }
         val items = itemRepo.findAllByEvent(eventRepo.findById(id).get())
         return ResponseEntity.ok(items.toList().map { mapToItemResponseEntity(it) })
@@ -293,7 +293,7 @@ class EventService {
     @Transactional
     fun deleteItems(eventId: Long, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val event = eventRepo.findEventById(eventId).get()
         if (event.host.id != authPerson.id) {
@@ -305,7 +305,7 @@ class EventService {
 
     fun editItems(eventId: Long, editItemsRequest: List<EditItemsRequestEntity>, hostId: Long?): ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val event = eventRepo.findById(eventId).get()
         if(hostId != event.host.id) {
@@ -327,12 +327,12 @@ class EventService {
 
     fun markItem(eventId: Long, markItemRequest: MarkItemRequestEntity, authPerson: JwtPerson): ResponseEntity<*> {
         if (!eventRepo.existsById(eventId)) {
-            return ResponseEntity.status(510).body("event with id $eventId not exist")
+            return ResponseEntity.status(471).body("event with id $eventId not exist")
         }
         val person = personRepo.findByNickname(authPerson.username)
         val event = eventRepo.findById(eventId).get()
         if (!event.members.contains(person) && !person!!.roles.contains(roleRepo.findByName("ROLE_ADMIN"))) {
-            return ResponseEntity.status(512).body("only member can mark items")
+            return ResponseEntity.status(473).body("only member can mark items")
         }
         val item = itemRepo.findById(markItemRequest.itemId).get()
         item.marked = markItemRequest.markedStatus;

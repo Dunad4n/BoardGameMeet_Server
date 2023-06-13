@@ -31,7 +31,8 @@ class MessageController {
     @Operation(summary = "Получения всех сообщений в чате", description = "В пагинации указывается только page и size")
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = MessageResponseEntity::class)))))]),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
+        ApiResponse(responseCode = "473", description = "Пользователь может прочитать сообщения только в том мероприятии, где он - участник")
     ])
     fun getAllMessages(@PathVariable @Parameter(description = "Id мероприятия") eventId: Long,
                        @AuthenticationPrincipal authPerson: JwtPerson,

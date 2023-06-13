@@ -60,7 +60,7 @@ class EventController {
     @Operation(summary = "Информация о мероприятии")
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = EventResponseEntity::class), mediaType = "application/json")]),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
     fun event(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
               @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
@@ -71,7 +71,7 @@ class EventController {
     @PostMapping("/createEvent")
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", description = "Ok"),
-        ApiResponse(responseCode = "409", description = "The request failed validation")
+        ApiResponse(responseCode = "409", description = "Некорректный запрос")
     ])
     @Operation(summary = "Создание мероприятия")
     fun createEvent(@RequestBody createEventRequest: CreateEventRequestEntity,
@@ -85,7 +85,8 @@ class EventController {
     @Operation(summary = "Список всех предметов мероприятия", description = "В пагинации указывается только page и size")
     @ApiResponses( value = [
         ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", array = (ArraySchema(schema = Schema(implementation = ItemResponseEntity::class)))))]),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
+        ApiResponse(responseCode = "473", description = "Только участник или админ могут получить полезные предметы")
     ])
     fun getItems(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
                  @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
@@ -95,9 +96,9 @@ class EventController {
     @PutMapping("/editItemsIn/{eventId}")
     @Operation(summary = "Редактирование предметов мероприятия")
     @ApiResponses( value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "409", description = "The request failed validation"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "409", description = "Некорректный запрос"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
     fun editItems(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
                   @RequestBody editItemsRequest: List<EditItemsRequestEntity>,
@@ -110,9 +111,9 @@ class EventController {
     @PostMapping("/kickPerson")
     @Operation(summary = "Забанить пользователя в мероприятии")
     @ApiResponses( value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist"),
-        ApiResponse(responseCode = "511", description = "Person with nickname not exist")
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
+        ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
     ])
     fun banPerson(@RequestBody kickPersonRequest: KickPersonRequestEntity,
                   @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
@@ -121,20 +122,21 @@ class EventController {
 
     @DeleteMapping("/deleteEvent/{eventId}")
     @ApiResponses( value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist"),
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
     @Operation(summary = "Удаление мероприятия")
-    fun deleteEvent(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long, @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.deleteEvent(eventId, authPerson)
+    fun deleteEvent(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
+                    @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return eventService.deleteEvent(eventId, authPerson)
     }
 
     @PutMapping("/updateEvent")
     @Operation(summary = "Редактирование мероприятия")
     @ApiResponses( value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "409", description = "The request failed validation"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "200", content = [(Content(mediaType = "application/json", schema = Schema(implementation = EventResponseEntity::class)))]),
+        ApiResponse(responseCode = "409", description = "Некорректный запрос"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
     fun updateEvent(@RequestBody request: UpdateEventRequest,
                     @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
@@ -146,20 +148,21 @@ class EventController {
     @DeleteMapping("/deleteItemsIn/{eventId}")
     @Operation(summary = "Удаление предметов мероприяитя")
     @ApiResponses( value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует")
     ])
     fun deleteItems(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
-                    @AuthenticationPrincipal authPerson: JwtPerson) {
-        eventService.deleteItems(eventId, authPerson)
+                    @AuthenticationPrincipal authPerson: JwtPerson): ResponseEntity<*> {
+        return eventService.deleteItems(eventId, authPerson)
     }
 
 
     @PutMapping("/markItemIn/{eventId}")
     @Operation(summary = "Отметить предмет")
     @ApiResponses( value = [
-        ApiResponse(responseCode = "200", description = "done"),
-        ApiResponse(responseCode = "510", description = "Event with id not exist")
+        ApiResponse(responseCode = "200"),
+        ApiResponse(responseCode = "471", description = "Мероприятия с таким id не существует"),
+        ApiResponse(responseCode = "473", description = "Только участник может отмечать полезные предметы")
     ])
     fun markItems(@PathVariable@Parameter(description = "Id мероприятия") eventId: Long,
                   @RequestBody markItemsRequest: MarkItemRequestEntity,

@@ -62,6 +62,9 @@ data class ItemResponseEntity(val itemId: Long?,
  * Person
  */
 
+data class UpdateProfileEntity(val token: String,
+                               val nickname: String)
+
 data class ProfileResponseEntity(val name: String,
                                  val nickname: String,
                                  val age: Int?,
