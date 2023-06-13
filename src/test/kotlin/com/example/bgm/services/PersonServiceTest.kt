@@ -1,52 +1,42 @@
 package com.example.bgm.services
 
+import com.example.bgm.IntegrationEnvironment
 import com.example.bgm.controller.dto.IsMyProfileResponseEntity
 import com.example.bgm.controller.dto.MemberResponseEntity
 import com.example.bgm.controller.dto.ProfileResponseEntity
 import com.example.bgm.controller.dto.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
-import com.example.bgm.entities.Role
 import com.example.bgm.entities.enums.Gender
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.jwt.JwtTokenProvider
-import com.example.bgm.repositories.*
+import com.example.bgm.repositories.EventRepo
+import com.example.bgm.repositories.PersonRepo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
-
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
-import org.springframework.http.RequestEntity
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
-import org.testcontainers.shaded.org.yaml.snakeyaml.tokens.Token
 import java.time.LocalDateTime
-import kotlin.test.assertNotEquals
 
 @SpringBootTest
-class PersonServiceTest
+class PersonServiceTest: IntegrationEnvironment()
 {
-    @Autowired
-    private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var eventRepo: EventRepo
+    @Autowired private lateinit var personService: PersonService
+    @Autowired private lateinit var jwtTokenProvider: JwtTokenProvider
 
-    @Autowired
-    private lateinit var eventRepo: EventRepo
-
-    @Autowired
-    private lateinit var roleRepo: RoleRepo
-
-    @Autowired
-    private lateinit var personService: PersonService
-
-    @Autowired
-    private lateinit var jwtTokenProvider: JwtTokenProvider
+    @BeforeEach
+    @Transactional
+    fun clean() {
+        eventRepo.deleteAll()
+        personRepo.deleteAll()
+    }
 
     @Test
     @Rollback
@@ -148,8 +138,6 @@ class PersonServiceTest
         personRepo.flush()
         val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
         eventRepo.flush()
-        val fds = Pageable()
-
 
         event.host = person
         event.members.add(person)
@@ -192,7 +180,7 @@ class PersonServiceTest
 
 
         /** when **/
-        val res = personService.getProfile(person.nickname)
+        val res = personService.getProfile(person.nickname).body
 
         /** then **/
         assertThat(res, `is`(equalTo(profile)))
@@ -329,7 +317,7 @@ class PersonServiceTest
         val response1 = personService.validateSecretWord("cat", person1.nickname)
 
         assertThat(response.statusCode, `is`(equalTo(HttpStatusCode.valueOf(200))))
-        assertThat(response1.statusCode, `not`(equalTo(HttpStatusCode.valueOf(200))))
+        assertThat(response1.statusCode, not(equalTo(HttpStatusCode.valueOf(200))))
     }
 
     @Test

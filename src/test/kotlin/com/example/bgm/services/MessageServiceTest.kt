@@ -1,5 +1,6 @@
 package com.example.bgm.services
 
+import com.example.bgm.IntegrationEnvironment
 import com.example.bgm.controller.dto.CreateMessageRequestEntity
 import com.example.bgm.controller.dto.MessageResponseEntity
 import com.example.bgm.entities.Event
@@ -7,34 +8,38 @@ import com.example.bgm.entities.Message
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.enums.Gender
 import com.example.bgm.jwt.JwtPerson
-import com.example.bgm.repositories.*
-import io.kotest.matchers.collections.sorted
+import com.example.bgm.repositories.EventRepo
+import com.example.bgm.repositories.MessageRepo
+import com.example.bgm.repositories.PersonRepo
+import com.example.bgm.repositories.RoleRepo
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.*
-
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.`is`
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @SpringBootTest
-class MessageServiceTest
+class MessageServiceTest: IntegrationEnvironment()
 {
-    @Autowired
-    private lateinit var messageService: MessageService
+    @Autowired private lateinit var messageService: MessageService
+    @Autowired private lateinit var messageRepo: MessageRepo
+    @Autowired private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var eventRepo: EventRepo
+    @Autowired private lateinit var roleRepo: RoleRepo
 
-    @Autowired
-    private lateinit var messageRepo: MessageRepo
-
-    @Autowired
-    private lateinit var personRepo: PersonRepo
-
-    @Autowired
-    private lateinit var eventRepo: EventRepo
+    @BeforeEach
+    @Transactional
+    fun clean() {
+        eventRepo.deleteAll()
+        personRepo.deleteAll()
+        messageRepo.deleteAll()
+    }
 
     @Test
     @Rollback
@@ -59,16 +64,20 @@ class MessageServiceTest
         val text = "text"
 
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
+        person.roles.add(roleRepo.findByName("ROLE_ADMIN"))
         personRepo.flush()
-        val event = eventRepo.save(Event(name, game, city, address, eventDate, maxPersonCount, person))
+        val event = Event(name, game, city, address, eventDate, maxPersonCount, person)
+        event.host = person
+        event.members.add(person)
+        eventRepo.save(event)
         eventRepo.flush()
 
+
         /** when **/
-//        messageService.createMessage(CreateMessageRequestEntity(text, event.id!!, person.nickname))
-//        val message = messageRepo.findByPerson(person)
-//
-//        /** then **/
-//        assertThat(message.text, `is`(equalTo(text)))
+        val message = messageService.createMessage(CreateMessageRequestEntity(text, event.id!!, person.nickname)).body as MessageResponseEntity
+
+        /** then **/
+        assertThat(message.text, `is`(equalTo(text)))
     }
 
     @Test
@@ -112,7 +121,7 @@ class MessageServiceTest
         messageList.add(msg1)
 
         /** when **/
-        val messages = messageService.getMessages(event.id!!, authPerson, p) as List<*>
+        val messages = messageService.getMessages(event.id!!, authPerson, p).body as List<*>
 
         /** then **/
         assertThat(messages[0], `is`(equalTo(messageList[0])))

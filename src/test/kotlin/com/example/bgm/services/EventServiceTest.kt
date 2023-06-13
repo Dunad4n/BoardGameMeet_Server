@@ -1,5 +1,6 @@
 package com.example.bgm.services
 
+import com.example.bgm.IntegrationEnvironment
 import com.example.bgm.controller.dto.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Item
@@ -9,43 +10,34 @@ import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.EventRepo
 import com.example.bgm.repositories.ItemRepo
 import com.example.bgm.repositories.PersonRepo
-import com.example.bgm.repositories.RoleRepo
-import org.apache.coyote.Response
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
-
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatusCode
-import org.springframework.http.ResponseEntity
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.test.annotation.Rollback
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.stream.Collectors
+
 
 @SpringBootTest
-class EventServiceTest
+class EventServiceTest: IntegrationEnvironment()
 {
 
-    @Autowired
-    private lateinit var eventRepo: EventRepo
+    @Autowired private lateinit var eventRepo: EventRepo
+    @Autowired private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var itemRepo: ItemRepo
+    @Autowired private lateinit var eventService: EventService
 
-    @Autowired
-    private lateinit var personRepo: PersonRepo
-
-    @Autowired
-    private lateinit var itemRepo: ItemRepo
-
-    @Autowired
-    private lateinit var roleRepo: RoleRepo
-
-    @Autowired
-    private lateinit var eventService: EventService
+    @BeforeEach
+    @Transactional
+    fun clean() {
+        eventRepo.deleteAll()
+        personRepo.deleteAll()
+    }
 
     @Test
     @Rollback
@@ -71,9 +63,9 @@ class EventServiceTest
 
 
         val person = personRepo.save(Person(personName, personNickname, personPassword, secretWord, gender, userCity))
-        personRepo.flush()
+//        personRepo.flush()
         val event = eventRepo.save(Event(name, game, city, address, date, maxPersonCount, person))
-        eventRepo.flush()
+//        eventRepo.flush()
         val authPerson = JwtPerson(person.id, personNickname, personPassword, listOf())
         event.members.add(person)
 
@@ -352,7 +344,7 @@ class EventServiceTest
         val item1Response = ItemResponseEntity(item1.id, item1.name, item1.marked)
         val item2Response = ItemResponseEntity(item2.id, item2.name, item2.marked)
 
-        val items = listOf<ItemResponseEntity>(item1Response, item2Response)
+        val items = listOf(item1Response, item2Response)
 
         val res = eventService.getItems(event.id!!, authPerson).body as List<*>
 
