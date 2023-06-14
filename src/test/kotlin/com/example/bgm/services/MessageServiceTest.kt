@@ -1,8 +1,8 @@
 package com.example.bgm.services
 
 import com.example.bgm.IntegrationEnvironment
-import com.example.bgm.controller.dto.CreateMessageRequestEntity
-import com.example.bgm.controller.dto.MessageResponseEntity
+import com.example.bgm.entities.dto.CreateMessageRequestEntity
+import com.example.bgm.entities.dto.MessageResponseEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Message
 import com.example.bgm.entities.Person

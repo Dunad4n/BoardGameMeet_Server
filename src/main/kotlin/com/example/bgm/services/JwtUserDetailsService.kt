@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service
 @Service
 class JwtUserDetailsService: UserDetailsService {
 
-    @Autowired
-    private lateinit var personService: PersonService
+    @Autowired private lateinit var personService: PersonService
 
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {

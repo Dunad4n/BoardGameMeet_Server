@@ -1,10 +1,10 @@
 package com.example.bgm.services
 
 import com.example.bgm.IntegrationEnvironment
-import com.example.bgm.controller.dto.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Item
 import com.example.bgm.entities.Person
+import com.example.bgm.entities.dto.*
 import com.example.bgm.entities.enums.Gender
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.EventRepo
@@ -157,7 +157,8 @@ class EventServiceTest: IntegrationEnvironment()
 
 
         /** when **/
-        val response = eventService.updateEvent(UpdateEventRequest(event.id, upName, upGame, upCity, upAddress, upDate,
+        val response = eventService.updateEvent(
+            UpdateEventRequest(event.id, upName, upGame, upCity, upAddress, upDate,
             upMaxPersonCount, upMinAge, upMaxAge, upDescription), authPerson)
 
         /** then **/

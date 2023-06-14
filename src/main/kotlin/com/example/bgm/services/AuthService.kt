@@ -1,8 +1,8 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.dto.AuthenticationRequestEntity
-import com.example.bgm.controller.dto.AuthenticationResponseEntity
-import com.example.bgm.controller.dto.CreatePersonRequestEntity
+import com.example.bgm.entities.dto.AuthenticationRequestEntity
+import com.example.bgm.entities.dto.AuthenticationResponseEntity
+import com.example.bgm.entities.dto.CreatePersonRequestEntity
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.Role
 import com.example.bgm.entities.jwt.Token
@@ -28,23 +28,12 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 open class AuthService {
 
-    @Autowired
-    private lateinit var passwordEncoder: BCryptPasswordEncoder
-
-    @Autowired
-    private lateinit var authenticationManager: AuthenticationManager
-
-    @Autowired
-    private lateinit var jwtTokenProvider: JwtTokenProvider
-
-    @Autowired
-    private lateinit var personRepo: PersonRepo
-
-    @Autowired
-    private lateinit var tokenRepo: TokenRepo
-
-    @Autowired
-    private lateinit var roleRepo: RoleRepo
+    @Autowired private lateinit var passwordEncoder: BCryptPasswordEncoder
+    @Autowired private lateinit var authenticationManager: AuthenticationManager
+    @Autowired private lateinit var jwtTokenProvider: JwtTokenProvider
+    @Autowired private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var tokenRepo: TokenRepo
+    @Autowired private lateinit var roleRepo: RoleRepo
 
     @Transactional
     fun createPerson(createPersonRequest: CreatePersonRequestEntity): ResponseEntity<*> {

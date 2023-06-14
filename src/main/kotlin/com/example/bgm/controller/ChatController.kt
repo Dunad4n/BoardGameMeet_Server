@@ -1,6 +1,6 @@
 package com.example.bgm.controller
 
-import com.example.bgm.controller.dto.CreateMessageRequestEntity
+import com.example.bgm.entities.dto.CreateMessageRequestEntity
 import com.example.bgm.repositories.PersonRepo
 import com.example.bgm.services.MessageService
 import io.swagger.v3.oas.annotations.tags.Tag

@@ -1,7 +1,7 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.dto.CreateMessageRequestEntity
-import com.example.bgm.controller.dto.MessageResponseEntity
+import com.example.bgm.entities.dto.CreateMessageRequestEntity
+import com.example.bgm.entities.dto.MessageResponseEntity
 import com.example.bgm.entities.Message
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.repositories.EventRepo
@@ -19,17 +19,10 @@ import java.time.LocalDateTime
 @Service
 class MessageService {
 
-    @Autowired
-    lateinit var messageRepo: MessageRepo
-
-    @Autowired
-    lateinit var eventRepo: EventRepo
-
-    @Autowired
-    lateinit var personRepo: PersonRepo
-
-    @Autowired
-    lateinit var roleRepo: RoleRepo
+    @Autowired private lateinit var messageRepo: MessageRepo
+    @Autowired private lateinit var eventRepo: EventRepo
+    @Autowired private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var roleRepo: RoleRepo
 
     private fun mapToMessageResponseEntity(message: Message): MessageResponseEntity {
         return MessageResponseEntity(text = message.text,

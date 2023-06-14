@@ -15,6 +15,5 @@ interface PersonRepo: JpaRepository<Person, Long> {
     fun findByNickname(nickname: String): Person?
     fun existsByNickname(nickname: String): Boolean
     fun deleteByNickname(nickname: String)
-    fun findAllByEventsContainingOrderByHostIn(event: Event, pageable: Pageable): Page<Person>
     fun findAllByEventsContaining(event: Event): List<Person>
 }

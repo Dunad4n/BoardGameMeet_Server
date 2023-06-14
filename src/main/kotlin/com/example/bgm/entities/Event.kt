@@ -1,6 +1,6 @@
 package com.example.bgm.entities
 
-import com.example.bgm.controller.dto.EditItemsRequestEntity
+import com.example.bgm.entities.dto.EditItemsRequestEntity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull

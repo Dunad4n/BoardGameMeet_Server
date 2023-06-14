@@ -16,15 +16,15 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import com.example.bgm.controller.dto.MainPageEventResponseEntity
-import com.example.bgm.controller.dto.MyEventsResponseEntity
-import com.example.bgm.controller.dto.EventResponseEntity
-import com.example.bgm.controller.dto.CreateEventResponseEntity
-import com.example.bgm.controller.dto.ItemResponseEntity
-import com.example.bgm.controller.dto.EditItemsRequestEntity
-import com.example.bgm.controller.dto.MarkItemRequestEntity
-import com.example.bgm.controller.dto.UpdateEventRequest
-import com.example.bgm.controller.dto.CreateEventRequestEntity
+import com.example.bgm.entities.dto.MainPageEventResponseEntity
+import com.example.bgm.entities.dto.MyEventsResponseEntity
+import com.example.bgm.entities.dto.EventResponseEntity
+import com.example.bgm.entities.dto.CreateEventResponseEntity
+import com.example.bgm.entities.dto.ItemResponseEntity
+import com.example.bgm.entities.dto.EditItemsRequestEntity
+import com.example.bgm.entities.dto.MarkItemRequestEntity
+import com.example.bgm.entities.dto.UpdateEventRequest
+import com.example.bgm.entities.dto.CreateEventRequestEntity
 import com.example.bgm.entities.enums.Gender
 import org.springframework.data.domain.PageImpl
 import org.springframework.http.HttpStatus
@@ -36,17 +36,10 @@ import java.time.LocalDate
 @Service
 class EventService {
 
-    @Autowired
-    lateinit var eventRepo: EventRepo
-
-    @Autowired
-    lateinit var personRepo: PersonRepo
-
-    @Autowired
-    lateinit var itemRepo: ItemRepo
-
-    @Autowired
-    lateinit var roleRepo: RoleRepo
+    @Autowired private lateinit var eventRepo: EventRepo
+    @Autowired private lateinit var personRepo: PersonRepo
+    @Autowired private lateinit var itemRepo: ItemRepo
+    @Autowired private lateinit var roleRepo: RoleRepo
 
     private fun mapToMainPageEventsResponseEntity(event: Event): MainPageEventResponseEntity {
         return MainPageEventResponseEntity(event.id,

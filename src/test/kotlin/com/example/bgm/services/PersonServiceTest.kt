@@ -1,10 +1,10 @@
 package com.example.bgm.services
 
 import com.example.bgm.IntegrationEnvironment
-import com.example.bgm.controller.dto.IsMyProfileResponseEntity
-import com.example.bgm.controller.dto.MemberResponseEntity
-import com.example.bgm.controller.dto.ProfileResponseEntity
-import com.example.bgm.controller.dto.UpdatePersonRequestEntity
+import com.example.bgm.entities.dto.IsMyProfileResponseEntity
+import com.example.bgm.entities.dto.MemberResponseEntity
+import com.example.bgm.entities.dto.ProfileResponseEntity
+import com.example.bgm.entities.dto.UpdatePersonRequestEntity
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
 import com.example.bgm.entities.enums.Gender

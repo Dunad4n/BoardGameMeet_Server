@@ -1,6 +1,6 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.dto.*
+import com.example.bgm.entities.dto.*
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -11,7 +11,6 @@ class RequestValidationService {
     fun getMessage() = message
 
     fun validate(request: CreateEventRequestEntity): Boolean{
-        //можно уменьшить количесто для имен
         if(request.name.length > 30) {
             message = "the name must be shorter than 30 characters"
             return false

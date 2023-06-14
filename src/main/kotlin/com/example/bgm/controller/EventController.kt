@@ -1,6 +1,6 @@
 package com.example.bgm.controller
 
-import com.example.bgm.controller.dto.*
+import com.example.bgm.entities.dto.*
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.services.EventService
 import com.example.bgm.services.RequestValidationService

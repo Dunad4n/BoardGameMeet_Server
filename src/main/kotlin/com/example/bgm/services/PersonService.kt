@@ -1,8 +1,8 @@
 package com.example.bgm.services
 
-import com.example.bgm.controller.dto.*
 import com.example.bgm.entities.Event
 import com.example.bgm.entities.Person
+import com.example.bgm.entities.dto.*
 import com.example.bgm.entities.jwt.Token
 import com.example.bgm.jwt.JwtPerson
 import com.example.bgm.jwt.JwtTokenProvider

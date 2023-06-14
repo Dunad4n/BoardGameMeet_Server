@@ -1,4 +1,4 @@
-package com.example.bgm.controller.dto
+package com.example.bgm.entities.dto
 
 import com.example.bgm.entities.enums.Gender
 import com.fasterxml.jackson.annotation.JsonProperty
