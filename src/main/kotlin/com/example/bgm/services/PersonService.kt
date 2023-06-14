@@ -186,11 +186,11 @@ class PersonService {
         return IsMyProfileResponseEntity(status)
     }
 
-    fun verifyToken(token: String, nickname: String): Boolean {
+    fun verifyToken(token: String, nickname: String): ResponseEntity<*> {
         val person = personRepo.findByNickname(nickname)
             ?: throw Exception("can not find person with nickname $nickname")
         val tokens = tokenRepo.findAllByPerson(person)
-        return tokens[tokens.size - 1].value == token
+        return ResponseEntity.ok(tokens[tokens.size - 1].value == token)
     }
 
     fun isMemberOfEvent(eventId: Long, authPerson: JwtPerson):ResponseEntity<*> {

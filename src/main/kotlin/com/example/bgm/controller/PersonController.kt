@@ -111,7 +111,7 @@ class PersonController {
 
     /** Person Удалить пользователя **/
     @DeleteMapping("/admin/deletePerson/{nickname}")
-    @Operation(summary = "Удаление пользователя из мероприятия", security = [SecurityRequirement(name = "bearer-key")])
+    @Operation(summary = "Удаление пользователя", security = [SecurityRequirement(name = "bearer-key")])
     @ApiResponses(value = [
         ApiResponse(responseCode = "200"),
         ApiResponse(responseCode = "472", description = "Пользователя с таким никнеймом не существует")
@@ -176,7 +176,7 @@ class PersonController {
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", content = [Content(schema = Schema(implementation = Boolean::class), mediaType = "application/json")]),
     ])
-    fun verifyToken(@RequestBody verifyTokenRequest: VerifyTokenRequestEntity): Boolean {
+    fun verifyToken(@RequestBody verifyTokenRequest: VerifyTokenRequestEntity): ResponseEntity<*> {
         return personService.verifyToken(verifyTokenRequest.token, verifyTokenRequest.nickname)
     }
 

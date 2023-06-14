@@ -250,6 +250,11 @@ class EventService {
 //        val sortedEvents = allEvents.sortedWith(compareBy { it.date.toEpochSecond(ZoneOffset.UTC) })
         val start = pageable.offset.toInt()
         val end = min((start + pageable.pageSize), allEvents.size)
+        if (start > end) {
+            return PageImpl(listOf(), pageable, allEvents.size.toLong())
+        }
+        println(start)
+        println(end)
         return PageImpl(allEvents.subList(start, end), pageable, allEvents.size.toLong())
     }
 
